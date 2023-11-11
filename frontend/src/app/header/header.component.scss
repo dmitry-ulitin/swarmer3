@@ -1,0 +1,23 @@
+@import '@taiga-ui/core/styles/taiga-ui-local';
+
+.icon {
+    @include transition(transform);
+    &_rotated {
+        transform: rotate(180deg);
+    }    
+}
+
+:host {
+    display: block;
+    height: 2.5rem;
+    background: rgb(13, 110, 29);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    padding-left: .5rem;
+    padding-right: .5rem;
+}
+
+.fill {
+    flex-grow: 1;
+}
