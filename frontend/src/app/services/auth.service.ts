@@ -12,7 +12,8 @@ export class AuthService {
   #api = inject(ApiService);
   #data = inject(DataService);
 
-  #state = signal<string | null>(null);
+  #tokenKey = 'app.token';
+  #state = signal<string | null>(localStorage.getItem(this.#tokenKey));
   token = this.#state.asReadonly();
   isAuthenticated = computed(() => !!this.#state());
   claims = computed(() => {
@@ -30,6 +31,7 @@ export class AuthService {
     if (!response?.access_token) {
       throw new Error('Incorrect username or password');
     }
+    localStorage.setItem(this.#tokenKey, response.access_token);
     this.#state.update(state => response.access_token);
     this.#data.init();
     this.#router.navigate(['']);
@@ -37,6 +39,7 @@ export class AuthService {
 
   logout() {
     if (this.isAuthenticated()) {
+      localStorage.removeItem(this.#tokenKey);
       this.#state.update(state => null);
     }
     this.#data.reset();
