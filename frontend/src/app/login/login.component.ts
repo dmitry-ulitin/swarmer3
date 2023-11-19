@@ -15,9 +15,9 @@ export class LoginComponent {
   #auth = inject(AuthService);
   #alerts = inject(AlertService);
 
-  onLogin() {
+  async onLogin() {
     try {
-      this.#auth.login('dmitry.ulitin@gmail.com', '123456');
+      await this.#auth.login('dmitry.ulitin@gmail.com', '123456');
     } catch (err) {
       this.#alerts.printError(err);
     }
