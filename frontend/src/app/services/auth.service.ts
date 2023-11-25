@@ -4,11 +4,6 @@ import { firstValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 import { DataService } from './data.service';
 
-export interface AuthStateModel {
-  token: string | null;
-  username: string | null;
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -17,11 +12,12 @@ export class AuthService {
   #api = inject(ApiService);
   #data = inject(DataService);
 
-  #state = signal<AuthStateModel>({ token: null, username: null });
-  state = this.#state.asReadonly();
-  isAuthenticated = computed(() => !!this.#state().token);
+  #tokenKey = 'app.token';
+  #state = signal<string | null>(localStorage.getItem(this.#tokenKey));
+  token = this.#state.asReadonly();
+  isAuthenticated = computed(() => !!this.#state());
   claims = computed(() => {
-    const token = this.#state().token;
+    const token = this.#state();
     if (!token) {
       return undefined;
     }
@@ -35,14 +31,16 @@ export class AuthService {
     if (!response?.access_token) {
       throw new Error('Incorrect username or password');
     }
-    this.#state.update(state => ({ token: response.access_token, username: username }));
+    localStorage.setItem(this.#tokenKey, response.access_token);
+    this.#state.update(state => response.access_token);
     this.#data.init();
     this.#router.navigate(['']);
   }
 
   logout() {
-    if (this.state().token) {
-      this.#state.update(state => ({ token: null, username: null }));
+    if (this.isAuthenticated()) {
+      localStorage.removeItem(this.#tokenKey);
+      this.#state.update(state => null);
     }
     this.#data.reset();
     window.location.reload();
