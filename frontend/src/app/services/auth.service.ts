@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { ApiService } from './api.service';
 import { firstValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
@@ -26,23 +26,25 @@ export class AuthService {
     return JSON.parse(window.atob(base64));
   });
 
+  constructor() {
+    effect(() => { if (this.isAuthenticated()) this.#data.init(); else this.#data.reset(); })
+  }
+
   async login(username: string, password: string) {
     const response = await firstValueFrom(this.#api.login(username, password));
     if (!response?.access_token) {
       throw new Error('Incorrect username or password');
     }
     localStorage.setItem(this.#tokenKey, response.access_token);
-    this.#state.update(state => response.access_token);
-    this.#data.init();
+    this.#state.set(response.access_token);
     this.#router.navigate(['']);
   }
 
   logout() {
     if (this.isAuthenticated()) {
       localStorage.removeItem(this.#tokenKey);
-      this.#state.update(state => null);
+      this.#state.set(null);
     }
-    this.#data.reset();
     window.location.reload();
   }
 }
