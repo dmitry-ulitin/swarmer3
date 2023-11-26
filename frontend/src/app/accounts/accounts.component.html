@@ -1,7 +1,8 @@
 <table class="groups">
     @for(g of data.groups(); track g.id) {
-        <tr>
-            <td>{{g.fullname}}</td>
-        </tr>
+    <tr [class.expanded]="data.expanded().includes(g.id)" [class.owner]="g.is_owner" [class.coowner]="g.is_coowner"
+        [class.shared]="g.is_shared">
+        <td>{{g.fullname}}</td>
+    </tr>
     }
 </table>

@@ -8,8 +8,25 @@ table.groups {
     border-collapse: collapse;
 }
 
-.groups td, .groups th {
+.groups td,
+.groups th {
     vertical-align: top;
-    border-top: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
     padding: .25rem .5rem;
+}
+
+.groups tr:last-child td {
+    border-bottom: none;
+}
+
+tr.owner {
+    background-color: #e7f6fb;
+}
+
+tr.coowner {
+    background-color: #f6ddf5;
+}
+
+tr.shared {
+    background-color: #f6e9cf;
 }

@@ -4,6 +4,7 @@ import { Group } from '../models/group';
 import { firstValueFrom } from 'rxjs';
 import { Category } from '../models/category';
 import { AlertService } from './alert.service';
+import { total } from '../models/balance';
 
 export interface DataState {
   // groups
@@ -23,6 +24,7 @@ export class DataService {
   #state = signal<DataState>(this.#default);
   #alerts = inject(AlertService);
   groups = computed(() => this.#state().groups);
+  expanded = computed(() => this.#state().expanded);
 
   async init() {
     await Promise.all([this.getGroups(), this.getCategories()]);
