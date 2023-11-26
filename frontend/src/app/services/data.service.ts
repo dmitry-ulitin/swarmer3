@@ -25,6 +25,8 @@ export class DataService {
   #alerts = inject(AlertService);
   groups = computed(() => this.#state().groups);
   expanded = computed(() => this.#state().expanded);
+  accounts = computed(() => this.#state().accounts);
+  total = computed(() => [...total(this.#state().groups).entries()].map(e => ({ value: e[1], currency: e[0] })));
 
   async init() {
     await Promise.all([this.getGroups(), this.getCategories()]);
