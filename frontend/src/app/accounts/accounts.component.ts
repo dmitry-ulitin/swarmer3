@@ -1,8 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DataService } from '../services/data.service';
-import { Group } from '../models/group';
-import { total } from '../models/balance';
+import { Group, total } from '../models/group';
 import { Account } from '../models/account';
 
 @Component({
@@ -21,7 +20,7 @@ export class AccountsComponent {
   }
 
   total(g: Group) {
-    return [...total(g).entries()].map(e => ({ value: e[1], currency: e[0] }));
+    return total(g);
   }
 
   isAccountSelected(a: Account): boolean {

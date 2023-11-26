@@ -1,10 +1,9 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { ApiService } from './api.service';
-import { Group } from '../models/group';
+import { Group, total } from '../models/group';
 import { firstValueFrom } from 'rxjs';
 import { Category } from '../models/category';
 import { AlertService } from './alert.service';
-import { total } from '../models/balance';
 
 export interface DataState {
   // groups
@@ -23,10 +22,11 @@ export class DataService {
   #default = { groups: [], expanded: [], accounts: [], categories: [] }
   #state = signal<DataState>(this.#default);
   #alerts = inject(AlertService);
+  // selectors
   groups = computed(() => this.#state().groups);
   expanded = computed(() => this.#state().expanded);
   accounts = computed(() => this.#state().accounts);
-  total = computed(() => [...total(this.#state().groups).entries()].map(e => ({ value: e[1], currency: e[0] })));
+  total = computed(() => total(this.#state().groups));
 
   async init() {
     await Promise.all([this.getGroups(), this.getCategories()]);
