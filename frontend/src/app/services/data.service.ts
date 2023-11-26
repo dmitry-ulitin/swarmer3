@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { ApiService } from './api.service';
 import { Group } from '../models/group';
 import { firstValueFrom } from 'rxjs';
@@ -22,13 +22,14 @@ export class DataService {
   #default = { groups: [], expanded: [], accounts: [], categories: [] }
   #state = signal<DataState>(this.#default);
   #alerts = inject(AlertService);
+  groups = computed(() => this.#state().groups);
 
   async init() {
     await Promise.all([this.getGroups(), this.getCategories()]);
   }
 
   reset() {
-    this.#state.update(state => ({ ...this.#default }));
+    this.#state.set({ ...this.#default });
   }
 
   async getGroups() {
