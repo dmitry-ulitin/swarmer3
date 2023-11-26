@@ -1,0 +1,15 @@
+:host {
+    display: block;
+    height: 100%;
+    overflow: auto;
+}
+
+table.groups {
+    border-collapse: collapse;
+}
+
+.groups td, .groups th {
+    vertical-align: top;
+    border-top: 1px solid #dee2e6;
+    padding: .25rem .5rem;
+}
