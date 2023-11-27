@@ -28,8 +28,8 @@ export class DataService {
   // selectors
   state = this.#state.asReadonly();
   groups = computed(() => this.#state().groups.filter(g => !g.deleted));
-  accounts = computed(() => this.#state().groups.filter(g => !g.deleted).reduce((acc, g) => acc.concat(g.accounts), [] as Account[]).filter(a => !a.deleted));
-  selectedAccounts = computed(() => this.accounts().filter(a => this.#state().accounts.includes(a.id)));
+  allAccounts = computed(() => this.#state().groups.filter(g => !g.deleted).reduce((acc, g) => acc.concat(g.accounts), [] as Account[]).filter(a => !a.deleted));
+  selectedAccounts = computed(() => this.allAccounts().filter(a => this.#state().accounts.includes(a.id)));
   total = computed(() => total(this.#state().groups));
 
   async init() {

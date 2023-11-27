@@ -14,7 +14,6 @@ import { TuiLinkModule, TuiSvgModule } from '@taiga-ui/core';
 })
 export class AccountsComponent {
   data = inject(DataService);
-  groups = computed(() => this.data.groups().filter(g => !g.deleted));
   accounts = computed(() => this.data.state().accounts);
 
 
@@ -26,13 +25,12 @@ export class AccountsComponent {
     return total(g);
   }
 
-  isAccountSelected(a: Account): boolean {
-    const accounts = this.accounts();
-    return accounts.includes(a.id);
-  }
-
   isGroupSelected(group: Group): boolean {
     return !group.accounts.some(a => !a.deleted && !this.isAccountSelected(a));
+  }
+
+  isAccountSelected(a: Account): boolean {
+    return this.accounts().includes(a.id);
   }
 
   isGroupExpandable(group: Group): boolean {

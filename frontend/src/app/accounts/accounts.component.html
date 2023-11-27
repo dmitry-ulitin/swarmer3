@@ -1,5 +1,5 @@
 <table class="groups">
-    @for(g of groups(); track g.id) {
+    @for(g of data.groups(); track g.id) {
     <tr [class.expanded]="data.state().expanded.includes(g.id)" [class.owner]="g.is_owner" [class.coowner]="g.is_coowner"
         [class.shared]="g.is_shared">
         <td [class.active]="isGroupSelected(g)" (click)="selectGroup(g, $event)">
@@ -13,7 +13,7 @@
         <td (click)="toggle(g)">
             <tui-svg *ngIf="isGroupExpandable(g)" src="tuiIconChevronDown" class="icon"></tui-svg>
         </td>
-        <td>
+        <td class="text-end">
             @for(t of total(g); track t.currency) {
                 <div class="group">{{t.value | currency:t.currency}}</div>
             }

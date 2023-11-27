@@ -21,6 +21,10 @@ table.groups {
     border-bottom: none;
 }
 
+.text-end {
+    text-align: right;
+}
+
 .icon {
     @include transition(transform, 300ms);
     transform: rotate(0deg);
