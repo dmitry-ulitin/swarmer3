@@ -1,16 +1,32 @@
 <table class="groups">
     @for(g of groups(); track g.id) {
-    <tr [class.expanded]="data.expanded().includes(g.id)" [class.owner]="g.is_owner" [class.coowner]="g.is_coowner"
+    <tr [class.expanded]="data.state().expanded.includes(g.id)" [class.owner]="g.is_owner" [class.coowner]="g.is_coowner"
         [class.shared]="g.is_shared">
-        <td>{{g.fullname}}</td>
+        <td [class.active]="isGroupSelected(g)" (click)="selectGroup(g, $event)">
+            <a class="group" tuiLink>{{g.fullname}}</a>
+            @for(a of g.accounts; track a.id) {
+                @if(!a.deleted) {
+                    <a class="account" tuiLink  [class.active]="isAccountSelected(a)" (click)="selectAccount(a, $event)">{{a.fullname}}</a>
+                }
+            }
+        </td>
+        <td (click)="toggle(g)">
+            <tui-svg *ngIf="isGroupExpandable(g)" src="tuiIconChevronDown" class="icon"></tui-svg>
+        </td>
         <td>
             @for(t of total(g); track t.currency) {
                 <div class="group">{{t.value | currency:t.currency}}</div>
+            }
+            @for(a of g.accounts; track a.id) {
+                @if(!a.deleted) {
+                    <div class="account">{{a.balance | currency:a.currency}}</div>
+                }
             }
         </td>
     </tr>
     }
     <tr>
+        <td><a tuiLink [pseudo]="true" (click)="newGroup()">new account</a></td>
         <td>&nbsp;</td>
         <td class="text-end">
             @for(t of data.total(); track t.currency) {

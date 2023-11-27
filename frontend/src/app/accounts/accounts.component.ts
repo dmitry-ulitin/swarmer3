@@ -3,20 +3,23 @@ import { CommonModule } from '@angular/common';
 import { DataService } from '../services/data.service';
 import { Group, total } from '../models/group';
 import { Account } from '../models/account';
+import { TuiLinkModule, TuiSvgModule } from '@taiga-ui/core';
 
 @Component({
   selector: 'app-accounts',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TuiSvgModule, TuiLinkModule],
   templateUrl: './accounts.component.html',
   styleUrl: './accounts.component.scss'
 })
 export class AccountsComponent {
   data = inject(DataService);
   groups = computed(() => this.data.groups().filter(g => !g.deleted));
+  accounts = computed(() => this.data.state().accounts);
+
 
   toggle(group: Group): void {
-//    this.store.dispatch(new ToggleGropup(group.id));
+    this.data.toggleGropup(group.id);
   }
 
   total(g: Group) {
@@ -24,7 +27,8 @@ export class AccountsComponent {
   }
 
   isAccountSelected(a: Account): boolean {
-    return this.data.accounts().includes(a.id);
+    const accounts = this.accounts();
+    return accounts.includes(a.id);
   }
 
   isGroupSelected(group: Group): boolean {
@@ -40,21 +44,21 @@ export class AccountsComponent {
     let selected = group.accounts.map(a => a.id);
     if (event.ctrlKey) {
       if (this.isGroupSelected(group)) {
-        selected = this.data.accounts().filter(a => !selected.includes(a));
+        selected = this.accounts().filter(a => !selected.includes(a));
       } else {
-        selected = [...this.data.accounts(), ...selected];
+        selected = [...this.accounts(), ...selected];
       }
     }
-//    this.store.dispatch(new SelectAccounts(selected));
+    this.data.selectAccounts(selected);
   }
 
   selectAccount(account: Account, event: MouseEvent): void {
     event.stopPropagation();
-    const accounts = event.ctrlKey ? (this.isAccountSelected(account) ? this.data.accounts().filter(a => a !== account.id) : [...this.data.accounts(), account.id]) : [account.id];
-//    this.store.dispatch(new SelectAccounts(accounts));
+    const selected = event.ctrlKey ? (this.isAccountSelected(account) ? this.accounts().filter(a => a !== account.id) : [...this.accounts(), account.id]) : [account.id];
+    this.data.selectAccounts(selected);
   }
 
   newGroup(): void {
-//    this.store.dispatch(new CreateGroup());
+    //    this.store.dispatch(new CreateGroup());
   }
 }

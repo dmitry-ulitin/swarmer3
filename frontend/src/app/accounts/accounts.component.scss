@@ -1,3 +1,5 @@
+@import '@taiga-ui/core/styles/taiga-ui-local';
+
 :host {
     display: block;
     height: 100%;
@@ -19,6 +21,48 @@ table.groups {
     border-bottom: none;
 }
 
+.icon {
+    @include transition(transform, 300ms);
+    transform: rotate(0deg);
+
+    .expanded & {
+        transform: rotate(180deg);
+    }
+}
+
+tr.active>td,
+td.active {
+    background-color: rgba(0, 0, 0, .075);
+}
+
+:not(.active)>a.active {
+    background-color: rgba(0, 0, 0, .075);
+}
+
+.group {
+    @include transition(opacity, 300ms);
+    opacity: 1;
+    height: auto;
+
+    .expanded & {
+        opacity: 0;
+        height: 0;
+        overflow: hidden;
+    }
+}
+
+.account {
+    @include transition(opacity, 300ms);
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+
+    .expanded & {
+        opacity: 1;
+        height: auto;
+    }
+}
+
 tr.owner {
     background-color: #e7f6fb;
 }
@@ -29,4 +73,11 @@ tr.coowner {
 
 tr.shared {
     background-color: #f6e9cf;
+}
+
+a,
+a:hover,
+a:focus {
+    display: block;
+    color: inherit;
 }
