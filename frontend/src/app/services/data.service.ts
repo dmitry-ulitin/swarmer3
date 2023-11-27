@@ -51,7 +51,7 @@ export class DataService {
 
   toggleGropup(id: number) {
     if ((this.#state().groups.find(g => g.id === id)?.accounts.length || 0) > 1) {
-      let expanded = this.#state().expanded.filter(id => id !== id);
+      let expanded = this.#state().expanded.filter(e => e !== id);
       if (expanded.length === this.#state().expanded.length) {
         expanded.push(id);
       }
