@@ -57,6 +57,6 @@ export class AccountsComponent {
   }
 
   newGroup(): void {
-    //    this.store.dispatch(new CreateGroup());
+    this.data.createGroup();
   }
 }

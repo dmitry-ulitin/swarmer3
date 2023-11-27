@@ -80,4 +80,6 @@ export class DataService {
       this.#alerts.printError(err);
     }
   }
+
+  createGroup() {}
 }
