@@ -5,16 +5,26 @@ import { firstValueFrom } from 'rxjs';
 import { Category } from '../models/category';
 import { AlertService } from './alert.service';
 import { Account } from '../models/account';
+import { Summary } from '../models/summary';
+import { Transaction } from '../models/transaction';
+import { DateRange } from '../models/date.range';
 
 export interface DataState {
   // groups
   groups: Group[];
   expanded: number[];
-  accounts: number[];
+  // transactions
+  transactions: Transaction[];
+  tid: number | null;
+  summary: Summary[];
   // categories
   categories: Category[];
   // filters
-  currency: string | null;
+  search: string;
+  accounts: number[];
+  range: DateRange;
+  category: Category | null;
+  currency: string;
 }
 
 @Injectable({
@@ -22,7 +32,8 @@ export interface DataState {
 })
 export class DataService {
   #api = inject(ApiService);
-  #default: DataState = { groups: [], expanded: [], accounts: [], categories: [], currency: null }
+  #default: DataState = { groups: [], expanded: [], transactions: [], tid: null, summary: [], categories: [],
+    search: '', accounts: [], range: DateRange.last30(), category: null, currency: '' }
   #state = signal<DataState>(this.#default);
   #alerts = inject(AlertService);
   // selectors
@@ -65,7 +76,7 @@ export class DataService {
     if (!!state.currency) {
       const currencies = this.selectedAccounts().map(a => a.currency);
       if (!currencies.includes(state.currency)) {
-        this.#state.update(state => ({ ...state, currency: null }));
+        this.#state.update(state => ({ ...state, currency: '' }));
       }
     }
     //    cxt.dispatch(new GetTransactions());
@@ -81,5 +92,5 @@ export class DataService {
     }
   }
 
-  createGroup() {}
+  createGroup() { }
 }
