@@ -9,13 +9,15 @@ import { Summary } from '../models/summary';
 import { Transaction } from '../models/transaction';
 import { DateRange } from '../models/date.range';
 
+const GET_TRANSACTIONS_LIMIT = 100;
+
 export interface DataState {
   // groups
   groups: Group[];
   expanded: number[];
   // transactions
   transactions: Transaction[];
-  tid: number | null;
+  tid: number | null | undefined;
   summary: Summary[];
   // categories
   categories: Category[];
@@ -32,8 +34,10 @@ export interface DataState {
 })
 export class DataService {
   #api = inject(ApiService);
-  #default: DataState = { groups: [], expanded: [], transactions: [], tid: null, summary: [], categories: [],
-    search: '', accounts: [], range: DateRange.last30(), category: null, currency: '' }
+  #default: DataState = {
+    groups: [], expanded: [], transactions: [], tid: null, summary: [], categories: [],
+    search: '', accounts: [], range: DateRange.last30(), category: null, currency: ''
+  }
   #state = signal<DataState>(this.#default);
   #alerts = inject(AlertService);
   // selectors
@@ -44,7 +48,7 @@ export class DataService {
   total = computed(() => total(this.#state().groups));
 
   async init() {
-    await Promise.all([this.getGroups(), this.getCategories()]);
+    await Promise.all([this.getGroups(), this.getCategories(), this.getTransactions(this.#default)]);
   }
 
   reset() {
@@ -70,6 +74,8 @@ export class DataService {
     }
   }
 
+  createGroup() { }
+
   selectAccounts(accounts: number[]) {
     this.#state.update(state => ({ ...state, accounts }));
     const state = this.#state();
@@ -79,6 +85,7 @@ export class DataService {
         this.#state.update(state => ({ ...state, currency: '' }));
       }
     }
+    this.getTransactions(state).then();
     //    cxt.dispatch(new GetTransactions());
     //    cxt.dispatch(new GetSummary());
   }
@@ -92,5 +99,14 @@ export class DataService {
     }
   }
 
-  createGroup() { }
+  async getTransactions(state: DataState) {
+    try {
+      const transactions = await firstValueFrom(this.#api.getTransactions(state.accounts, state.search, state.range, state.category?.id, state.currency, 0, GET_TRANSACTIONS_LIMIT));
+      const tid = transactions.find(t => t.id === state.tid)?.id;
+      this.#state.update(state => ({ ...state, transactions, tid }));
+    } catch (err) {
+      this.#alerts.printError(err);
+    }
+
+  }
 }
