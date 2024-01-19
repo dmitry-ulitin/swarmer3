@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { TuiRootModule } from '@taiga-ui/core';
 import { HeaderComponent } from './header/header.component';
+import { DataService } from './services/data.service';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -12,4 +14,10 @@ import { HeaderComponent } from './header/header.component';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
+  #auth = inject(AuthService);
+  #data = inject(DataService);
+
+  constructor() {
+    if (this.#auth.isAuthenticated()) this.#data.init();
+  }
 }

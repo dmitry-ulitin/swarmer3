@@ -5,16 +5,28 @@ import { firstValueFrom } from 'rxjs';
 import { Category } from '../models/category';
 import { AlertService } from './alert.service';
 import { Account } from '../models/account';
+import { Summary } from '../models/summary';
+import { Transaction } from '../models/transaction';
+import { DateRange } from '../models/date.range';
+
+const GET_TRANSACTIONS_LIMIT = 100;
 
 export interface DataState {
   // groups
   groups: Group[];
   expanded: number[];
-  accounts: number[];
+  // transactions
+  transactions: Transaction[];
+  tid: number | null | undefined;
+  summary: Summary[];
   // categories
   categories: Category[];
   // filters
-  currency: string | null;
+  search: string;
+  accounts: number[];
+  range: DateRange;
+  category: Category | null;
+  currency: string;
 }
 
 @Injectable({
@@ -22,7 +34,10 @@ export interface DataState {
 })
 export class DataService {
   #api = inject(ApiService);
-  #default: DataState = { groups: [], expanded: [], accounts: [], categories: [], currency: null }
+  #default: DataState = {
+    groups: [], expanded: [], transactions: [], tid: null, summary: [], categories: [],
+    search: '', accounts: [], range: DateRange.last30(), category: null, currency: ''
+  }
   #state = signal<DataState>(this.#default);
   #alerts = inject(AlertService);
   // selectors
@@ -33,7 +48,7 @@ export class DataService {
   total = computed(() => total(this.#state().groups));
 
   async init() {
-    await Promise.all([this.getGroups(), this.getCategories()]);
+    await Promise.all([this.getGroups(), this.getCategories(), this.getTransactions(this.#default)]);
   }
 
   reset() {
@@ -42,7 +57,7 @@ export class DataService {
 
   async getGroups() {
     try {
-      const groups = await firstValueFrom(this.#api.getGroups(''));
+      const groups = await firstValueFrom(this.#api.getGroups(''), { defaultValue: [] });
       this.#state.update(state => ({ ...state, groups }));
     } catch (err) {
       this.#alerts.printError(err);
@@ -59,27 +74,39 @@ export class DataService {
     }
   }
 
+  createGroup() { }
+
   selectAccounts(accounts: number[]) {
     this.#state.update(state => ({ ...state, accounts }));
     const state = this.#state();
     if (!!state.currency) {
       const currencies = this.selectedAccounts().map(a => a.currency);
       if (!currencies.includes(state.currency)) {
-        this.#state.update(state => ({ ...state, currency: null }));
+        this.#state.update(state => ({ ...state, currency: '' }));
       }
     }
+    this.getTransactions(state).then();
     //    cxt.dispatch(new GetTransactions());
     //    cxt.dispatch(new GetSummary());
   }
 
   async getCategories() {
     try {
-      const categories = await firstValueFrom(this.#api.getCategories());
+      const categories = await firstValueFrom(this.#api.getCategories(), { defaultValue: [] });
       this.#state.update(state => ({ ...state, categories }));
     } catch (err) {
       this.#alerts.printError(err);
     }
   }
 
-  createGroup() {}
+  async getTransactions(state: DataState) {
+    try {
+      const transactions = await firstValueFrom(this.#api.getTransactions(state.accounts, state.search, state.range, state.category?.id, state.currency, 0, GET_TRANSACTIONS_LIMIT), { defaultValue: [] });
+      const tid = transactions.find(t => t.id === state.tid)?.id;
+      this.#state.update(state => ({ ...state, transactions, tid }));
+    } catch (err) {
+      this.#alerts.printError(err);
+    }
+
+  }
 }
