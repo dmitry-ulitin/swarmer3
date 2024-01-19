@@ -57,7 +57,7 @@ export class DataService {
 
   async getGroups() {
     try {
-      const groups = await firstValueFrom(this.#api.getGroups(''));
+      const groups = await firstValueFrom(this.#api.getGroups(''), { defaultValue: [] });
       this.#state.update(state => ({ ...state, groups }));
     } catch (err) {
       this.#alerts.printError(err);
@@ -92,7 +92,7 @@ export class DataService {
 
   async getCategories() {
     try {
-      const categories = await firstValueFrom(this.#api.getCategories());
+      const categories = await firstValueFrom(this.#api.getCategories(), { defaultValue: [] });
       this.#state.update(state => ({ ...state, categories }));
     } catch (err) {
       this.#alerts.printError(err);
@@ -101,7 +101,7 @@ export class DataService {
 
   async getTransactions(state: DataState) {
     try {
-      const transactions = await firstValueFrom(this.#api.getTransactions(state.accounts, state.search, state.range, state.category?.id, state.currency, 0, GET_TRANSACTIONS_LIMIT));
+      const transactions = await firstValueFrom(this.#api.getTransactions(state.accounts, state.search, state.range, state.category?.id, state.currency, 0, GET_TRANSACTIONS_LIMIT), { defaultValue: [] });
       const tid = transactions.find(t => t.id === state.tid)?.id;
       this.#state.update(state => ({ ...state, transactions, tid }));
     } catch (err) {
