@@ -5,6 +5,7 @@ import { Group } from '../models/group';
 import { Category } from '../models/category';
 import { DateRange } from '../models/date.range';
 import { Transaction } from '../models/transaction';
+import { Credentials, Registration } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,8 +14,12 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
-  login(username: string, password: string): Observable<any> {
-    return this.http.post<any>('/api/login', { username: username, password: password });
+  login(credentials: Credentials): Observable<any> {
+    return this.http.post<any>('/api/login', credentials);
+  }
+
+  register(registration: Registration): Observable<any> {
+    return this.http.post<any>('/api/register', registration);
   }
 
   getGroups(opdate: string): Observable<Group[]> {

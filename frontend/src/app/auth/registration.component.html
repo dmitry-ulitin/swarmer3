@@ -1,4 +1,4 @@
-<form [formGroup]="form" (ngSubmit)="onLogin()" class="form" [tuiTextfieldSize]="'s'">
+<form [formGroup]="form" (ngSubmit)="onRegister()" class="form" [tuiTextfieldSize]="'s'" autocomplete="off">
     <p>
         <label [tuiLabel]="'Email'">
             <tui-input formControlName="username" required>
@@ -13,7 +13,7 @@
         </label>
     </p>
     <p class="buttons">
-        <span>New to Swarmer Finance? <a [routerLink]="['/register']" routerLinkActive="router-link-active" >Create an account</a></span>
-        <button type="submit" tuiButton  [size]="'s'"  [disabled]="form.invalid">Login</button>
+        <span>Already have an account? <a [routerLink]="['/login']" routerLinkActive="router-link-active" >Sign in</a></span>
+        <button type="submit" tuiButton  [size]="'s'"  [disabled]="form.invalid">Register</button>
     </p>
 </form>

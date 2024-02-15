@@ -1,28 +1,34 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { AuthService } from '../services/auth.service';
-import { TuiButtonModule, TuiLabelModule, TuiTextfieldControllerModule } from '@taiga-ui/core';
 import { AlertService } from '../services/alert.service';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TuiInputModule, TuiInputPasswordModule } from '@taiga-ui/kit';
+import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TuiButtonModule, TuiLabelModule, TuiTextfieldControllerModule } from '@taiga-ui/core';
+import { TuiInputModule, TuiInputPasswordModule } from '@taiga-ui/kit';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-registration',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink, TuiButtonModule, TuiInputModule, TuiInputPasswordModule, TuiLabelModule, TuiTextfieldControllerModule],
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
+  templateUrl: './registration.component.html',
+  styleUrl: './registration.component.scss'
 })
-export class LoginComponent {
+export class RegistrationComponent {
   #auth = inject(AuthService);
   #alerts = inject(AlertService);
   form = new FormGroup({
     username: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
     password: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    currency: new FormControl('EUR', { nonNullable: true, validators: [Validators.required] }),
   });
 
-  async onLogin() {
+  get defaultName(): string {
+    return this.form.value.username?.replace(/@.*/, '') || 'Enter your name';
+  }
+
+  async onRegister() {
     try {
       await this.#auth.login(this.form.value);
     } catch (err) {
