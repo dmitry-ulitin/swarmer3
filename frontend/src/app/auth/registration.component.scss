@@ -8,10 +8,25 @@
 .form {
     display: flex;
     flex-direction: column;
-    min-width: 25rem;;
+    gap: 0.5rem;
+    min-width: 25rem;
+}
+
+.row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.row label:first-child {
+    flex-grow: 1;
+}
+
+.row label:last-child {
+    width: 5rem;
 }
 
 .buttons {
+    margin-top: 1rem;
     display: flex;
     align-items: center;
     justify-content: space-between;

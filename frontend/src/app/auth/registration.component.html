@@ -1,19 +1,27 @@
 <form [formGroup]="form" (ngSubmit)="onRegister()" class="form" [tuiTextfieldSize]="'s'" autocomplete="off">
-    <p>
-        <label [tuiLabel]="'Email'">
-            <tui-input formControlName="username" required>
-                Enter your email
-                <input autocomplete="email" tuiTextfield type="email" />
-            </tui-input>
+    <label [tuiLabel]="'Email'">
+        <tui-input formControlName="username" required>
+            Enter your email
+            <input autocomplete="email" tuiTextfield type="email" />
+        </tui-input>
+    </label>
+    <div class="row">
+        <label [tuiLabel]="'Name'">
+            <tui-input formControlName="name">{{defaultName}}</tui-input>
         </label>
-    </p>
-    <p>
-        <label [tuiLabel]="'Password'">
-            <tui-input-password formControlName="password" required>Enter your password</tui-input-password>
+        <label [tuiLabel]="'Currency'">
+            <tui-combo-box formControlName="currency" [strict]="false">
+                <input tuiTextfield />
+                <tui-data-list-wrapper *tuiDataList [items]="currencies | tuiFilterByInput" [size]="'s'">
+                </tui-data-list-wrapper>
+            </tui-combo-box>
         </label>
-    </p>
-    <p class="buttons">
-        <span>Already have an account? <a [routerLink]="['/login']" routerLinkActive="router-link-active" >Sign in</a></span>
-        <button type="submit" tuiButton  [size]="'s'"  [disabled]="form.invalid">Register</button>
-    </p>
+    </div>
+    <label [tuiLabel]="'Password'">
+        <tui-input-password formControlName="password" required>Enter your password</tui-input-password>
+    </label>
+    <div class="buttons">
+        <span>Already have an account? <a [routerLink]="['/login']" routerLinkActive="router-link-active">Sign in</a></span>
+        <button type="submit" tuiButton [size]="'s'" [disabled]="form.invalid">Register</button>
+    </div>
 </form>
