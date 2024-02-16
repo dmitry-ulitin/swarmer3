@@ -1,19 +1,15 @@
 <form [formGroup]="form" (ngSubmit)="onLogin()" class="form" [tuiTextfieldSize]="'s'">
-    <p>
-        <label [tuiLabel]="'Email'">
-            <tui-input formControlName="username" required>
-                Enter your email
-                <input autocomplete="email" tuiTextfield type="email" />
-            </tui-input>
-        </label>
-    </p>
-    <p>
-        <label [tuiLabel]="'Password'">
-            <tui-input-password formControlName="password" required>Enter your password</tui-input-password>
-        </label>
-    </p>
-    <p class="buttons">
-        <span>New to Swarmer Finance? <a [routerLink]="['/register']" routerLinkActive="router-link-active" >Create an account</a></span>
-        <button type="submit" tuiButton  [size]="'s'"  [disabled]="form.invalid">Login</button>
-    </p>
+    <label [tuiLabel]="'Email'">
+        <tui-input formControlName="username" required>
+            Enter your email
+            <input autocomplete="email" tuiTextfield type="email" />
+        </tui-input>
+    </label>
+    <label [tuiLabel]="'Password'">
+        <tui-input-password formControlName="password" required>Enter your password</tui-input-password>
+    </label>
+    <div class="buttons">
+        <span>New to Swarmer Finance? <a [routerLink]="['/register']" routerLinkActive="router-link-active">Create an account</a></span>
+        <button type="submit" tuiButton [size]="'s'" [disabled]="form.invalid">Login</button>
+    </div>
 </form>
