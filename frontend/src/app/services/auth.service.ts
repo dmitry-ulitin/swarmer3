@@ -4,6 +4,17 @@ import { firstValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 import { DataService } from './data.service';
 
+export interface Credentials {
+  email?: string;
+  password?: string;
+}
+
+export interface Registration extends Credentials {
+  name?: string;
+  currency?: string;
+}
+
+
 @Injectable({
   providedIn: 'root'
 })
@@ -26,10 +37,21 @@ export class AuthService {
     return JSON.parse(window.atob(base64));
   });
 
-  async login(username: string, password: string) {
-    const response = await firstValueFrom(this.#api.login(username, password));
+  async login(credentials: Credentials) {
+    const response = await firstValueFrom(this.#api.login(credentials));
     if (!response?.access_token) {
       throw new Error('Incorrect username or password');
+    }
+    localStorage.setItem(this.#tokenKey, response.access_token);
+    this.#state.set(response.access_token);
+    this.#router.navigate(['']);
+    this.#data.init();
+  }
+
+  async register(registration: Registration) {
+    const response = await firstValueFrom(this.#api.register(registration));
+    if (!response?.access_token) {
+      throw new Error('Registration error');
     }
     localStorage.setItem(this.#tokenKey, response.access_token);
     this.#state.set(response.access_token);

@@ -18,13 +18,13 @@ export class LoginComponent {
   #auth = inject(AuthService);
   #alerts = inject(AlertService);
   form = new FormGroup({
-    username: new FormControl('', [Validators.required, Validators.email]),
-    password: new FormControl('', [Validators.required]),
+    username: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
+    password: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
   });
 
   async onLogin() {
     try {
-      await this.#auth.login(this.form.value.username || '', this.form.value.password || '');
+      await this.#auth.login(this.form.value);
     } catch (err) {
       this.#alerts.printError(err);
     }
