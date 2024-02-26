@@ -6,7 +6,7 @@ import { Category } from '../models/category';
 import { AlertService } from './alert.service';
 import { Account } from '../models/account';
 import { Summary } from '../models/summary';
-import { Transaction } from '../models/transaction';
+import { Transaction, TransactionView } from '../models/transaction';
 import { DateRange } from '../models/date.range';
 
 const GET_TRANSACTIONS_LIMIT = 100;
@@ -16,7 +16,7 @@ export interface DataState {
   groups: Group[];
   expanded: number[];
   // transactions
-  transactions: Transaction[];
+  transactions: TransactionView[];
   tid: number | null | undefined;
   summary: Summary[];
   // categories
@@ -102,11 +102,20 @@ export class DataService {
   async getTransactions(state: DataState) {
     try {
       const transactions = await firstValueFrom(this.#api.getTransactions(state.accounts, state.search, state.range, state.category?.id, state.currency, 0, GET_TRANSACTIONS_LIMIT), { defaultValue: [] });
+      const selected: { [key: number]: boolean } = Object.assign({}, ...state.accounts.map(a => ({ [a]: true })));
       const tid = transactions.find(t => t.id === state.tid)?.id;
-      this.#state.update(state => ({ ...state, transactions, tid }));
+      this.#state.update(state => ({ ...state, tid, transactions: transactions.map(t => this.transaction2View(t, selected)) }));
     } catch (err) {
       this.#alerts.printError(err);
     }
 
   }
+
+  transaction2View(t: Transaction, selected: { [key: number]: boolean }): TransactionView {
+    const useRecipient = t.recipient && (typeof t.account?.balance !== 'number' || typeof t.recipient?.balance === 'number' && selected[t.recipient?.id] && (!t.account || !selected[t.account?.id]));
+    const amount = (t.account && !useRecipient) ? { value: t.debit, currency: t.account.currency } : { value: t.credit, currency: t.recipient.currency };
+    const acc = useRecipient && t.recipient ? t.recipient : (t.account || t.recipient);
+    return { ...t, amount, balance: { fullname: acc.fullname, currency: acc.currency, balance: acc.balance } };
+  }
+
 }

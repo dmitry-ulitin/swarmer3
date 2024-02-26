@@ -9,12 +9,10 @@ export enum TransactionType {
     Correction
 }
 
-export interface Transaction {
-    id?: number | null;
+interface TransactionBase {
+    id: number;
     opdate: string;
-    account?: Account | null;
     credit: number;
-    recipient?: Account | null;
     debit: number;
     category?: Category | null;
     currency?: string;
@@ -23,8 +21,30 @@ export interface Transaction {
     type: TransactionType;
 }
 
-export interface TransactionImport extends Transaction {
+interface TransactionTransfer extends TransactionBase {
+    account: Account;
+    recipient: Account;
+}
+
+interface TransactionExpense extends TransactionBase {
+    account: Account;
+    recipient: null;
+}
+
+interface TransactionIncome extends TransactionBase {
+    account: null;
+    recipient: Account;
+}
+
+export type Transaction = TransactionTransfer | TransactionExpense | TransactionIncome;
+
+export type TransactionImport = Transaction & {
     selected: boolean;
     rule: Rule;
 }
+
+export type TransactionView = Transaction & {
+    amount: { value: number; currency: string };
+    balance: { fullname: string; balance?: number; currency: string; };
+};
 
