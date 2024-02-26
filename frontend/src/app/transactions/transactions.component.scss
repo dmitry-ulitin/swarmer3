@@ -41,5 +41,14 @@
 }
 
 .text-black-50 {
-    color: #00000080;    
+    color: var(--tui-text-03);
+}
+
+.account {
+    font-weight: 500;
+    color: var(--tui-text-01);
+}
+
+.category {
+    color: var(--tui-text-01);
 }

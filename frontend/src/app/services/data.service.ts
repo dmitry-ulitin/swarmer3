@@ -86,8 +86,8 @@ export class DataService {
     const state = this.#state();
     // check expanded
     let expanded = this.#state().expanded;
-    for(let aid of state.accounts) {
-      const group  = state.groups.find(g => g.accounts.findIndex(a => a.id == aid) >= 0);
+    for (let aid of state.accounts) {
+      const group = state.groups.find(g => g.accounts.findIndex(a => a.id == aid) >= 0);
       if (group?.id && group.accounts.length > 1 && !expanded.includes(group.id) && group.accounts.some(a => !a.deleted && !state.accounts.includes(a.id))) {
         expanded.push(group.id);
         this.#state.update(state => ({ ...state, expanded }));
@@ -114,6 +114,11 @@ export class DataService {
     }
   }
 
+  selectCategory(category: Category | null) {
+    this.#state.update(state => ({ ...state, category }));
+    this.getTransactions(this.#state()).then();
+  }
+
   async getTransactions(state: DataState) {
     try {
       const transactions = await firstValueFrom(this.#api.getTransactions(state.accounts, state.search, state.range, state.category?.id, state.currency, 0, GET_TRANSACTIONS_LIMIT), { defaultValue: [] });
@@ -123,7 +128,6 @@ export class DataService {
     } catch (err) {
       this.#alerts.printError(err);
     }
-
   }
 
   selectTransaction(tid: number) {
@@ -150,7 +154,7 @@ export class DataService {
     const useRecipient = t.recipient && (typeof t.account?.balance !== 'number' || typeof t.recipient?.balance === 'number' && selected[t.recipient?.id] && (!t.account || !selected[t.account?.id]));
     const amount = (t.account && !useRecipient) ? { value: t.debit, currency: t.account.currency } : { value: t.credit, currency: t.recipient.currency };
     const acc = useRecipient && t.recipient ? t.recipient : (t.account || t.recipient);
-    return { ...t, amount, balance: { fullname: acc.fullname, currency: acc.currency, balance: acc.balance } };
+    return { ...t, amount, balance: { aid: acc.id, fullname: acc.fullname, currency: acc.currency, balance: acc.balance } };
   }
 
 }
