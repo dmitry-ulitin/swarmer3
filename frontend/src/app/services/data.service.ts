@@ -78,8 +78,22 @@ export class DataService {
   createGroup() { }
 
   selectAccounts(accounts: number[]) {
+    const prev = this.#state().accounts;
+    if (accounts.every(a => prev.includes(a)) && prev.every(a => accounts.includes(a))) {
+      return;
+    }
     this.#state.update(state => ({ ...state, accounts }));
     const state = this.#state();
+    // check expanded
+    let expanded = this.#state().expanded;
+    for(let aid of state.accounts) {
+      const group  = state.groups.find(g => g.accounts.findIndex(a => a.id == aid) >= 0);
+      if (group?.id && group.accounts.length > 1 && !expanded.includes(group.id) && group.accounts.some(a => !a.deleted && !state.accounts.includes(a.id))) {
+        expanded.push(group.id);
+        this.#state.update(state => ({ ...state, expanded }));
+      }
+    }
+    // check currency
     if (!!state.currency) {
       const currencies = this.selectedAccounts().map(a => a.currency);
       if (!currencies.includes(state.currency)) {
