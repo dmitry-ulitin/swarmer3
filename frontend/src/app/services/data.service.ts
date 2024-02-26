@@ -9,7 +9,7 @@ import { Summary } from '../models/summary';
 import { Transaction, TransactionView } from '../models/transaction';
 import { DateRange } from '../models/date.range';
 
-const GET_TRANSACTIONS_LIMIT = 100;
+const GET_TRANSACTIONS_LIMIT = 50;
 
 export interface DataState {
   // groups
@@ -19,6 +19,7 @@ export interface DataState {
   transactions: TransactionView[];
   tid: number | null | undefined;
   summary: Summary[];
+  loaded: boolean;
   // categories
   categories: Category[];
   // filters
@@ -35,7 +36,7 @@ export interface DataState {
 export class DataService {
   #api = inject(ApiService);
   #default: DataState = {
-    groups: [], expanded: [], transactions: [], tid: null, summary: [], categories: [],
+    groups: [], expanded: [], transactions: [], tid: null, summary: [], loaded: false, categories: [],
     search: '', accounts: [], range: DateRange.last30(), category: null, currency: ''
   }
   #state = signal<DataState>(this.#default);
@@ -104,7 +105,27 @@ export class DataService {
       const transactions = await firstValueFrom(this.#api.getTransactions(state.accounts, state.search, state.range, state.category?.id, state.currency, 0, GET_TRANSACTIONS_LIMIT), { defaultValue: [] });
       const selected: { [key: number]: boolean } = Object.assign({}, ...state.accounts.map(a => ({ [a]: true })));
       const tid = transactions.find(t => t.id === state.tid)?.id;
-      this.#state.update(state => ({ ...state, tid, transactions: transactions.map(t => this.transaction2View(t, selected)) }));
+      this.#state.update(state => ({ ...state, tid, loaded: false, transactions: transactions.map(t => this.transaction2View(t, selected)) }));
+    } catch (err) {
+      this.#alerts.printError(err);
+    }
+
+  }
+
+  selectTransaction(tid: number) {
+    this.#state.update(state => ({ ...state, tid }));
+  }
+
+
+  async scrollTransactions() {
+    try {
+      const state = this.#state();
+      if (!state.loaded) {
+        const transactions = await firstValueFrom(this.#api.getTransactions(state.accounts, state.search, state.range, state.category?.id, state.currency, state.transactions.length, GET_TRANSACTIONS_LIMIT), { defaultValue: [] });
+        const loaded = transactions.length < GET_TRANSACTIONS_LIMIT;
+        const selected: { [key: number]: boolean } = Object.assign({}, ...state.accounts.map(a => ({ [a]: true })));
+        this.#state.update(state => ({ ...state, loaded, transactions: state.transactions.concat(transactions.map(t => this.transaction2View(t, selected))) }));
+      }
     } catch (err) {
       this.#alerts.printError(err);
     }
