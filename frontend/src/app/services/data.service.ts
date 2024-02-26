@@ -9,7 +9,7 @@ import { Summary } from '../models/summary';
 import { Transaction, TransactionView } from '../models/transaction';
 import { DateRange } from '../models/date.range';
 
-const GET_TRANSACTIONS_LIMIT = 50;
+const GET_TRANSACTIONS_LIMIT = 100;
 
 export interface DataState {
   // groups
@@ -122,9 +122,10 @@ export class DataService {
   async getTransactions(state: DataState) {
     try {
       const transactions = await firstValueFrom(this.#api.getTransactions(state.accounts, state.search, state.range, state.category?.id, state.currency, 0, GET_TRANSACTIONS_LIMIT), { defaultValue: [] });
+      const loaded = transactions.length < GET_TRANSACTIONS_LIMIT;
       const selected: { [key: number]: boolean } = Object.assign({}, ...state.accounts.map(a => ({ [a]: true })));
       const tid = transactions.find(t => t.id === state.tid)?.id;
-      this.#state.update(state => ({ ...state, tid, loaded: false, transactions: transactions.map(t => this.transaction2View(t, selected)) }));
+      this.#state.update(state => ({ ...state, tid, loaded, transactions: transactions.map(t => this.transaction2View(t, selected)) }));
     } catch (err) {
       this.#alerts.printError(err);
     }
