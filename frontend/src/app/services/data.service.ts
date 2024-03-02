@@ -6,7 +6,7 @@ import { Category } from '../models/category';
 import { AlertService } from './alert.service';
 import { Account } from '../models/account';
 import { Summary } from '../models/summary';
-import { Transaction } from '../models/transaction';
+import { Transaction, TransactionView } from '../models/transaction';
 import { DateRange } from '../models/date.range';
 
 const GET_TRANSACTIONS_LIMIT = 100;
@@ -16,9 +16,10 @@ export interface DataState {
   groups: Group[];
   expanded: number[];
   // transactions
-  transactions: Transaction[];
+  transactions: TransactionView[];
   tid: number | null | undefined;
   summary: Summary[];
+  loaded: boolean;
   // categories
   categories: Category[];
   // filters
@@ -35,7 +36,7 @@ export interface DataState {
 export class DataService {
   #api = inject(ApiService);
   #default: DataState = {
-    groups: [], expanded: [], transactions: [], tid: null, summary: [], categories: [],
+    groups: [], expanded: [], transactions: [], tid: null, summary: [], loaded: false, categories: [],
     search: '', accounts: [], range: DateRange.last30(), category: null, currency: ''
   }
   #state = signal<DataState>(this.#default);
@@ -77,8 +78,22 @@ export class DataService {
   createGroup() { }
 
   selectAccounts(accounts: number[]) {
+    const prev = this.#state().accounts;
+    if (accounts.every(a => prev.includes(a)) && prev.every(a => accounts.includes(a))) {
+      return;
+    }
     this.#state.update(state => ({ ...state, accounts }));
     const state = this.#state();
+    // check expanded
+    let expanded = this.#state().expanded;
+    for (let aid of state.accounts) {
+      const group = state.groups.find(g => g.accounts.findIndex(a => a.id == aid) >= 0);
+      if (group?.id && group.accounts.length > 1 && !expanded.includes(group.id) && group.accounts.some(a => !a.deleted && !state.accounts.includes(a.id))) {
+        expanded.push(group.id);
+        this.#state.update(state => ({ ...state, expanded }));
+      }
+    }
+    // check currency
     if (!!state.currency) {
       const currencies = this.selectedAccounts().map(a => a.currency);
       if (!currencies.includes(state.currency)) {
@@ -99,14 +114,48 @@ export class DataService {
     }
   }
 
+  selectCategory(category: Category | null) {
+    this.#state.update(state => ({ ...state, category }));
+    this.getTransactions(this.#state()).then();
+  }
+
   async getTransactions(state: DataState) {
     try {
       const transactions = await firstValueFrom(this.#api.getTransactions(state.accounts, state.search, state.range, state.category?.id, state.currency, 0, GET_TRANSACTIONS_LIMIT), { defaultValue: [] });
+      const loaded = transactions.length < GET_TRANSACTIONS_LIMIT;
+      const selected: { [key: number]: boolean } = Object.assign({}, ...state.accounts.map(a => ({ [a]: true })));
       const tid = transactions.find(t => t.id === state.tid)?.id;
-      this.#state.update(state => ({ ...state, transactions, tid }));
+      this.#state.update(state => ({ ...state, tid, loaded, transactions: transactions.map(t => this.transaction2View(t, selected)) }));
+    } catch (err) {
+      this.#alerts.printError(err);
+    }
+  }
+
+  selectTransaction(tid: number) {
+    this.#state.update(state => ({ ...state, tid }));
+  }
+
+
+  async scrollTransactions() {
+    try {
+      const state = this.#state();
+      if (!state.loaded) {
+        const transactions = await firstValueFrom(this.#api.getTransactions(state.accounts, state.search, state.range, state.category?.id, state.currency, state.transactions.length, GET_TRANSACTIONS_LIMIT), { defaultValue: [] });
+        const loaded = transactions.length < GET_TRANSACTIONS_LIMIT;
+        const selected: { [key: number]: boolean } = Object.assign({}, ...state.accounts.map(a => ({ [a]: true })));
+        this.#state.update(state => ({ ...state, loaded, transactions: state.transactions.concat(transactions.map(t => this.transaction2View(t, selected))) }));
+      }
     } catch (err) {
       this.#alerts.printError(err);
     }
 
   }
+
+  transaction2View(t: Transaction, selected: { [key: number]: boolean }): TransactionView {
+    const useRecipient = t.recipient && (typeof t.account?.balance !== 'number' || typeof t.recipient?.balance === 'number' && selected[t.recipient?.id] && (!t.account || !selected[t.account?.id]));
+    const amount = (t.account && !useRecipient) ? { value: t.debit, currency: t.account.currency } : { value: t.credit, currency: t.recipient.currency };
+    const acc = useRecipient && t.recipient ? t.recipient : (t.account || t.recipient);
+    return { ...t, amount, balance: { aid: acc.id, fullname: acc.fullname, currency: acc.currency, balance: acc.balance } };
+  }
+
 }

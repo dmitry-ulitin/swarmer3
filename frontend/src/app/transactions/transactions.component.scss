@@ -1,0 +1,54 @@
+
+.overflow-auto {
+    overflow: auto;
+}
+
+.t-content.active {
+    background-color: rgba(0, 0, 0, .075);
+}
+
+.t-content {
+    border-top: 1px solid #dee2e6;
+    min-width: 16rem;
+    padding: 0 .5rem;
+}
+
+.t-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.t-long {
+    display: block;
+    max-width: 30rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 11px;
+}
+
+.t-left {
+    display: block;
+    max-width: 24rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.t-right {
+    padding-left: 1rem;
+    text-align: right;
+}
+
+.text-black-50 {
+    color: var(--tui-text-03);
+}
+
+.account {
+    font-weight: 500;
+    color: var(--tui-text-01);
+}
+
+.category {
+    color: var(--tui-text-01);
+}
