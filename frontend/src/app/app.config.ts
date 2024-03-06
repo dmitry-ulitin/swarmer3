@@ -10,9 +10,9 @@ import { errorInterceptor } from './auth/error.interceptor';
 import localeRu from '@angular/common/locales/ru';
 import { registerLocaleData } from '@angular/common';
 
-registerLocaleData(localeRu, 'ru');
+registerLocaleData(localeRu, 'ru-RU');
 
 export const appConfig: ApplicationConfig = {
   providers: [provideRouter(routes), provideHttpClient(withInterceptors([jwtInterceptor, errorInterceptor])),
-    provideAnimations(), importProvidersFrom(TuiRootModule), importProvidersFrom(TuiAlertModule), { provide: LOCALE_ID, useValue: 'ru' }]
+    provideAnimations(), importProvidersFrom(TuiRootModule), importProvidersFrom(TuiAlertModule), { provide: LOCALE_ID, useValue: 'ru-RU' }]
 };
