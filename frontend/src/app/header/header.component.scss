@@ -22,3 +22,14 @@
 .fill {
     flex-grow: 1;
 }
+
+.title {
+    font-weight: 500;
+    font-size: 15px;
+    margin-right: 1rem;
+}
+
+.group {
+    display: flex;
+    column-gap: 0.2rem;
+}

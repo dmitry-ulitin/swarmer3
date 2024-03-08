@@ -1,16 +1,28 @@
-<span>Swarmer Finance</span>
+<span class="title">Swarmer Finance</span>
+@if(data.allAccounts().length > 0) {
+<div tuiMode="onDark" class="group">
+    <button tuiIconButton type="button" icon="tuiIconMinus" [size]="'s'" [appearance]="'flat'"
+        (click)="onExpense()"></button>
+    @if(data.allAccounts().length > 1) {
+    <button tuiIconButton type="button" icon="tuiIconShuffle" [size]="'s'" [appearance]="'flat'"
+        (click)="onTransfer()"></button>
+    }
+    <button tuiIconButton type="button" icon="tuiIconPlus" [size]="'s'" [appearance]="'flat'"
+        (click)="onIncome()"></button>
+</div>
+}
 <span class="fill"></span>
 @if (auth.isAuthenticated()) {
-    <tui-hosted-dropdown #userMenu [content]="dropdown" tuiDropdownAlign="left">
-        <button tuiButton type="button" appearance="flat" [size]="'s'" [icon]="'tuiIconUser'" [iconRight]="uicon"
-            tuiMode="onDark">{{auth.claims().name}}</button>
-    </tui-hosted-dropdown>
-    <ng-template #dropdown>
-        <tui-data-list>
-            <button tuiOption (click)="onLogout()" [size]="'s'">Logout</button>
-        </tui-data-list>
-    </ng-template>
-    <ng-template #uicon>
-        <tui-svg src="tuiIconChevronDown" class="icon" [class.icon_rotated]="userMenu.open"></tui-svg>
-    </ng-template>
+<tui-hosted-dropdown #userMenu [content]="dropdown" tuiDropdownAlign="left">
+    <button tuiButton type="button" appearance="flat" [size]="'s'" [icon]="'tuiIconUser'" [iconRight]="uicon"
+        tuiMode="onDark">{{auth.claims().name}}</button>
+</tui-hosted-dropdown>
+<ng-template #dropdown>
+    <tui-data-list>
+        <button tuiOption (click)="onLogout()" [size]="'s'">Logout</button>
+    </tui-data-list>
+</ng-template>
+<ng-template #uicon>
+    <tui-svg src="tuiIconChevronDown" class="icon" [class.icon_rotated]="userMenu.open"></tui-svg>
+</ng-template>
 }
