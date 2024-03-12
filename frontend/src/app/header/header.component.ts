@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../services/auth.service';
 import { TuiButtonModule, TuiDataListModule, TuiHostedDropdownComponent, TuiHostedDropdownModule, TuiModeModule, TuiSvgModule } from '@taiga-ui/core';
 import { DataService } from '../services/data.service';
+import { TransactionType } from '../models/transaction';
 
 @Component({
   selector: 'app-header',
@@ -21,7 +22,13 @@ export class HeaderComponent {
     this.auth.logout();
   }
 
-  onExpense() {}
-  onTransfer() {}
-  onIncome() {}
+  onExpense() {
+    this.data.createTransaction(TransactionType.Expense);
+  }
+  onTransfer() {
+    this.data.createTransaction(TransactionType.Transfer);
+  }
+  onIncome() {
+    this.data.createTransaction(TransactionType.Income);
+  }
 }

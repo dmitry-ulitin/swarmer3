@@ -6,7 +6,7 @@ import { Category } from '../models/category';
 import { AlertService } from './alert.service';
 import { Account } from '../models/account';
 import { Summary } from '../models/summary';
-import { Transaction, TransactionView } from '../models/transaction';
+import { Transaction, TransactionType, TransactionView } from '../models/transaction';
 import { DateRange } from '../models/date.range';
 
 const GET_TRANSACTIONS_LIMIT = 100;
@@ -149,6 +149,9 @@ export class DataService {
       this.#alerts.printError(err);
     }
 
+  }
+
+  async createTransaction(type: TransactionType) {
   }
 
   transaction2View(t: Transaction, selected: { [key: number]: boolean }): TransactionView {
