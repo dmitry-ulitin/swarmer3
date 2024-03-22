@@ -25,9 +25,11 @@ export class HeaderComponent {
   onExpense() {
     this.data.createTransaction(TransactionType.Expense);
   }
+
   onTransfer() {
     this.data.createTransaction(TransactionType.Transfer);
   }
+  
   onIncome() {
     this.data.createTransaction(TransactionType.Income);
   }

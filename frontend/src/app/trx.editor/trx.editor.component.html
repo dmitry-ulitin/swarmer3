@@ -1,0 +1,12 @@
+<form [formGroup]=form class="transaction" [tuiTextfieldSize]="'s'">
+    @if (showCredit) {
+        <div class="credit">
+            <tui-input-number formControlName="credit">0,00</tui-input-number>
+        </div>
+    }
+    <div class="footer">
+        <div class="fill"></div>
+        <button tuiButton type="button" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()">Save</button>
+        <button tuiButton type="button" [appearance]="'secondary'" [size]="'s'" (click)="onCancel()">Cancel</button>
+    </div>
+</form>

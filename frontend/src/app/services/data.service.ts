@@ -8,6 +8,9 @@ import { Account } from '../models/account';
 import { Summary } from '../models/summary';
 import { Transaction, TransactionType, TransactionView } from '../models/transaction';
 import { DateRange } from '../models/date.range';
+import { TuiDialogService } from '@taiga-ui/core';
+import { PolymorpheusComponent } from '@tinkoff/ng-polymorpheus';
+import { TrxEditorComponent } from '../trx.editor/trx.editor.component';
 
 const GET_TRANSACTIONS_LIMIT = 100;
 
@@ -41,6 +44,7 @@ export class DataService {
   }
   #state = signal<DataState>(this.#default);
   #alerts = inject(AlertService);
+  #dlgService = inject(TuiDialogService);
   // selectors
   state = this.#state.asReadonly();
   groups = computed(() => this.#state().groups.filter(g => !g.deleted));
@@ -152,6 +156,16 @@ export class DataService {
   }
 
   async createTransaction(type: TransactionType) {
+    const accounts = this.allAccounts();
+    if (accounts.length === 0) {
+      this.#alerts.printError('No accounts found');
+      return;
+    }
+    const account = accounts[0];
+    let transaction: Transaction = { type, opdate: new Date().toISOString(), debit: 0, credit: 0, account: account, recipient: null, id: 0 };
+    const data = await firstValueFrom(this.#dlgService.open<Transaction | undefined>(
+      new PolymorpheusComponent(TrxEditorComponent), { data: transaction, dismissible: false, size: 's' }
+    ));
   }
 
   transaction2View(t: Transaction, selected: { [key: number]: boolean }): TransactionView {

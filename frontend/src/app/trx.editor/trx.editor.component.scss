@@ -1,0 +1,14 @@
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.footer {
+    display: flex;
+    gap: .5rem;
+}
+
+.fill {
+    flex: 1;
+}
