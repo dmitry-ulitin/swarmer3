@@ -50,6 +50,10 @@ export class TrxEditorComponent {
     return this.form.controls['type'].value;
   }
 
+  get category(): Category | undefined | null {
+    return this.form.controls['category'].value;
+  }
+
   get typeString(): string {
     return TransactionType[this.type].toLocaleLowerCase();
   }
@@ -78,6 +82,18 @@ export class TrxEditorComponent {
 
   get showCategory(): boolean {
     return this.type === TransactionType.Income || this.type === TransactionType.Expense;
+  }
+
+  get showTransfer(): boolean {
+    return this.type == TransactionType.Income || this.type == TransactionType.Expense;
+  }
+
+  get showIncome(): boolean {
+    return this.type === TransactionType.Transfer && (this.category?.type === TransactionType.Income || !this.category);
+  }
+
+  get showExpense(): boolean {
+    return this.type === TransactionType.Transfer && (this.category?.type === TransactionType.Expense || !this.category);
   }
 
   get categoryParent(): string {
@@ -114,6 +130,45 @@ export class TrxEditorComponent {
       }
       this.recipient = recipient;
     });
+    this.form.controls['type'].valueChanges.pipe(takeUntil(this.#destroy$)).subscribe(type => {
+      let category = this.form.controls['category'].value;
+      if (type === TransactionType.Expense) {
+        this.form.controls['ccurrency'].enable();
+        this.form.controls['dcurrency'].disable();
+        if (type !== category?.type) {
+          this.form.controls['category'].setValue(null, { emitEvent: false });
+        }
+      } else if (type === TransactionType.Income) {
+        this.form.controls['ccurrency'].disable();
+        this.form.controls['dcurrency'].enable();
+        if (type !== category?.type) {
+          this.form.controls['category'].setValue(null, { emitEvent: false });
+        }
+      } else {
+        this.form.controls['ccurrency'].disable();
+        this.form.controls['dcurrency'].disable();
+        if (type === TransactionType.Transfer) {
+          let account = this.form.controls['account'].value;
+          let recipient = this.form.controls['recipient'].value;
+          if (!account || !recipient) {
+            const transactions = computed(() => this.#data.state().transactions)();
+            const transfer = transactions.find(t => t.type === TransactionType.Transfer && (t.account?.id === account?.id || t.recipient?.id === recipient?.id));
+            if (recipient) {
+              account = transfer?.account || this.accounts.find(a => a.id !== recipient?.id && a.currency === recipient?.currency) ||
+                this.accounts.find(a => a.id !== recipient?.id) || null;
+              this.form.controls['account'].setValue(account, { emitEvent: false });
+            }
+            if (account) {
+              recipient = transfer?.recipient || this.accounts.find(a => a.id !== account?.id && a.currency === account?.currency) ||
+                this.accounts.find(a => a.id !== account?.id) || null;
+              this.form.controls['recipient'].setValue(recipient, { emitEvent: false });
+            }
+            this.form.controls['dcurrency'].setValue(account?.currency, { emitEvent: false });
+            this.form.controls['ccurrency'].setValue(recipient?.currency, { emitEvent: false });
+          }
+        }
+      }
+    });
   }
 
   onYesterday(): void {
@@ -138,6 +193,18 @@ export class TrxEditorComponent {
   onCancelCategory() {
     this.newcategory = false;
     this.form.controls['newcategory'].setValue(null);
+  }
+
+  onTransfer() {
+    this.form.controls['type'].setValue(TransactionType.Transfer);
+  }
+
+  onIncome() {
+    this.form.controls['type'].setValue(TransactionType.Income);
+  }
+
+  onExpense() {
+    this.form.controls['type'].setValue(TransactionType.Expense);
   }
 
   onCancel() {

@@ -79,6 +79,15 @@
     </div>
     <tui-textarea formControlName="details" [tuiTextfieldLabelOutside]="true"></tui-textarea>
     <div class="row">
+        @if (showExpense) {
+        <button tuiIconButton type="button" icon="tuiIconMinus" [size]="'s'" [appearance]="'flat'" (click)="onExpense()"></button>
+        }
+        @if (showIncome) {
+        <button tuiIconButton type="button" icon="tuiIconPlus" [size]="'s'" [appearance]="'flat'" (click)="onIncome()"></button>
+        }
+        @if (showTransfer) {
+        <button tuiIconButton type="button" icon="tuiIconShuffle" [size]="'s'" [appearance]="'flat'" (click)="onTransfer()"></button>
+        }
         <div class="fill"></div>
         <button tuiButton type="button" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()">Save</button>
         <button tuiButton type="button" [appearance]="'secondary'" [size]="'s'" (click)="onCancel()">Cancel</button>
