@@ -1,6 +1,8 @@
 <span class="title">Swarmer Finance</span>
 @if(data.allAccounts().length > 0) {
 <div tuiMode="onDark" class="group">
+    <button tuiIconButton type="button" icon="tuiIconRefreshCw" [size]="'s'" [appearance]="'flat'"
+        (click)="onRefresh()"></button>
     <button tuiIconButton type="button" icon="tuiIconMinus" [size]="'s'" [appearance]="'flat'"
         (click)="onExpense()"></button>
     @if(data.allAccounts().length > 1) {

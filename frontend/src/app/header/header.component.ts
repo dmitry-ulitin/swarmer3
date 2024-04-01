@@ -33,4 +33,8 @@ export class HeaderComponent {
   onIncome() {
     this.data.createTransaction(TransactionType.Income);
   }
+
+  onRefresh() {
+    this.data.refresh();
+  }
 }
