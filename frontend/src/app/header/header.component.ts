@@ -37,4 +37,12 @@ export class HeaderComponent {
   onRefresh() {
     this.data.refresh();
   }
+
+  editTransaction() {
+    this.data.editTransaction();
+  }
+
+  deleteTransaction() {
+    this.data.deleteTransaction();
+  }
 }

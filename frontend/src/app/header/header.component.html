@@ -13,6 +13,14 @@
         (click)="onIncome()"></button>
 </div>
 }
+@if(!!data.state().tid) {
+    <div tuiMode="onDark" class="group">
+        <button tuiIconButton type="button" icon="tuiIconEdit" [size]="'s'" [appearance]="'flat'"
+            (click)="editTransaction()"></button>
+        <button tuiIconButton type="button" icon="tuiIconTrash" [size]="'s'" [appearance]="'flat'"
+            (click)="deleteTransaction()"></button>
+    </div>
+}
 <span class="fill"></span>
 @if (auth.isAuthenticated()) {
 <tui-hosted-dropdown #userMenu [content]="dropdown" tuiDropdownAlign="left">

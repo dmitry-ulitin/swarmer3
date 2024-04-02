@@ -42,4 +42,12 @@ export class ApiService {
     params = params.set('limit', limit);
     return this.http.get<Transaction[]>('/api/transactions', {params: params});
   }
+
+  saveTransaction(transaction: Transaction): Observable<Transaction> {
+    return !!transaction.id ? this.http.put<Transaction>('/api/transactions', transaction) : this.http.post<Transaction>('/api/transactions', transaction);
+  }
+
+  deleteTransaction(id: number): Observable<void> {
+    return this.http.delete<void>(`/api/transactions/${id}`);
+  }
 }

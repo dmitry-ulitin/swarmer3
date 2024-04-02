@@ -11,6 +11,7 @@ import { DateRange } from '../models/date.range';
 import { TuiDialogService } from '@taiga-ui/core';
 import { PolymorpheusComponent } from '@tinkoff/ng-polymorpheus';
 import { TrxEditorComponent } from '../trx.editor/trx.editor.component';
+import { TUI_PROMPT } from '@taiga-ui/kit';
 
 const GET_TRANSACTIONS_LIMIT = 100;
 
@@ -171,7 +172,7 @@ export class DataService {
     const account = first?.account || first?.recipient || accounts.find(a => a.id === state.accounts[0]) || accounts[0];
 
     const date = new Date();
-    let base = { type, opdate: date.toISOString().substring(0,10) + ' ' + date.toTimeString().substring(0,8), debit: 0, credit: 0, id: 0 };
+    let base = { type, opdate: date.toISOString().substring(0, 10) + ' ' + date.toTimeString().substring(0, 8), debit: 0, credit: 0, id: 0 };
     let transaction = null;
     if (type === TransactionType.Transfer) {
       const transfer = this.state().transactions.find((t: TransactionView) => t.type === TransactionType.Transfer);
@@ -192,6 +193,41 @@ export class DataService {
       if (state.categories.findIndex(c => c.id === data.category?.id) < 0) {
         this.getCategories();
       }
+    }
+  }
+
+  async editTransaction() {
+    const state = this.#state();
+    const transaction = state.transactions.find(t => t.id === state.tid);
+    if (!!transaction) {
+      const data = await firstValueFrom(this.#dlgService.open<Transaction | undefined>(
+        new PolymorpheusComponent(TrxEditorComponent), { data: transaction, dismissible: false, size: 's' }
+      ));
+      if (!!data) {
+        this.#alerts.printSuccess('Transaction updated');
+        this.patchStateTransactions(transaction, true);
+        this.patchStateTransactions(data, false);
+        if (state.categories.findIndex(c => c.id === data.category?.id) < 0) {
+          this.getCategories();
+        }
+      }
+    }
+  }
+
+  async deleteTransaction() {
+    try {
+      const state = this.#state();
+      const transaction = state.transactions.find(t => t.id === state.tid);
+      if (!!transaction) {
+        const answer = await firstValueFrom(this.#dlgService.open<boolean>(TUI_PROMPT, { size: 's', data: { content: 'Are you sure you want to delete this transaction?', yes: 'Yes', no: 'No' } }));
+        if (answer) {
+          await firstValueFrom(this.#api.deleteTransaction(transaction.id));
+          this.#alerts.printSuccess('Transaction deleted');
+          this.patchStateTransactions(transaction, true);
+        }
+      }
+    } catch (err) {
+      this.#alerts.printError(err);
     }
   }
 
@@ -270,11 +306,11 @@ export class DataService {
         s.credit += remove ? -transaction.credit : transaction.credit;
       }
     }
+    // TODO: patch categories
     // patch state
     this.#state.update(state => ({ ...state, transactions, groups, tid, summary }));
   }
 }
-
 
 function transaction2View(t: Transaction, selected: { [key: number]: boolean }): TransactionView {
   const useRecipient = t.recipient && (typeof t.account?.balance !== 'number' || typeof t.recipient?.balance === 'number' && selected[t.recipient?.id] && (!t.account || !selected[t.account?.id]));

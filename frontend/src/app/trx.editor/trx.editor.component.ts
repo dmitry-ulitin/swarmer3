@@ -8,7 +8,9 @@ import { DataService } from '../services/data.service';
 import { TuiDay, TuiDestroyService, TuiFilterPipeModule } from '@taiga-ui/cdk';
 import { Category } from '../models/category';
 import { CategoryCtrlComponent } from '../categories/category.ctrl/category.ctrl.component';
-import { takeUntil } from 'rxjs';
+import { firstValueFrom, takeUntil } from 'rxjs';
+import { ApiService } from '../services/api.service';
+import { AlertService } from '../services/alert.service';
 
 @Component({
   standalone: true,
@@ -21,6 +23,8 @@ import { takeUntil } from 'rxjs';
 export class TrxEditorComponent {
   #data = inject(DataService);
   #destroy$ = inject(TuiDestroyService);
+  #api = inject(ApiService);
+  #alerts = inject(AlertService);
   currencies = this.#data.currencies();
   accounts = this.#data.allAccounts();
   account = this.context.data.account;
@@ -211,28 +215,35 @@ export class TrxEditorComponent {
     this.context.completeWith(undefined);
   }
 
-  onSubmit() {
-    const value = this.form.getRawValue();
-    const debit = (this.showDebit ? value.debit : value.credit) || 0;
-    const credit = (this.showCredit ? value.credit : value.debit) || 0;
-    if (debit == 0 || credit == 0) {
-      return;
-    }
-    const opdate = value.opdate.getFormattedDay('YMD', '-') + ' ' + this.timepart;
-    let transaction: Transaction | undefined = undefined;
-    if (value.type == TransactionType.Income && !!value.recipient) {
-      transaction = { ...value, opdate, currency: value.ccurrency, debit, credit, account: null, recipient: value.recipient };
-    } else if (value.type == TransactionType.Expense && !!value.account) {
-      transaction = { ...value, opdate, currency: value.dcurrency, debit, credit, account: value.account, recipient: null };
-    } else if (value.type == TransactionType.Correction && !!value.account) {
-      if (credit < 0) {
-        transaction = { ...value, opdate, currency: value.account.currency, debit: -credit, credit: -credit, account: value.account, recipient: null };
-      } else {
-        transaction = { ...value, opdate, currency: value.account.currency, debit: credit, credit, account: null, recipient: value.account };
+  async onSubmit() {
+    try {
+      const value = this.form.getRawValue();
+      const debit = (this.showDebit ? value.debit : value.credit) || 0;
+      const credit = (this.showCredit ? value.credit : value.debit) || 0;
+      if (debit == 0 || credit == 0) {
+        return;
       }
-    } else if (value.type == TransactionType.Transfer && !!value.account && !!value.recipient) {
-      transaction = { ...value, opdate, currency: undefined, debit, credit, account: value.account, recipient: value.recipient, category: undefined };
+      const opdate = value.opdate.getFormattedDay('YMD', '-') + ' ' + this.timepart;
+      let transaction: Transaction | undefined = undefined;
+      if (value.type == TransactionType.Income && !!value.recipient) {
+        transaction = { ...value, opdate, currency: value.ccurrency, debit, credit, account: null, recipient: value.recipient };
+      } else if (value.type == TransactionType.Expense && !!value.account) {
+        transaction = { ...value, opdate, currency: value.dcurrency, debit, credit, account: value.account, recipient: null };
+      } else if (value.type == TransactionType.Correction && !!value.account) {
+        if (credit < 0) {
+          transaction = { ...value, opdate, currency: value.account.currency, debit: -credit, credit: -credit, account: value.account, recipient: null };
+        } else {
+          transaction = { ...value, opdate, currency: value.account.currency, debit: credit, credit, account: null, recipient: value.account };
+        }
+      } else if (value.type == TransactionType.Transfer && !!value.account && !!value.recipient) {
+        transaction = { ...value, opdate, currency: undefined, debit, credit, account: value.account, recipient: value.recipient, category: undefined };
+      }
+      if (!!transaction) {
+        transaction = await firstValueFrom(this.#api.saveTransaction(transaction));
+      }
+      this.context.completeWith(transaction);
+    } catch (error) {
+      this.#alerts.printError(error);
     }
-    this.context.completeWith(transaction);
   }
 }
