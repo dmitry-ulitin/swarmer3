@@ -1,0 +1,13 @@
+<tui-input class="search" [formControl]="search" [tuiTextfieldIcon]="'tuiIconSearch'" [tuiTextfieldCleaner]="true"
+    [tuiTextfieldSize]="'s'" />
+@if(data.state().category; as category) {
+<tui-tag [value]="category.fullname" [removable]="true" (edited)="removeCategory()" status="custom"
+    class="support-20" />
+}
+@if(data.state().currency; as currency) {
+<tui-tag [value]="currency" [removable]="true" (edited)="removeCurrency()" status="custom" class="support-19" />
+}
+@for(f of data.filters(); track f.name) {
+<tui-tag [value]="f.name" [removable]="true" status="custom" (edited)="removeFilter(f)"
+    class="support-{{ $index + 1 }}" />
+}
