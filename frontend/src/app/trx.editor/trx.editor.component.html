@@ -1,0 +1,95 @@
+<form [formGroup]=form class="transaction" [tuiTextfieldSize]="'s'">
+    <div class="amounts" [class]="typeString">
+        @if (showCredit) {
+        <div class="row credit">
+            <tui-input-number formControlName="credit" class="fill">0,00</tui-input-number>
+            <tui-combo-box formControlName="ccurrency" class="currency" [strict]="false">
+                <input tuiTextfield />
+                <tui-data-list-wrapper *tuiDataList [items]="currencies | tuiFilterByInput" [size]="'s'">
+                </tui-data-list-wrapper>
+            </tui-combo-box>
+        </div>
+        }
+        @if (showDebit) {
+        <div class="row debit">
+            <tui-input-number formControlName="debit" class="fill">0,00</tui-input-number>
+            <tui-combo-box formControlName="dcurrency" class="currency" [strict]="false">
+                <input tuiTextfield />
+                <tui-data-list-wrapper *tuiDataList [items]="currencies | tuiFilterByInput" [size]="'s'">
+                </tui-data-list-wrapper>
+            </tui-combo-box>
+        </div>
+        }
+        @if (showAccount) {
+        <tui-select class="account" formControlName="account" [valueContent]="accountContent" [tuiTextfieldSize]="'m'">
+            Account
+            <tui-data-list-wrapper *tuiDataList [items]="accounts" [itemContent]="accountContent" [size]="'s'">
+            </tui-data-list-wrapper>
+        </tui-select>
+        }
+        @if (showRecipient) {
+        <tui-select class="recipient" formControlName="recipient" [valueContent]="accountContent"
+            [tuiTextfieldSize]="'m'">
+            Recipient
+            <tui-data-list-wrapper *tuiDataList [items]="accounts" [itemContent]="accountContent" [size]="'s'">
+            </tui-data-list-wrapper>
+        </tui-select>
+        }
+        <ng-template #accountContent let-account>
+            {{account.fullname}}
+        </ng-template>
+    </div>
+    @if(showCategory && !newcategory) {
+    <div class="row">
+        <tui-select class="fill" formControlName="category" [valueContent]="categoryValue" [tuiTextfieldSize]="'s'"
+            [tuiTextfieldCleaner]="true">
+            no category
+            <tui-data-list-wrapper *tuiDataList [items]="categories() | tuiFilter: matcher: type"
+                [itemContent]="categoryContent" [size]="'s'">
+            </tui-data-list-wrapper>
+        </tui-select>
+        <button tuiIconButton type="button" icon="tuiIconPlus" [size]="'s'" [appearance]="'icon'"
+            (click)="onCreateCategory()"></button>
+    </div>
+    <ng-template #categoryValue let-category>
+        {{category.fullname}}
+    </ng-template>
+    <ng-template #categoryContent let-category>
+        <div [class]="'category-level-' + category.level">{{category.name}}</div>
+    </ng-template>
+    }
+    @if(showCategory && newcategory) {
+    <div class="row">
+        <app-category-ctrl formControlName="newcategory" class="fill" [prefix]="categoryParent">
+            category name</app-category-ctrl>
+        <button tuiIconButton type="button" icon="tuiIconCloseLarge" [size]="'s'" [appearance]="'icon'"
+            (click)="onCancelCategory()"></button>
+    </div>
+    }
+    <div class="row">
+        <tui-input-date formControlName="opdate" [tuiTextfieldSize]="'s'" class="fill">
+            <input tuiTextfield />
+        </tui-input-date>
+        <button tuiIconButton type="button" icon="tuiIconChevronLeft" [size]="'s'" [appearance]="'icon'"
+            (click)="onYesterday()"></button>
+        <button tuiIconButton type="button" icon="tuiIconToggleOff" [size]="'s'" [appearance]="'icon'"
+            (click)="onToday()"></button>
+        <button tuiIconButton type="button" icon="tuiIconChevronRight" [size]="'s'" [appearance]="'icon'"
+            (click)="onTomorrow()"></button>
+    </div>
+    <tui-textarea formControlName="details" [tuiTextfieldLabelOutside]="true"></tui-textarea>
+    <div class="row">
+        @if (showExpense) {
+        <button tuiIconButton type="button" icon="tuiIconMinus" [size]="'s'" [appearance]="'flat'" (click)="onExpense()"></button>
+        }
+        @if (showIncome) {
+        <button tuiIconButton type="button" icon="tuiIconPlus" [size]="'s'" [appearance]="'flat'" (click)="onIncome()"></button>
+        }
+        @if (showTransfer) {
+        <button tuiIconButton type="button" icon="tuiIconShuffle" [size]="'s'" [appearance]="'flat'" (click)="onTransfer()"></button>
+        }
+        <div class="fill"></div>
+        <button tuiButton type="button" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()">Save</button>
+        <button tuiButton type="button" [appearance]="'secondary'" [size]="'s'" (click)="onCancel()">Cancel</button>
+    </div>
+</form>

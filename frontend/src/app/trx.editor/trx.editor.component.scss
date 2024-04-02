@@ -1,0 +1,55 @@
+form, .amounts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.row {
+    display: flex;
+    gap: .5rem;
+}
+
+.fill {
+    flex: 1;
+}
+
+.currency {
+    width: 5rem;
+}
+
+.account {
+    order: 0;
+}
+
+div.debit {
+    order: 1;
+}
+
+.recipient {
+    order: 2;
+}
+
+div.credit {
+    order: 3;
+}
+
+div.expense div.debit {
+    order: 4;
+}
+
+div.income .recipient {
+    order: -1;
+}
+
+div.correction .recipient {
+    order: -1;
+}
+
+.category-level-2 {
+    margin-left: 1rem;
+}
+
+.category-level-3 {
+    margin-left: 2rem;
+}
+
