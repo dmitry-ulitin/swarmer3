@@ -165,6 +165,11 @@ export class DataService {
     this.getTransactions(this.#state()).then();
   }
 
+  setRange(range: DateRange) {
+    this.#state.update(state => ({ ...state, range }));
+    this.getTransactions(this.#state()).then();
+  }
+
   async getTransactions(state: DataState) {
     try {
       const transactions = await firstValueFrom(this.#api.getTransactions(state.accounts, state.search, state.range, state.category?.id, state.currency, 0, GET_TRANSACTIONS_LIMIT), { defaultValue: [] });
