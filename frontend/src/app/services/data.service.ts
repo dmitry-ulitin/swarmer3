@@ -53,6 +53,20 @@ export class DataService {
   selectedAccounts = computed(() => this.allAccounts().filter(a => this.#state().accounts.includes(a.id)));
   total = computed(() => total(this.#state().groups));
   currencies = computed(() => Array.from(new Set(this.allAccounts().map(a => a.currency))).filter((v, i, a) => a.indexOf(v) === i));
+  filters = computed(() => {
+    const state = this.#state();
+    return state.groups.map(g => ({ group: g, accounts: g.accounts.filter(a => state.accounts.includes(a.id)) }))
+      .filter(f => f.accounts.length > 0)
+      .map(f => ({ name: f.group.fullname, accounts: f.accounts, selected: !f.group.accounts.filter(a => !a.deleted).some(a => !state.accounts.includes(a.id)) }))
+      .reduce((acc, f) => {
+        if (f.selected) {
+          acc.push({ name: f.name, ids: f.accounts.map(a => a.id) });
+        } else {
+          acc = acc.concat(f.accounts.map(a => ({ name: a.fullname, ids: [a.id] })));
+        }
+        return acc;
+      }, [] as { name: string, ids: number[] }[]);
+  });
 
   async init() {
     await this.refresh();
@@ -87,12 +101,19 @@ export class DataService {
 
   createGroup() { }
 
-  selectAccounts(accounts: number[]) {
+  selectAccounts(ids: number[]) {
     const prev = this.#state().accounts;
-    if (accounts.every(a => prev.includes(a)) && prev.every(a => accounts.includes(a))) {
+    // check if the same accounts are selected
+    if (ids.every(a => prev.includes(a)) && prev.every(a => ids.includes(a))) {
       return;
     }
-    this.#state.update(state => ({ ...state, accounts }));
+    // check if all selected accounts are valid
+    const all = this.allAccounts();
+    if (ids.some(a => !all.find(aa => aa.id === a))) {
+      return;
+    }
+    // update state
+    this.#state.update(state => ({ ...state, accounts: ids }));
     const state = this.#state();
     // check expanded
     let expanded = this.#state().expanded;
@@ -111,7 +132,12 @@ export class DataService {
       }
     }
     this.getTransactions(state).then();
-    //    cxt.dispatch(new GetTransactions());
+    //    cxt.dispatch(new GetSummary());
+  }
+
+  deselectAccounts(ids: number[]) {
+    this.#state.update(state => ({ ...state, accounts: state.accounts.filter(a => !ids.includes(a)) }));
+    this.getTransactions(this.#state()).then();
     //    cxt.dispatch(new GetSummary());
   }
 
@@ -126,6 +152,16 @@ export class DataService {
 
   selectCategory(category: Category | null) {
     this.#state.update(state => ({ ...state, category }));
+    this.getTransactions(this.#state()).then();
+  }
+
+  selectCurrency(currency: string | undefined | null) {
+    this.#state.update(state => ({ ...state, currency: currency || ''}));
+    this.getTransactions(this.#state()).then();
+  }
+
+  setSearch(search: string | undefined | null) {
+    this.#state.update(state => ({ ...state, search: search || ''}));
     this.getTransactions(this.#state()).then();
   }
 
