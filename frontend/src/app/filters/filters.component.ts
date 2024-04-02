@@ -4,11 +4,12 @@ import { TuiTextfieldControllerModule } from '@taiga-ui/core';
 import { TuiInputModule, TuiTagModule } from '@taiga-ui/kit';
 import { DataService } from '../services/data.service';
 import { debounceTime } from 'rxjs';
+import { RangeComponent } from './range/range.component';
 
 @Component({
   selector: 'app-filters',
   standalone: true,
-  imports: [ReactiveFormsModule, TuiInputModule, TuiTextfieldControllerModule, TuiTagModule],
+  imports: [ReactiveFormsModule, TuiInputModule, TuiTextfieldControllerModule, TuiTagModule, RangeComponent],
   templateUrl: './filters.component.html',
   styleUrl: './filters.component.scss'
 })

@@ -1,5 +1,6 @@
 <tui-input class="search" [formControl]="search" [tuiTextfieldIcon]="'tuiIconSearch'" [tuiTextfieldCleaner]="true"
     [tuiTextfieldSize]="'s'" />
+<app-range />
 @if(data.state().category; as category) {
 <tui-tag [value]="category.fullname" [removable]="true" (edited)="removeCategory()" status="custom"
     class="support-20" />
