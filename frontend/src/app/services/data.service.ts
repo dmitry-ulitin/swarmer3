@@ -108,7 +108,7 @@ export class DataService {
       return;
     }
     // check if all selected accounts are valid
-    const all = this.allAccounts();
+    const all = computed(() => this.#state().groups.reduce((acc, g) => acc.concat(g.accounts), [] as Account[]))();
     if (ids.some(a => !all.find(aa => aa.id === a))) {
       return;
     }
