@@ -1,0 +1,78 @@
+<form [formGroup]=form class="group" [tuiTextfieldSize]="'s'" autocomplete="off">
+    <tui-input formControlName="fullname">
+        Name
+        <input tuiTextfield autocomplete="off" />
+    </tui-input>
+    <table class="accounts" formArrayName="accounts">
+        <tr>
+            <td colspan="3">Initial Balances</td>
+            <td><button tuiIconButton type="button" [icon]="'tuiIconPlus'" [size]="'s'" [appearance]="'flat'"
+                    (click)="onAddAccount()" [disabled]="!isOwnerOrCoowner"></button></td>
+        </tr>
+        @for(account of accounts.controls; track $index) {
+        @if (!account.value.deleted) {
+        <tr [formGroupName]="$index">
+            <td><tui-input formControlName="name">{{getAccount($index).getRawValue().currency}}</tui-input></td>
+            <td><tui-input-number formControlName="start_balance">0,00</tui-input-number></td>
+            <td>
+                <tui-combo-box formControlName="currency" class="currency" [strict]="false">
+                    <input tuiTextfield />
+                    <tui-data-list-wrapper *tuiDataList [items]="currencies | tuiFilterByInput" [size]="'s'" />
+                </tui-combo-box>
+            </td>
+            <td>
+                <button tuiIconButton type="button" [icon]="'tuiIconTrash'" [size]="'s'" [appearance]="'flat'"
+                    [disabled]="!isOwnerOrCoowner || !canDelete || !!account.value.balance"
+                    (click)="onRemoveAccount($index)"></button>
+            </td>
+        </tr>
+        }
+        }
+    </table>
+    <div>Permissions</div>
+    <div class="query">
+        <tui-input [formControl]="query" [tuiTextfieldCleaner]="true" class="fill" *tuiLet="users$ | async as users">
+            <input tuiTextfield autocomplete="of" placeholder="Type user email" />
+            <tui-data-list *tuiDataList>
+                <button *ngFor="let user of users" tuiOption [value]="user" (click)="onSelectedUser(user)">
+                    {{ user }}
+                </button>
+            </tui-data-list>
+        </tui-input>
+        <tui-select class="rights" [formControl]="rights" [valueContent]="optionContent" [tuiTextfieldSize]="'s'">
+            <tui-data-list-wrapper *tuiDataList [items]="options" [itemContent]="optionContent" [size]="'s'" />
+        </tui-select>
+        <ng-template #optionContent let-option>{{option.name}}</ng-template>
+        <button tuiIconButton type="button" [icon]="'tuiIconPlus'" [size]="'s'" [appearance]="'flat'"
+            (click)="onAddPermission()" [disabled]="!selected"></button>
+    </div>
+    <table class="permissions" formArrayName="permissions">
+        @if (permissions.controls.length>0) {
+        <tr>
+            <td></td>
+            <td>Admin</td>
+            <td>Write</td>
+            <td>Read</td>
+            <td></td>
+        </tr>
+        }
+        @for(account of permissions.controls; track $index) {
+        <tr [formGroupName]="$index">
+            <td>{{getPermission($index).getRawValue().user.email}}</td>
+            <td><input type="checkbox" formControlName="is_admin" (change)="onToggleAdmin($event, $index)"></td>
+            <td><input type="checkbox" formControlName="is_write" (change)="onToggleWrite($event, $index)"></td>
+            <td><input type="checkbox" [disabled]="true" [checked]="true"></td>
+            <td>
+                <button tuiIconButton type="button" [icon]="'tuiIconTrash'" [size]="'s'" [appearance]="'flat'"
+                    (click)="onRemovePermission($index)"></button>
+            </td>
+        </tr>
+        }
+    </table>
+    <div class="row">
+        <div class="fill"></div>
+        <button tuiButton type="button" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()"
+            [disabled]=!form.valid>Save</button>
+        <button tuiButton type="button" [appearance]="'secondary'" [size]="'s'" (click)="onCancel()">Cancel</button>
+    </div>
+</form>

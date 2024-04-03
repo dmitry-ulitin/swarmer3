@@ -1,4 +1,4 @@
-<form [formGroup]=form class="transaction" [tuiTextfieldSize]="'s'">
+<form [formGroup]=form [tuiTextfieldSize]="'s'">
     <div class="amounts" [class]="typeString">
         @if (showCredit) {
         <div class="row credit">
@@ -89,7 +89,7 @@
         <button tuiIconButton type="button" icon="tuiIconShuffle" [size]="'s'" [appearance]="'flat'" (click)="onTransfer()"></button>
         }
         <div class="fill"></div>
-        <button tuiButton type="button" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()">Save</button>
+        <button tuiButton type="button" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()" [disabled]=!form.valid>Save</button>
         <button tuiButton type="button" [appearance]="'secondary'" [size]="'s'" (click)="onCancel()">Cancel</button>
     </div>
 </form>
