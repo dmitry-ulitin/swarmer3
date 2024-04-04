@@ -26,6 +26,14 @@ export class ApiService {
     return this.http.get<Group[]>(`/api/groups?opdate=${encodeURIComponent(opdate)}`);
   }
 
+  saveGroup(group: Group): Observable<Group> {
+    return !!group.id ? this.http.put<Group>('/api/groups', group) : this.http.post<Group>('/api/groups', group);
+  }
+
+  deleteGroup(id: number): Observable<void> {
+    return this.http.delete<void>(`/api/groups/${id}`);
+  }
+
   getCategories(): Observable<Category[]> {
     return this.http.get<Category[]>('/api/categories');
   }
@@ -49,5 +57,11 @@ export class ApiService {
 
   deleteTransaction(id: number): Observable<void> {
     return this.http.delete<void>(`/api/transactions/${id}`);
+  }
+
+  getUsers(query: string): Observable<string[]> {
+    let params = new HttpParams();
+    params = params.set('query', query);
+    return this.http.get<string[]>('/api/groups/users', {params: params});
   }
 }

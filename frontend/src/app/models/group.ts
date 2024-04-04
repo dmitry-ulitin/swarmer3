@@ -9,7 +9,7 @@ export interface Group {
     is_coowner: boolean;
     is_shared: boolean;
     accounts: Account[];
-    permissions?: Permission[];
+    permissions: Permission[];
     deleted?: boolean;
     ownerEmail?: string;
     opdate?: string;

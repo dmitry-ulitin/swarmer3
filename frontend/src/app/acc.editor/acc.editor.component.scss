@@ -1,0 +1,79 @@
+.group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.row {
+    display: flex;
+    gap: .5rem;
+}
+
+.fill {
+    flex: 1;
+}
+
+.currency {
+    flex: 1;
+}
+
+table.accounts {
+    width: 100%;
+}
+
+table.accounts td:first-child {
+    padding-left: 0;
+    width: 50%;
+}
+
+table.accounts td:nth-child(2n) {
+    width: 25%;
+}
+
+table.accounts td:nth-child(3n) {
+    width: 25%;
+}
+
+table.accounts td:last-child {
+    padding-right: 0;
+    text-align: right;
+    width: 0%;
+}
+
+table.permissions tr td {
+    text-align: center;
+    padding: 0;
+}
+
+table.permissions tr:first-child td {
+    text-align: center;
+    font-size: .7rem;
+    line-height: .7rem;
+    vertical-align: bottom;
+    padding: 0;
+}
+
+table.permissions tr td:first-child {
+    padding-left: 0;
+    text-align: left;
+}
+
+table.permissions tr td:last-child {
+    padding-right: 0;
+    text-align: right;
+    width: 0%;
+}
+
+.query {
+    display: flex;
+    gap: 4px;
+    margin-right: 2px;
+}
+
+.rights {
+    width: 6rem;
+}
+
+
+
+

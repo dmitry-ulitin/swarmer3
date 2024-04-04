@@ -224,6 +224,11 @@ export class TrxEditorComponent {
         return;
       }
       const opdate = value.opdate.getFormattedDay('YMD', '-') + ' ' + this.timepart;
+      if (this.newcategory && !!value.newcategory) {
+        let parent = value.category;
+        value.category = { id: null, name: value.newcategory, fullname: (parent ? (parent.fullname + ' / ') : '') + value.newcategory, level: parent ? parent.level + 1 : 1, type: value.type, parent_id: parent ? parent.id : value.type }
+      }
+
       let transaction: Transaction | undefined = undefined;
       if (value.type == TransactionType.Income && !!value.recipient) {
         transaction = { ...value, opdate, currency: value.ccurrency, debit, credit, account: null, recipient: value.recipient };

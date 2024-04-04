@@ -12,6 +12,7 @@ import { TuiDialogService } from '@taiga-ui/core';
 import { PolymorpheusComponent } from '@tinkoff/ng-polymorpheus';
 import { TrxEditorComponent } from '../trx.editor/trx.editor.component';
 import { TUI_PROMPT } from '@taiga-ui/kit';
+import { AccEditorComponent } from '../acc.editor/acc.editor.component';
 
 const GET_TRANSACTIONS_LIMIT = 100;
 
@@ -51,6 +52,8 @@ export class DataService {
   groups = computed(() => this.#state().groups.filter(g => !g.deleted));
   allAccounts = computed(() => this.#state().groups.filter(g => !g.deleted).reduce((acc, g) => acc.concat(g.accounts), [] as Account[]).filter(a => !a.deleted));
   selectedAccounts = computed(() => this.allAccounts().filter(a => this.#state().accounts.includes(a.id)));
+  selectedGroups = computed(() => this.#state().groups.filter(g => g.accounts.some(a => this.#state().accounts.includes(a.id))));
+  selectedGroup = computed(() => this.selectedGroups().length === 1 ? this.selectedGroups()[0] : null);
   total = computed(() => total(this.#state().groups));
   currencies = computed(() => Array.from(new Set(this.allAccounts().map(a => a.currency))).filter((v, i, a) => a.indexOf(v) === i));
   filters = computed(() => {
@@ -99,7 +102,51 @@ export class DataService {
     }
   }
 
-  createGroup() { }
+  async createGroup() {
+    const group: Group = { id: 0, fullname: '', is_owner: true, is_coowner: false, is_shared: false, accounts: [{id: 0, name: '', fullname: '', currency: '', start_balance: 0, balance: 0}], permissions: [] };
+    const data = await firstValueFrom(this.#dlgService.open<Group | undefined>(
+      new PolymorpheusComponent(AccEditorComponent), { data: group, dismissible: false, size: 's' }
+    ));
+    if (!!data) {
+      this.#alerts.printSuccess('Group created');
+      const groups = this.#state().groups.slice();
+      const index = groups.findIndex(g => data.is_owner && !g.is_owner || data.is_coowner && !g.is_coowner);
+      groups.splice(index < 0 ? groups.length : index, 0, data);
+      this.#state.update(state => ({ ...state, groups }));
+    }
+  }
+
+  async editGroup(id: number) {
+    const group = this.#state().groups.find(g => g.id === id);
+    if (!!group) {
+      const data = await firstValueFrom(this.#dlgService.open<Group | undefined>(
+        new PolymorpheusComponent(AccEditorComponent), { data: group, dismissible: false, size: 's' }
+      ));
+      if (!!data) {
+        this.#alerts.printSuccess('Group updated');
+        const groups = this.#state().groups.map(g => g.id === data.id ? data : g);
+        this.#state.update(state => ({ ...state, groups }));
+      }
+    }
+  }
+
+  async deleteGroup(id: number) {
+    try {
+      const group = this.#state().groups.find(g => g.id === id);
+      if (!!group) {
+        const answer = await firstValueFrom(this.#dlgService.open<boolean>(TUI_PROMPT, { size: 's', data: { content: 'Are you sure you want to delete this group?', yes: 'Yes', no: 'No' } }));
+        if (answer) {
+          await firstValueFrom(this.#api.deleteGroup(group.id));
+          this.#alerts.printSuccess('Group deleted');
+          const groups = this.#state().groups.map(g => g.id === group.id ? { ...g, deleted: true } : g);
+          const accounts = this.#state().accounts.filter(id => !group.accounts.some(a => a.id === id));
+          this.#state.update(state => ({ ...state, groups, accounts }));
+        }
+      }
+    } catch (err) {
+      this.#alerts.printError(err);
+    }
+  }
 
   selectAccounts(ids: number[]) {
     const prev = this.#state().accounts;
@@ -156,12 +203,12 @@ export class DataService {
   }
 
   selectCurrency(currency: string | undefined | null) {
-    this.#state.update(state => ({ ...state, currency: currency || ''}));
+    this.#state.update(state => ({ ...state, currency: currency || '' }));
     this.getTransactions(this.#state()).then();
   }
 
   setSearch(search: string | undefined | null) {
-    this.#state.update(state => ({ ...state, search: search || ''}));
+    this.#state.update(state => ({ ...state, search: search || '' }));
     this.getTransactions(this.#state()).then();
   }
 
