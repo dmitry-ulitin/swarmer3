@@ -80,8 +80,7 @@ tr.shared {
 }
 
 a,
-a:hover,
 a:focus {
     display: block;
-    color: inherit;
+    color: var(--tui-text-01);
 }

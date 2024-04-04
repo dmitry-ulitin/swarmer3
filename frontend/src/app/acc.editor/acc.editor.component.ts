@@ -143,8 +143,8 @@ export class AccEditorComponent {
 
   async onSubmit() {
     try {
-      const group = this.form.getRawValue();
-      await firstValueFrom(this.#api.saveGroup(group));
+      let group: Group = this.form.getRawValue();
+      group = await firstValueFrom(this.#api.saveGroup({...group, accounts: group.accounts.map(a => ({...a, currency: a.currency.toUpperCase()}))}));
       this.context.completeWith(group);
     } catch (error) {
       this.#alerts.printError(error);

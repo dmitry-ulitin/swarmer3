@@ -60,8 +60,8 @@
     }
     @if(showCategory && newcategory) {
     <div class="row">
-        <app-category-ctrl formControlName="newcategory" class="fill" [prefix]="categoryParent">
-            category name</app-category-ctrl>
+        <tui-input formControlName="newcategory" class="fill" [tuiTextfieldPrefix]="categoryParent">
+            {{categoryParent}}category name</tui-input>
         <button tuiIconButton type="button" icon="tuiIconCloseLarge" [size]="'s'" [appearance]="'icon'"
             (click)="onCancelCategory()"></button>
     </div>

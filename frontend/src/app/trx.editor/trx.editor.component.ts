@@ -7,8 +7,7 @@ import { TuiInputModule, TuiComboBoxModule, TuiDataListWrapperModule, TuiFilterB
 import { DataService } from '../services/data.service';
 import { TuiDay, TuiDestroyService, TuiFilterPipeModule } from '@taiga-ui/cdk';
 import { Category } from '../models/category';
-import { CategoryCtrlComponent } from '../categories/category.ctrl/category.ctrl.component';
-import { firstValueFrom, takeUntil } from 'rxjs';
+import { firstValueFrom, startWith, takeUntil } from 'rxjs';
 import { ApiService } from '../services/api.service';
 import { AlertService } from '../services/alert.service';
 
@@ -16,7 +15,7 @@ import { AlertService } from '../services/alert.service';
   standalone: true,
   imports: [TuiButtonModule, ReactiveFormsModule, TuiInputModule, TuiInputNumberModule, TuiLabelModule,
     TuiTextfieldControllerModule, TuiComboBoxModule, TuiSelectModule, TuiDataListWrapperModule,
-    TuiTextareaModule, TuiInputDateModule, TuiFilterPipeModule, TuiFilterByInputPipeModule, CategoryCtrlComponent],
+    TuiTextareaModule, TuiInputDateModule, TuiFilterPipeModule, TuiFilterByInputPipeModule],
   templateUrl: './trx.editor.component.html',
   styleUrl: './trx.editor.component.scss'
 })
@@ -39,10 +38,10 @@ export class TrxEditorComponent {
     opdate: new FormControl(TuiDay.fromLocalNativeDate(new Date(this.context.data.opdate)), { nonNullable: true, validators: [Validators.required] }),
     account: new FormControl(this.context.data.account),
     credit: new FormControl(this.context.data.credit ? this.context.data.credit : undefined, { nonNullable: true }),
-    ccurrency: new FormControl(this.context.data.currency || this.context.data.account?.currency, { nonNullable: true }),
+    ccurrency: new FormControl(this.context.data.recipient?.currency || this.context.data.currency || this.context.data.account?.currency, { nonNullable: true }),
     recipient: new FormControl(this.context.data.recipient),
     debit: new FormControl(this.context.data.debit ? this.context.data.debit : undefined, { nonNullable: true }),
-    dcurrency: new FormControl(this.context.data.currency || this.context.data.recipient?.currency, { nonNullable: true }),
+    dcurrency: new FormControl(this.context.data.account?.currency || this.context.data.currency || this.context.data.recipient?.currency, { nonNullable: true }),
     category: new FormControl(this.context.data.category),
     newcategory: new FormControl(''),
     details: new FormControl(this.context.data.details, { nonNullable: true }),
@@ -89,7 +88,7 @@ export class TrxEditorComponent {
   }
 
   get showTransfer(): boolean {
-    return this.type == TransactionType.Income || this.type == TransactionType.Expense;
+    return (this.type == TransactionType.Income || this.type == TransactionType.Expense) && this.accounts.length > 1;
   }
 
   get showIncome(): boolean {
@@ -114,6 +113,7 @@ export class TrxEditorComponent {
         }
         if (this.type === TransactionType.Transfer && account.id === this.recipient?.id) {
           this.form.controls['recipient'].setValue(this.account, { emitEvent: false });
+          this.recipient = this.account;
         }
         if (this.type === TransactionType.Correction) {
           this.form.controls['credit'].setValue(0);
@@ -130,11 +130,12 @@ export class TrxEditorComponent {
         }
         if (this.type === TransactionType.Transfer && recipient.id === this.account?.id) {
           this.form.controls['account'].setValue(this.recipient, { emitEvent: false });
+          this.account = this.recipient;
         }
       }
       this.recipient = recipient;
     });
-    this.form.controls['type'].valueChanges.pipe(takeUntil(this.#destroy$)).subscribe(type => {
+    this.form.controls['type'].valueChanges.pipe(takeUntil(this.#destroy$), startWith(context.data.type)).subscribe(type => {
       let category = this.form.controls['category'].value;
       if (type === TransactionType.Expense) {
         this.form.controls['ccurrency'].enable();
@@ -220,7 +221,7 @@ export class TrxEditorComponent {
       const value = this.form.getRawValue();
       const debit = (this.showDebit ? value.debit : value.credit) || 0;
       const credit = (this.showCredit ? value.credit : value.debit) || 0;
-      if (debit == 0 || credit == 0) {
+      if (debit == 0 && credit == 0) {
         return;
       }
       const opdate = value.opdate.getFormattedDay('YMD', '-') + ' ' + this.timepart;
@@ -231,9 +232,9 @@ export class TrxEditorComponent {
 
       let transaction: Transaction | undefined = undefined;
       if (value.type == TransactionType.Income && !!value.recipient) {
-        transaction = { ...value, opdate, currency: value.ccurrency, debit, credit, account: null, recipient: value.recipient };
+        transaction = { ...value, opdate, currency: value.dcurrency?.toUpperCase(), debit, credit, account: null, recipient: value.recipient };
       } else if (value.type == TransactionType.Expense && !!value.account) {
-        transaction = { ...value, opdate, currency: value.dcurrency, debit, credit, account: value.account, recipient: null };
+        transaction = { ...value, opdate, currency: value.ccurrency?.toUpperCase(), debit, credit, account: value.account, recipient: null };
       } else if (value.type == TransactionType.Correction && !!value.account) {
         if (credit < 0) {
           transaction = { ...value, opdate, currency: value.account.currency, debit: -credit, credit: -credit, account: value.account, recipient: null };

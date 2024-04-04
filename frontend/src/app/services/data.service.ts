@@ -139,8 +139,8 @@ export class DataService {
           await firstValueFrom(this.#api.deleteGroup(group.id));
           this.#alerts.printSuccess('Group deleted');
           const groups = this.#state().groups.map(g => g.id === group.id ? { ...g, deleted: true } : g);
-          const accounts = this.#state().accounts.filter(id => !group.accounts.some(a => a.id === id));
-          this.#state.update(state => ({ ...state, groups, accounts }));
+          this.#state.update(state => ({ ...state, groups }));
+          this.selectAccounts(this.#state().accounts.filter(id => !group.accounts.some(a => a.id === id)));
         }
       }
     } catch (err) {
@@ -246,7 +246,6 @@ export class DataService {
     } catch (err) {
       this.#alerts.printError(err);
     }
-
   }
 
   async createTransaction(type: TransactionType) {
