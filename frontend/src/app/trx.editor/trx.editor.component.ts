@@ -222,7 +222,7 @@ export class TrxEditorComponent {
       const value = this.form.getRawValue();
       const debit = (this.showDebit ? value.debit : value.credit) || 0;
       const credit = (this.showCredit ? value.credit : value.debit) || 0;
-      if (debit == 0 || credit == 0) {
+      if (debit == 0 && credit == 0) {
         return;
       }
       const opdate = value.opdate.getFormattedDay('YMD', '-') + ' ' + this.timepart;
@@ -233,9 +233,9 @@ export class TrxEditorComponent {
 
       let transaction: Transaction | undefined = undefined;
       if (value.type == TransactionType.Income && !!value.recipient) {
-        transaction = { ...value, opdate, currency: value.dcurrency, debit, credit, account: null, recipient: value.recipient };
+        transaction = { ...value, opdate, currency: value.dcurrency?.toUpperCase(), debit, credit, account: null, recipient: value.recipient };
       } else if (value.type == TransactionType.Expense && !!value.account) {
-        transaction = { ...value, opdate, currency: value.ccurrency, debit, credit, account: value.account, recipient: null };
+        transaction = { ...value, opdate, currency: value.ccurrency?.toUpperCase(), debit, credit, account: value.account, recipient: null };
       } else if (value.type == TransactionType.Correction && !!value.account) {
         if (credit < 0) {
           transaction = { ...value, opdate, currency: value.account.currency, debit: -credit, credit: -credit, account: value.account, recipient: null };

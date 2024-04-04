@@ -34,7 +34,7 @@ export class RegistrationComponent {
 
   async onRegister() {
     try {
-      await this.#auth.register({...this.form.value, name: this.form.value.name || this.defaultName});
+      await this.#auth.register({...this.form.value, currency: this.form.value.currency?.toUpperCase(), name: this.form.value.name || this.defaultName});
     } catch (err) {
       this.#alerts.printError(err);
     }
