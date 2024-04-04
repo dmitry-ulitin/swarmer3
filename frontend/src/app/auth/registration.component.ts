@@ -20,7 +20,7 @@ export class RegistrationComponent {
   #auth = inject(AuthService);
   #alerts = inject(AlertService);
   form = new FormGroup({
-    username: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
+    email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
     password: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     name: new FormControl(''),
     currency: new FormControl('EUR', { nonNullable: true, validators: [Validators.required] }),
@@ -29,7 +29,7 @@ export class RegistrationComponent {
 
 
   get defaultName(): string {
-    return this.form.value.username?.replace(/@.*/, '') || 'Enter your name';
+    return this.form.value.email?.replace(/@.*/, '') || 'Enter your name';
   }
 
   async onRegister() {
