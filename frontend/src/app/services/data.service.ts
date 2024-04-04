@@ -52,6 +52,8 @@ export class DataService {
   groups = computed(() => this.#state().groups.filter(g => !g.deleted));
   allAccounts = computed(() => this.#state().groups.filter(g => !g.deleted).reduce((acc, g) => acc.concat(g.accounts), [] as Account[]).filter(a => !a.deleted));
   selectedAccounts = computed(() => this.allAccounts().filter(a => this.#state().accounts.includes(a.id)));
+  selectedGroups = computed(() => this.#state().groups.filter(g => g.accounts.some(a => this.#state().accounts.includes(a.id))));
+  selectedGroup = computed(() => this.selectedGroups().length === 1 ? this.selectedGroups()[0] : null);
   total = computed(() => total(this.#state().groups));
   currencies = computed(() => Array.from(new Set(this.allAccounts().map(a => a.currency))).filter((v, i, a) => a.indexOf(v) === i));
   filters = computed(() => {

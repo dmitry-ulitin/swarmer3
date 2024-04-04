@@ -14,15 +14,37 @@
 </div>
 }
 @if(!!data.state().tid) {
-    <div tuiMode="onDark" class="group">
-        <button tuiIconButton type="button" icon="tuiIconEdit" [size]="'s'" [appearance]="'flat'"
-            (click)="editTransaction()"></button>
-        <button tuiIconButton type="button" icon="tuiIconTrash" [size]="'s'" [appearance]="'flat'"
-            (click)="deleteTransaction()"></button>
-    </div>
+<div tuiMode="onDark" class="group">
+    <button tuiIconButton type="button" icon="tuiIconEdit" [size]="'s'" [appearance]="'flat'"
+        (click)="editTransaction()"></button>
+    <button tuiIconButton type="button" icon="tuiIconTrash" [size]="'s'" [appearance]="'flat'"
+        (click)="deleteTransaction()"></button>
+</div>
 }
 <span class="fill"></span>
 @if (auth.isAuthenticated()) {
+<tui-hosted-dropdown #accMenu [content]="accDropdown" tuiDropdownAlign="left">
+    <button tuiButton type="button" appearance="flat" [size]="'s'" [iconRight]="aicon" tuiMode="onDark">
+        <tui-svg src="tuiIconSettings"></tui-svg>
+    </button>
+</tui-hosted-dropdown>
+<ng-template #aicon>
+    <tui-svg src="tuiIconChevronDown" class="icon" [class.icon_rotated]="accMenu.open"></tui-svg>
+</ng-template>
+<ng-template #accDropdown>
+    <tui-data-list [size]="'s'">
+        <button tuiOption (click)="createGroup()">New Account</button>
+        @if(group(); as group) {
+        <button tuiOption (click)="editGroup(group)">Edit
+            '{{group.fullname}}'</button>
+        <button tuiOption (click)="deleteGroup(group)">Delete
+            '{{group.fullname}}'</button>
+        }
+        <button tuiOption (click)="onCategories()">Categories</button>
+        <button tuiOption (click)="onSaveBackup()">Save Backup</button>
+        <button tuiOption (click)="onLoadBackup()">Load Backup</button>
+    </tui-data-list>
+</ng-template>
 <tui-hosted-dropdown #userMenu [content]="dropdown" tuiDropdownAlign="left">
     <button tuiButton type="button" appearance="flat" [size]="'s'" [icon]="'tuiIconUser'" [iconRight]="uicon"
         tuiMode="onDark">{{auth.claims().name}}</button>
