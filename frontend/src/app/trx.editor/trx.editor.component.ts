@@ -7,7 +7,6 @@ import { TuiInputModule, TuiComboBoxModule, TuiDataListWrapperModule, TuiFilterB
 import { DataService } from '../services/data.service';
 import { TuiDay, TuiDestroyService, TuiFilterPipeModule } from '@taiga-ui/cdk';
 import { Category } from '../models/category';
-import { CategoryCtrlComponent } from '../categories/category.ctrl/category.ctrl.component';
 import { firstValueFrom, startWith, takeUntil } from 'rxjs';
 import { ApiService } from '../services/api.service';
 import { AlertService } from '../services/alert.service';
@@ -16,7 +15,7 @@ import { AlertService } from '../services/alert.service';
   standalone: true,
   imports: [TuiButtonModule, ReactiveFormsModule, TuiInputModule, TuiInputNumberModule, TuiLabelModule,
     TuiTextfieldControllerModule, TuiComboBoxModule, TuiSelectModule, TuiDataListWrapperModule,
-    TuiTextareaModule, TuiInputDateModule, TuiFilterPipeModule, TuiFilterByInputPipeModule, CategoryCtrlComponent],
+    TuiTextareaModule, TuiInputDateModule, TuiFilterPipeModule, TuiFilterByInputPipeModule],
   templateUrl: './trx.editor.component.html',
   styleUrl: './trx.editor.component.scss'
 })
