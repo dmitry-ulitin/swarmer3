@@ -1,0 +1,22 @@
+<div class="header">
+    <button tuiIconButton type="button" icon="tuiIconRefreshCw" [size]="'s'" [appearance]="'secondary'"
+        (click)="onRefresh()"></button>
+    <button tuiIconButton type="button" icon="tuiIconPlus" [size]="'s'" [appearance]="'secondary'"
+        (click)="onAdd()"></button>
+    @if (isEditable) {
+    <button tuiIconButton type="button" icon="tuiIconEdit" [size]="'s'" [appearance]="'secondary'"
+        (click)="onEdit()"></button>
+    <button tuiIconButton type="button" icon="tuiIconTrash" [size]="'s'" [appearance]="'secondary'"
+        (click)="onDelete()"></button>
+    }
+</div>
+<div class="tree">
+    @for (item of categories(); track item.category) {
+    <tui-tree [value]="item" [content]="content" [tuiTreeController]="false" [childrenHandler]="handler"
+        [map]="map"></tui-tree>
+    }
+    <ng-template #content let-item>
+        <div class="category" [class.active]="item.category.id===selected" (click)="setAsSelected(item)">
+            {{item.category.name}}</div>
+    </ng-template>
+</div>

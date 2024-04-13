@@ -227,7 +227,7 @@ export class TrxEditorComponent {
       const opdate = value.opdate.getFormattedDay('YMD', '-') + ' ' + this.timepart;
       if (this.newcategory && !!value.newcategory) {
         let parent = value.category;
-        value.category = { id: null, name: value.newcategory, fullname: (parent ? (parent.fullname + ' / ') : '') + value.newcategory, level: parent ? parent.level + 1 : 1, type: value.type, parent_id: parent ? parent.id : value.type }
+        value.category = { id: 0, name: value.newcategory, fullname: (parent ? (parent.fullname + ' / ') : '') + value.newcategory, level: parent ? parent.level + 1 : 1, type: value.type, parent_id: parent ? parent.id : value.type }
       }
 
       let transaction: Transaction | undefined = undefined;
