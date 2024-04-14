@@ -38,6 +38,14 @@ export class ApiService {
     return this.http.get<Category[]>('/api/categories');
   }
 
+  saveCategory(category: Category) {
+    return !!category.id ? this.http.put<Category>('/api/categories', category) : this.http.post<Category>('/api/categories', category);
+  }
+
+  deleteCategory(id: number): Observable<void> {
+    return this.http.delete<void>(`/api/categories/${id}`);
+  }
+
   getTransactions(accounts: number[], search: string, range: DateRange, category: number | null | undefined, currency: string, offset: number, limit: number): Observable<Transaction[]> {
     let params = new HttpParams();
     params = params.set('accounts', accounts.join(","));

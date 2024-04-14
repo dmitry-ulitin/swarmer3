@@ -13,6 +13,7 @@ import { PolymorpheusComponent } from '@tinkoff/ng-polymorpheus';
 import { TrxEditorComponent } from '../trx.editor/trx.editor.component';
 import { TUI_PROMPT } from '@taiga-ui/kit';
 import { AccEditorComponent } from '../acc.editor/acc.editor.component';
+import { CatEditorComponent } from '../cat.editor/cat.editor.component';
 
 const GET_TRANSACTIONS_LIMIT = 100;
 
@@ -103,7 +104,7 @@ export class DataService {
   }
 
   async createGroup() {
-    const group: Group = { id: 0, fullname: '', is_owner: true, is_coowner: false, is_shared: false, accounts: [{id: 0, name: '', fullname: '', currency: '', start_balance: 0, balance: 0}], permissions: [] };
+    const group: Group = { id: 0, fullname: '', is_owner: true, is_coowner: false, is_shared: false, accounts: [{ id: 0, name: '', fullname: '', currency: '', start_balance: 0, balance: 0 }], permissions: [] };
     const data = await firstValueFrom(this.#dlgService.open<Group | undefined>(
       new PolymorpheusComponent(AccEditorComponent), { data: group, dismissible: false, size: 's' }
     ));
@@ -137,7 +138,7 @@ export class DataService {
         const answer = await firstValueFrom(this.#dlgService.open<boolean>(TUI_PROMPT, { size: 's', data: { content: 'Are you sure you want to delete this group?', yes: 'Yes', no: 'No' } }));
         if (answer) {
           await firstValueFrom(this.#api.deleteGroup(group.id));
-          this.#alerts.printSuccess('Group deleted');
+          this.#alerts.printSuccess(`Group '${group.fullname}' deleted`);
           const groups = this.#state().groups.map(g => g.id === group.id ? { ...g, deleted: true } : g);
           this.#state.update(state => ({ ...state, groups }));
           this.selectAccounts(this.#state().accounts.filter(id => !group.accounts.some(a => a.id === id)));
@@ -195,6 +196,58 @@ export class DataService {
     } catch (err) {
       this.#alerts.printError(err);
     }
+  }
+
+  async createCategory(id: number) {
+    const parent = this.#state().categories.find(c => c.id === id);
+    if (!!parent) {
+      const category: Category = { id: 0, name: '', fullname: '', level: parent.level + 1, parent_id: parent.id, type: parent.type };
+      const data = await firstValueFrom(this.#dlgService.open<Category | undefined>(
+        new PolymorpheusComponent(CatEditorComponent), { data: category, dismissible: false, size: 's' }
+      ));
+      if (!!data) {
+        this.#alerts.printSuccess(`Category '${data.fullname}' created`);
+        await this.getCategories();
+        return data;
+      }
+    }
+    return null;
+  }
+
+  async editCategory(id: number) {
+    const category = this.#state().categories.find(c => c.id === id);
+    if (!!category) {
+      const data = await firstValueFrom(this.#dlgService.open<Category | undefined>(
+        new PolymorpheusComponent(CatEditorComponent), { data: category, dismissible: false, size: 's' }
+      ));
+      if (!!data) {
+        this.#alerts.printSuccess(`Category '${data.fullname}' updated`);
+        await this.getCategories();
+        return data;
+      }
+    }
+    return null;
+  } 
+
+  async deleteCategory(id: number) {
+    try {
+      const category = this.#state().categories.find(c => c.id === id);
+      if (!!category) {
+        const answer = await firstValueFrom(this.#dlgService.open<boolean>(TUI_PROMPT, { size: 's', data: { content: 'Are you sure you want to delete this category?', yes: 'Yes', no: 'No' } }));
+        if (answer) {
+          await firstValueFrom(this.#api.deleteCategory(category.id));
+          this.#alerts.printSuccess(`Category '${category.fullname}' deleted`);
+          await this.getCategories();
+          if (this.#state().category?.id === id) {
+            this.selectCategory(null);
+          }
+          return true;
+        }
+      }
+    } catch (err) {
+      this.#alerts.printError(err);
+    }
+    return false;
   }
 
   selectCategory(category: Category | null) {

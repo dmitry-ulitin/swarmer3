@@ -3,7 +3,7 @@ import { TuiButtonModule, TuiDataListModule, TuiDialogContext, TuiTextfieldContr
 import { Group, Permission } from '../models/group';
 import { POLYMORPHEUS_CONTEXT } from '@tinkoff/ng-polymorpheus';
 import { DataService } from '../services/data.service';
-import { TuiDestroyService, TuiLetModule } from '@taiga-ui/cdk';
+import { TuiAutoFocusModule, TuiDestroyService, TuiLetModule } from '@taiga-ui/cdk';
 import { ApiService } from '../services/api.service';
 import { AlertService } from '../services/alert.service';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -17,7 +17,7 @@ import { CommonModule } from '@angular/common';
   selector: 'app-acc.editor',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, TuiButtonModule, TuiInputModule, TuiInputNumberModule, TuiComboBoxModule, TuiSelectModule,
-    TuiTextfieldControllerModule, TuiDataListModule, TuiDataListWrapperModule, TuiFilterByInputPipeModule, TuiLetModule],
+    TuiTextfieldControllerModule, TuiDataListModule, TuiDataListWrapperModule, TuiFilterByInputPipeModule, TuiLetModule, TuiAutoFocusModule],
   templateUrl: './acc.editor.component.html',
   styleUrl: './acc.editor.component.scss'
 })

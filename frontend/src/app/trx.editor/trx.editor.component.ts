@@ -5,7 +5,7 @@ import { TuiButtonModule, TuiDialogContext, TuiLabelModule, TuiTextfieldControll
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TuiInputModule, TuiComboBoxModule, TuiDataListWrapperModule, TuiFilterByInputPipeModule, TuiInputNumberModule, TuiSelectModule, TuiTextareaModule, TuiInputDateModule } from '@taiga-ui/kit';
 import { DataService } from '../services/data.service';
-import { TuiDay, TuiDestroyService, TuiFilterPipeModule } from '@taiga-ui/cdk';
+import { TuiAutoFocusModule, TuiDay, TuiDestroyService, TuiFilterPipeModule } from '@taiga-ui/cdk';
 import { Category } from '../models/category';
 import { firstValueFrom, startWith, takeUntil } from 'rxjs';
 import { ApiService } from '../services/api.service';
@@ -15,7 +15,7 @@ import { AlertService } from '../services/alert.service';
   standalone: true,
   imports: [TuiButtonModule, ReactiveFormsModule, TuiInputModule, TuiInputNumberModule, TuiLabelModule,
     TuiTextfieldControllerModule, TuiComboBoxModule, TuiSelectModule, TuiDataListWrapperModule,
-    TuiTextareaModule, TuiInputDateModule, TuiFilterPipeModule, TuiFilterByInputPipeModule],
+    TuiTextareaModule, TuiInputDateModule, TuiFilterPipeModule, TuiFilterByInputPipeModule, TuiAutoFocusModule],
   templateUrl: './trx.editor.component.html',
   styleUrl: './trx.editor.component.scss'
 })
@@ -227,7 +227,7 @@ export class TrxEditorComponent {
       const opdate = value.opdate.getFormattedDay('YMD', '-') + ' ' + this.timepart;
       if (this.newcategory && !!value.newcategory) {
         let parent = value.category;
-        value.category = { id: null, name: value.newcategory, fullname: (parent ? (parent.fullname + ' / ') : '') + value.newcategory, level: parent ? parent.level + 1 : 1, type: value.type, parent_id: parent ? parent.id : value.type }
+        value.category = { id: 0, name: value.newcategory, fullname: (parent ? (parent.fullname + ' / ') : '') + value.newcategory, level: parent ? parent.level + 1 : 1, type: value.type, parent_id: parent ? parent.id : value.type }
       }
 
       let transaction: Transaction | undefined = undefined;

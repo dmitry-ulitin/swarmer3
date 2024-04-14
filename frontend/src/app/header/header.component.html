@@ -33,7 +33,6 @@
 </ng-template>
 <ng-template #accDropdown>
     <tui-data-list [size]="'s'">
-        <button tuiOption (click)="createGroup()">New Account</button>
         @if(group(); as group) {
         <button tuiOption (click)="editGroup(group)">Edit
             '{{group.fullname}}'</button>
