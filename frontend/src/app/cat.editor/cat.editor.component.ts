@@ -5,7 +5,7 @@ import { TuiButtonModule, TuiDialogContext, TuiTextfieldControllerModule } from 
 import { TuiDataListWrapperModule, TuiInputModule, TuiSelectModule } from '@taiga-ui/kit';
 import { POLYMORPHEUS_CONTEXT } from '@tinkoff/ng-polymorpheus';
 import { Category } from '../models/category';
-import { TuiFilterPipeModule } from '@taiga-ui/cdk';
+import { TuiAutoFocusModule, TuiFilterPipeModule } from '@taiga-ui/cdk';
 import { TransactionType } from '../models/transaction';
 import { ApiService } from '../services/api.service';
 import { AlertService } from '../services/alert.service';
@@ -14,7 +14,8 @@ import { firstValueFrom } from 'rxjs';
 @Component({
   selector: 'app-cat.editor',
   standalone: true,
-  imports: [ReactiveFormsModule, TuiButtonModule, TuiInputModule, TuiSelectModule, TuiTextfieldControllerModule, TuiDataListWrapperModule, TuiFilterPipeModule],
+  imports: [ReactiveFormsModule, TuiButtonModule, TuiInputModule, TuiSelectModule, TuiTextfieldControllerModule,
+            TuiDataListWrapperModule, TuiFilterPipeModule, TuiAutoFocusModule],
   templateUrl: './cat.editor.component.html',
   styleUrl: './cat.editor.component.scss'
 })

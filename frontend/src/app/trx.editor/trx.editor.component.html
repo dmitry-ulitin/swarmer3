@@ -2,7 +2,7 @@
     <div class="amounts" [class]="typeString">
         @if (showCredit) {
         <div class="row credit">
-            <tui-input-number formControlName="credit" class="fill">0,00</tui-input-number>
+            <tui-input-number formControlName="credit" class="fill" tuiAutoFocus>0,00</tui-input-number>
             <tui-combo-box formControlName="ccurrency" class="currency" [strict]="false">
                 <input tuiTextfield />
                 <tui-data-list-wrapper *tuiDataList [items]="currencies | tuiFilterByInput" [size]="'s'">
@@ -12,7 +12,7 @@
         }
         @if (showDebit) {
         <div class="row debit">
-            <tui-input-number formControlName="debit" class="fill">0,00</tui-input-number>
+            <tui-input-number formControlName="debit" class="fill" tuiAutoFocus>0,00</tui-input-number>
             <tui-combo-box formControlName="dcurrency" class="currency" [strict]="false">
                 <input tuiTextfield />
                 <tui-data-list-wrapper *tuiDataList [items]="currencies | tuiFilterByInput" [size]="'s'">
@@ -89,7 +89,7 @@
         <button tuiIconButton type="button" icon="tuiIconShuffle" [size]="'s'" [appearance]="'flat'" (click)="onTransfer()"></button>
         }
         <div class="fill"></div>
-        <button tuiButton type="button" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()" [disabled]=!form.valid>Save</button>
+        <button tuiButton type="submit" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()" [disabled]=!form.valid>Save</button>
         <button tuiButton type="button" [appearance]="'secondary'" [size]="'s'" (click)="onCancel()">Cancel</button>
     </div>
 </form>

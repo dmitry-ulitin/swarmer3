@@ -8,7 +8,7 @@
         </tui-select>
     </label>
     <label tuiLabel="Name">
-        <tui-input formControlName="name" class="fill" [tuiTextfieldPrefix]="categoryParent">
+        <tui-input tuiAutoFocus formControlName="name" class="fill" [tuiTextfieldPrefix]="categoryParent">
             {{categoryParent}}category name</tui-input>
     </label>
     <ng-template #categoryValue let-category>
@@ -19,7 +19,7 @@
     </ng-template>
     <div class="row">
         <div class="fill"></div>
-        <button tuiButton type="button" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()"
+        <button tuiButton type="submit" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()"
             [disabled]=!form.valid>Save</button>
         <button tuiButton type="button" [appearance]="'secondary'" [size]="'s'" (click)="onCancel()">Cancel</button>
     </div>

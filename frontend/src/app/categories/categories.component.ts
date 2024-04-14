@@ -81,19 +81,20 @@ export class CategoriesComponent {
 function map2tree(data: Category[], index: number, tree: TreeNode[], map: Map<TreeNode, boolean>) {
   const level = data[index].level;
   while (index < data.length && data[index].level >= level) {
-    if (data[index].level === 0 && data[index].type === TransactionType.Correction) {
+    if (data[index].type === TransactionType.Correction) {
       index++;
       continue;
     }
     if (data[index].level > level) {
       index = map2tree(data, index, tree[tree.length - 1].children, map);
     } else {
-      const item = { category: data[index++], children: [] };
+      const item = { category: data[index++], children: []};
       tree.push(item);
+      
       const key = [...map.keys()].find(n => n.category.id === item.category.id);
-      if (key && map.get(key)) {
+      if (key) {
+        map.set(item,  map.get(key) || false);
         map.delete(key);
-        map.set(item, true);
       } else {
         map.set(item, false);
       }

@@ -1,5 +1,5 @@
 <form [formGroup]=form class="group" [tuiTextfieldSize]="'s'" autocomplete="off">
-    <tui-input formControlName="fullname">
+    <tui-input formControlName="fullname" tuiAutoFocus>
         Name
         <input tuiTextfield autocomplete="off" />
     </tui-input>
@@ -71,7 +71,7 @@
     </table>
     <div class="row">
         <div class="fill"></div>
-        <button tuiButton type="button" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()"
+        <button tuiButton type="submit" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()"
             [disabled]=!form.valid>Save</button>
         <button tuiButton type="button" [appearance]="'secondary'" [size]="'s'" (click)="onCancel()">Cancel</button>
     </div>
