@@ -74,7 +74,12 @@ export class DataService {
 
   async init() {
     await this.refresh();
-  }
+
+    let max = this.#state().groups.map(g => g.opdate || '').reduce((max,c) => c > max? c : max);
+    if (max < (this.#state().range.from?.toString('YMD','-') || '')) {
+        await this.setRange(DateRange.all());
+    }
+}
 
   reset() {
     this.#state.set({ ...this.#default });
@@ -250,24 +255,24 @@ export class DataService {
     return false;
   }
 
-  selectCategory(category: Category | null) {
+  async selectCategory(category: Category | null) {
     this.#state.update(state => ({ ...state, category }));
-    this.getTransactions(this.#state()).then();
+    await this.getTransactions(this.#state());
   }
 
-  selectCurrency(currency: string | undefined | null) {
+  async selectCurrency(currency: string | undefined | null) {
     this.#state.update(state => ({ ...state, currency: currency || '' }));
-    this.getTransactions(this.#state()).then();
+    await this.getTransactions(this.#state());
   }
 
-  setSearch(search: string | undefined | null) {
+  async setSearch(search: string | undefined | null) {
     this.#state.update(state => ({ ...state, search: search || '' }));
-    this.getTransactions(this.#state()).then();
+    await this.getTransactions(this.#state());
   }
 
-  setRange(range: DateRange) {
+  async setRange(range: DateRange) {
     this.#state.update(state => ({ ...state, range }));
-    this.getTransactions(this.#state()).then();
+    await this.getTransactions(this.#state());
   }
 
   async getTransactions(state: DataState) {
