@@ -26,20 +26,21 @@ export class AccEditorComponent {
   #api = inject(ApiService);
   #alerts = inject(AlertService);
   #auth = inject(AuthService);
+  email = this.#auth.claims().sub;
   currencies = this.#data.currencies();
   options = [{ id: 0, name: 'read' }, { id: 1, name: 'write' }, { id: 3, name: 'admin' }];
   rights = new FormControl(this.options[0]);
   query = new FormControl('');
   selected = '';
-  users$ = this.query.valueChanges.pipe(tap(v => this.selected=''),debounceTime(500), switchMap(q => !!q && q.length > 2 ? this.#api.getUsers(q || '') : of([])),
+  users$ = this.query.valueChanges.pipe(tap(v => this.selected = ''), debounceTime(500), switchMap(q => !!q && q.length > 2 ? this.#api.getUsers(q || '') : of([])),
     map(a => a.filter(u => u !== this.form.value.ownerEmail && !this.permissions.controls.find(p => p.value.user.email === u))));
 
   acc2form = (acc: Account) => new FormGroup({
     id: new FormControl(acc.id, { nonNullable: true }),
     name: new FormControl(acc.name, { nonNullable: true }),
     fullname: new FormControl(acc.fullname, { nonNullable: true }),
-    currency: new FormControl(acc.currency || this.#auth.claims().currency || 'EUR', { nonNullable: true, validators: [Validators.required] }),
-    start_balance: new FormControl(acc.start_balance, { nonNullable: true, validators: [Validators.required] }),
+    currency: new FormControl({ value: acc.currency || this.#auth.claims().currency || 'EUR', disabled: !!acc.id }, { nonNullable: true, validators: [Validators.required] }),
+    start_balance: new FormControl({ value: acc.start_balance, disabled: false }, { nonNullable: true, validators: [Validators.required] }),
     balance: new FormControl(acc.balance, { nonNullable: true, validators: [Validators.required] }),
     deleted: new FormControl(acc.deleted, { nonNullable: true })
   });
@@ -47,8 +48,8 @@ export class AccEditorComponent {
   user2form = (p: Permission) => new FormGroup({
     user: new FormControl(p.user, { nonNullable: true }),
     is_readonly: new FormControl(p.is_readonly && !p.is_admin, { nonNullable: true }),
-    is_write: new FormControl(!p.is_readonly || p.is_admin, { nonNullable: true }),
-    is_admin: new FormControl(p.is_admin, { nonNullable: true })
+    is_write: new FormControl({ value: !p.is_readonly || p.is_admin, disabled: !this.isOwnerOrCoowner }, { nonNullable: true }),
+    is_admin: new FormControl({ value: p.is_admin, disabled: !this.isOwnerOrCoowner }, { nonNullable: true })
   });
 
   form = new FormGroup({
@@ -63,7 +64,7 @@ export class AccEditorComponent {
   });
 
   get isOwnerOrCoowner(): boolean {
-    return !!this.form.value.is_owner || !!this.form.value.is_coowner;
+    return !!this.context.data.is_owner || !!this.context.data.is_coowner;
   }
 
   get accounts(): FormArray {
@@ -87,7 +88,7 @@ export class AccEditorComponent {
   }
 
   onAddAccount(): void {
-    this.accounts.push(this.acc2form({id: 0, name: '', fullname: '', currency: '', start_balance: 0, balance: 0}));
+    this.accounts.push(this.acc2form({ id: 0, name: '', fullname: '', currency: '', start_balance: 0, balance: 0 }));
     this.checkCanDelete();
   }
 
@@ -114,7 +115,7 @@ export class AccEditorComponent {
 
   onAddPermission() {
     const option = this.rights.value || this.options[0];
-    this.permissions.push(this.user2form({user: {id:0, email: this.selected, name: ''}, is_readonly: option.id === 0, is_admin: option.id === 3}));
+    this.permissions.push(this.user2form({ user: { id: 0, email: this.selected, name: '' }, is_readonly: option.id === 0, is_admin: option.id === 3 }));
     this.query.setValue('');
     this.rights.setValue(this.options[0]);
   }
@@ -144,7 +145,7 @@ export class AccEditorComponent {
   async onSubmit() {
     try {
       let group: Group = this.form.getRawValue();
-      group = await firstValueFrom(this.#api.saveGroup({...group, accounts: group.accounts.map(a => ({...a, currency: a.currency.toUpperCase()}))}));
+      group = await firstValueFrom(this.#api.saveGroup({ ...group, accounts: group.accounts.map(a => ({ ...a, currency: a.currency.toUpperCase() })) }));
       this.context.completeWith(group);
     } catch (error) {
       this.#alerts.printError(error);
