@@ -8,4 +8,5 @@ export interface Account {
     start_balance: number;
     balance?: number;
     deleted?: boolean;
+    opdate?: string;
 }

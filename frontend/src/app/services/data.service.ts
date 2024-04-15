@@ -74,7 +74,12 @@ export class DataService {
 
   async init() {
     await this.refresh();
-  }
+
+    let max = this.#state().groups.map(g => g.opdate || '').reduce((max,c) => c > max? c : max);
+    if (max < (this.#state().range.from?.toString('YMD','-') || '')) {
+        await this.setRange(DateRange.all());
+    }
+}
 
   reset() {
     this.#state.set({ ...this.#default });
@@ -109,11 +114,8 @@ export class DataService {
       new PolymorpheusComponent(AccEditorComponent), { data: group, dismissible: false, size: 's' }
     ));
     if (!!data) {
-      this.#alerts.printSuccess('Group created');
-      const groups = this.#state().groups.slice();
-      const index = groups.findIndex(g => data.is_owner && !g.is_owner || data.is_coowner && !g.is_coowner);
-      groups.splice(index < 0 ? groups.length : index, 0, data);
-      this.#state.update(state => ({ ...state, groups }));
+      this.#alerts.printSuccess(`Group '${data.fullname}' created`);
+      await this.getGroups();
     }
   }
 
@@ -124,9 +126,8 @@ export class DataService {
         new PolymorpheusComponent(AccEditorComponent), { data: group, dismissible: false, size: 's' }
       ));
       if (!!data) {
-        this.#alerts.printSuccess('Group updated');
-        const groups = this.#state().groups.map(g => g.id === data.id ? data : g);
-        this.#state.update(state => ({ ...state, groups }));
+        this.#alerts.printSuccess(`Group '${data.fullname}' updated`);
+        await this.getGroups();
       }
     }
   }
@@ -250,24 +251,24 @@ export class DataService {
     return false;
   }
 
-  selectCategory(category: Category | null) {
+  async selectCategory(category: Category | null) {
     this.#state.update(state => ({ ...state, category }));
-    this.getTransactions(this.#state()).then();
+    await this.getTransactions(this.#state());
   }
 
-  selectCurrency(currency: string | undefined | null) {
+  async selectCurrency(currency: string | undefined | null) {
     this.#state.update(state => ({ ...state, currency: currency || '' }));
-    this.getTransactions(this.#state()).then();
+    await this.getTransactions(this.#state());
   }
 
-  setSearch(search: string | undefined | null) {
+  async setSearch(search: string | undefined | null) {
     this.#state.update(state => ({ ...state, search: search || '' }));
-    this.getTransactions(this.#state()).then();
+    await this.getTransactions(this.#state());
   }
 
-  setRange(range: DateRange) {
+  async setRange(range: DateRange) {
     this.#state.update(state => ({ ...state, range }));
-    this.getTransactions(this.#state()).then();
+    await this.getTransactions(this.#state());
   }
 
   async getTransactions(state: DataState) {

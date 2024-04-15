@@ -3,11 +3,12 @@
         Name
         <input tuiTextfield autocomplete="off" />
     </tui-input>
+    @if(isOwnerOrCoowner) {
     <table class="accounts" formArrayName="accounts">
         <tr>
             <td colspan="3">Initial Balances</td>
             <td><button tuiIconButton type="button" [icon]="'tuiIconPlus'" [size]="'s'" [appearance]="'flat'"
-                    (click)="onAddAccount()" [disabled]="!isOwnerOrCoowner"></button></td>
+                    (click)="onAddAccount()"></button></td>
         </tr>
         @for(account of accounts.controls; track $index) {
         @if (!account.value.deleted) {
@@ -22,7 +23,7 @@
             </td>
             <td>
                 <button tuiIconButton type="button" [icon]="'tuiIconTrash'" [size]="'s'" [appearance]="'flat'"
-                    [disabled]="!isOwnerOrCoowner || !canDelete || !!account.value.balance"
+                    [disabled]="!isOwnerOrCoowner || !canDelete || !(!account.value.balance || !account.value.opdate)"
                     (click)="onRemoveAccount($index)"></button>
             </td>
         </tr>
@@ -46,6 +47,7 @@
         <button tuiIconButton type="button" [icon]="'tuiIconPlus'" [size]="'s'" [appearance]="'flat'"
             (click)="onAddPermission()" [disabled]="!selected"></button>
     </div>
+    }
     <table class="permissions" formArrayName="permissions">
         @if (permissions.controls.length>0) {
         <tr>
@@ -56,17 +58,19 @@
             <td></td>
         </tr>
         }
-        @for(account of permissions.controls; track $index) {
+        @for(acl of permissions.controls; track $index) {
+        @if (isOwnerOrCoowner || acl.value.user.email == email) {
         <tr [formGroupName]="$index">
-            <td>{{getPermission($index).getRawValue().user.email}}</td>
+            <td>{{acl.value.user.email}}</td>
             <td><input type="checkbox" formControlName="is_admin" (change)="onToggleAdmin($event, $index)"></td>
             <td><input type="checkbox" formControlName="is_write" (change)="onToggleWrite($event, $index)"></td>
             <td><input type="checkbox" [disabled]="true" [checked]="true"></td>
             <td>
                 <button tuiIconButton type="button" [icon]="'tuiIconTrash'" [size]="'s'" [appearance]="'flat'"
-                    (click)="onRemovePermission($index)"></button>
+                    (click)="onRemovePermission($index)" [disabled]="!isOwnerOrCoowner"></button>
             </td>
         </tr>
+        }
         }
     </table>
     <div class="row">
