@@ -114,11 +114,8 @@ export class DataService {
       new PolymorpheusComponent(AccEditorComponent), { data: group, dismissible: false, size: 's' }
     ));
     if (!!data) {
-      this.#alerts.printSuccess('Group created');
-      const groups = this.#state().groups.slice();
-      const index = groups.findIndex(g => data.is_owner && !g.is_owner || data.is_coowner && !g.is_coowner);
-      groups.splice(index < 0 ? groups.length : index, 0, data);
-      this.#state.update(state => ({ ...state, groups }));
+      this.#alerts.printSuccess(`Group '${data.fullname}' created`);
+      await this.getGroups();
     }
   }
 
@@ -129,9 +126,8 @@ export class DataService {
         new PolymorpheusComponent(AccEditorComponent), { data: group, dismissible: false, size: 's' }
       ));
       if (!!data) {
-        this.#alerts.printSuccess('Group updated');
-        const groups = this.#state().groups.map(g => g.id === data.id ? data : g);
-        this.#state.update(state => ({ ...state, groups }));
+        this.#alerts.printSuccess(`Group '${data.fullname}' updated`);
+        await this.getGroups();
       }
     }
   }

@@ -23,7 +23,7 @@
             </td>
             <td>
                 <button tuiIconButton type="button" [icon]="'tuiIconTrash'" [size]="'s'" [appearance]="'flat'"
-                    [disabled]="!isOwnerOrCoowner || !canDelete || !!account.value.balance"
+                    [disabled]="!isOwnerOrCoowner || !canDelete || !(!account.value.balance || !account.value.opdate)"
                     (click)="onRemoveAccount($index)"></button>
             </td>
         </tr>

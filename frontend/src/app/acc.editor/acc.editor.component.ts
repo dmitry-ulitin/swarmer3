@@ -40,9 +40,10 @@ export class AccEditorComponent {
     name: new FormControl(acc.name, { nonNullable: true }),
     fullname: new FormControl(acc.fullname, { nonNullable: true }),
     currency: new FormControl({ value: acc.currency || this.#auth.claims().currency || 'EUR', disabled: !!acc.id }, { nonNullable: true, validators: [Validators.required] }),
-    start_balance: new FormControl({ value: acc.start_balance, disabled: false }, { nonNullable: true, validators: [Validators.required] }),
+    start_balance: new FormControl({ value: acc.start_balance, disabled: !!acc.id }, { nonNullable: true, validators: [Validators.required] }),
     balance: new FormControl(acc.balance, { nonNullable: true, validators: [Validators.required] }),
-    deleted: new FormControl(acc.deleted, { nonNullable: true })
+    deleted: new FormControl(acc.deleted, { nonNullable: true }),
+    opdate: new FormControl(acc.opdate, { nonNullable: true })
   });
 
   user2form = (p: Permission) => new FormGroup({
