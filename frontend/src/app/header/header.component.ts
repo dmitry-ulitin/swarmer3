@@ -18,6 +18,7 @@ import { PolymorpheusComponent } from '@tinkoff/ng-polymorpheus';
 export class HeaderComponent {
   auth = inject(AuthService);
   data = inject(DataService);
+  account = computed(() => this.data.selectedAccount());
   #dlgService = inject(TuiDialogService);
   group = computed(() => this.data.selectedGroup());
 
@@ -64,7 +65,15 @@ export class HeaderComponent {
     this.#dlgService.open(new PolymorpheusComponent(CategoriesComponent), { header: "Categories", size: 'l' }).subscribe();
   }
 
-  onSaveBackup() { }
+  onSaveBackup() {
+    this.data.saveBackup();
+  }
 
-  onLoadBackup() { }
+  onLoadBackup() {
+    this.data.loadBackup();
+  }
+
+  onImport(id: number) {
+    this.data.importTransactions(id);
+  }
 }

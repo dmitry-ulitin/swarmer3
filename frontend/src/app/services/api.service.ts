@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Group } from '../models/group';
@@ -71,5 +71,13 @@ export class ApiService {
     let params = new HttpParams();
     params = params.set('query', query);
     return this.http.get<string[]>('/api/groups/users', {params: params});
+  }
+
+  getBackup(): Observable<HttpResponse<Blob>> {
+    return this.http.get('/api/data/dump', {responseType: 'blob', observe: 'response'});
+  }
+
+  loadBackup(blob: any) {
+    return this.http.put('/api/data/dump', blob);
   }
 }

@@ -14,6 +14,8 @@ import { TrxEditorComponent } from '../trx.editor/trx.editor.component';
 import { TUI_PROMPT } from '@taiga-ui/kit';
 import { AccEditorComponent } from '../acc.editor/acc.editor.component';
 import { CatEditorComponent } from '../cat.editor/cat.editor.component';
+import { LoadDumpComponent } from '../load/load.dump.component';
+import { LoadStatComponent } from '../load/load.stat.component';
 
 const GET_TRANSACTIONS_LIMIT = 100;
 
@@ -53,6 +55,7 @@ export class DataService {
   groups = computed(() => this.#state().groups.filter(g => !g.deleted));
   allAccounts = computed(() => this.#state().groups.filter(g => !g.deleted).reduce((acc, g) => acc.concat(g.accounts), [] as Account[]).filter(a => !a.deleted));
   selectedAccounts = computed(() => this.allAccounts().filter(a => this.#state().accounts.includes(a.id)));
+  selectedAccount = computed(() => this.selectedAccounts().length === 1 ? this.selectedAccounts()[0] : null);
   selectedGroups = computed(() => this.#state().groups.filter(g => g.accounts.some(a => this.#state().accounts.includes(a.id))));
   selectedGroup = computed(() => this.selectedGroups().length === 1 ? this.selectedGroups()[0] : null);
   total = computed(() => total(this.#state().groups));
@@ -75,11 +78,11 @@ export class DataService {
   async init() {
     await this.refresh();
 
-    let max = this.#state().groups.map(g => g.opdate || '').reduce((max,c) => c > max? c : max);
-    if (max < (this.#state().range.from?.toString('YMD','-') || '')) {
-        await this.setRange(DateRange.all());
+    let max = this.#state().groups.map(g => g.opdate || '').reduce((max, c) => c > max ? c : max);
+    if (max < (this.#state().range.from?.toString('YMD', '-') || '')) {
+      await this.setRange(DateRange.all());
     }
-}
+  }
 
   reset() {
     this.#state.set({ ...this.#default });
@@ -228,7 +231,7 @@ export class DataService {
       }
     }
     return null;
-  } 
+  }
 
   async deleteCategory(id: number) {
     try {
@@ -366,6 +369,44 @@ export class DataService {
           this.#alerts.printSuccess('Transaction deleted');
           this.patchStateTransactions(transaction, true);
         }
+      }
+    } catch (err) {
+      this.#alerts.printError(err);
+    }
+  }
+
+  async saveBackup() {
+    try {
+      const data = await firstValueFrom(this.#api.getBackup());
+      const url = window.URL.createObjectURL(data.body as Blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `export_${new Date().toISOString().substring(0, 16)}.json`;
+      link.click();
+    } catch (err) {
+      this.#alerts.printError(err);
+    }
+  }
+
+  async loadBackup() {
+    try {
+      const data = await firstValueFrom(this.#dlgService.open<File>(new PolymorpheusComponent(LoadDumpComponent), { dismissible: false }), { defaultValue: null });
+      if (!!data) {
+        await  firstValueFrom(this.#api.loadBackup(data));
+        this.#alerts.printSuccess('Backup loaded');
+        await this.refresh();
+      }
+    } catch (err) {
+      this.#alerts.printError(err);
+    }
+  }
+
+  async importTransactions(id: number) {
+    try {
+      const data = await firstValueFrom(this.#dlgService.open<File>(new PolymorpheusComponent(LoadStatComponent), { dismissible: false }), { defaultValue: null });
+      if (!!data) {
+        this.#alerts.printSuccess('Transactions imported');
+        await this.refresh();
       }
     } catch (err) {
       this.#alerts.printError(err);
