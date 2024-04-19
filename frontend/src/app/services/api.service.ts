@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { Group } from '../models/group';
 import { Category } from '../models/category';
 import { DateRange } from '../models/date.range';
-import { Transaction } from '../models/transaction';
+import { Transaction, TransactionImport } from '../models/transaction';
 import { Credentials, Registration } from './auth.service';
 
 @Injectable({
@@ -79,5 +79,17 @@ export class ApiService {
 
   loadBackup(blob: any) {
     return this.http.put('/api/data/dump', blob);
+  }
+
+  importTransactions(acc: number, bank: number, file: File): Observable<TransactionImport[]> {
+    const formData: FormData = new FormData();
+    formData.append('file', file, file.name);
+    formData.append('id', acc.toString());
+    formData.append('bank', bank.toString());
+    return this.http.post<TransactionImport[]>('/api/transactions/import', formData);
+  }
+
+  saveTransactions(acc: number, transactions: TransactionImport[]): Observable<void> {
+    return this.http.patch<void>(`/api/transactions/import?account=${acc}`, transactions);
   }
 }

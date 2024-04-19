@@ -1,0 +1,43 @@
+<div class="table">
+    <table>
+        <thead>
+            <tr>
+                <th></th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Category</th>
+                <th>Sender/Reciever</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (item of records; track $index) {
+            <tr>
+                <td><input type="checkbox" [checked]="item.selected" (change)="onToggle(item)"></td>
+                <td>{{item.opdate | date: 'dd/MM/yyyy'}}</td>
+                <td>{{item.debit | currency: item.currency}}</td>
+                <td><tui-select class="category" [valueContent]="categoryValue" [formControl]="category($index)" [tuiTextfieldSize]="'s'" [tuiTextfieldCleaner]="true">
+                        no category
+                        <tui-data-list-wrapper *tuiDataList
+                            [items]="categories() | tuiFilter: matcher: item.type"
+                            [itemContent]="categoryContent" [size]="'s'">
+                        </tui-data-list-wrapper>
+                    </tui-select>
+                </td>
+                <td>{{item.party}}</td>
+                <td>{{item.details}}</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<div class="footer">
+    <button tuiButton type="submit" [appearance]="'primary'" [size]="'s'" (click)="onNext()">Next</button>
+    <button tuiButton type="button" [appearance]="'secondary'" [size]="'s'" (click)="onCancel()">Cancel</button>
+</div>
+<ng-template #categoryValue let-category>
+    {{category.fullname}}
+</ng-template>
+<ng-template #categoryContent let-category>
+    <div [class]="'category-level-' + category.level">{{category.name}}</div>
+</ng-template>

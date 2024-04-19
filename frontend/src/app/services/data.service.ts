@@ -6,7 +6,7 @@ import { Category } from '../models/category';
 import { AlertService } from './alert.service';
 import { Account } from '../models/account';
 import { Summary } from '../models/summary';
-import { Transaction, TransactionType, TransactionView } from '../models/transaction';
+import { Transaction, TransactionImport, TransactionType, TransactionView } from '../models/transaction';
 import { DateRange } from '../models/date.range';
 import { TuiDialogService } from '@taiga-ui/core';
 import { PolymorpheusComponent } from '@tinkoff/ng-polymorpheus';
@@ -16,6 +16,7 @@ import { AccEditorComponent } from '../acc.editor/acc.editor.component';
 import { CatEditorComponent } from '../cat.editor/cat.editor.component';
 import { LoadDumpComponent } from '../load/load.dump.component';
 import { LoadStatComponent } from '../load/load.stat.component';
+import { StatementComponent } from '../statement/statement.component';
 
 const GET_TRANSACTIONS_LIMIT = 100;
 
@@ -392,7 +393,7 @@ export class DataService {
     try {
       const data = await firstValueFrom(this.#dlgService.open<File>(new PolymorpheusComponent(LoadDumpComponent), { dismissible: false }), { defaultValue: null });
       if (!!data) {
-        await  firstValueFrom(this.#api.loadBackup(data));
+        await firstValueFrom(this.#api.loadBackup(data));
         this.#alerts.printSuccess('Backup loaded');
         await this.refresh();
       }
@@ -403,10 +404,15 @@ export class DataService {
 
   async importTransactions(id: number) {
     try {
-      const data = await firstValueFrom(this.#dlgService.open<File>(new PolymorpheusComponent(LoadStatComponent), { dismissible: false }), { defaultValue: null });
+      const data = await firstValueFrom(this.#dlgService.open<{ bank: number, file: File }>(new PolymorpheusComponent(LoadStatComponent), { dismissible: false }), { defaultValue: null });
       if (!!data) {
-        this.#alerts.printSuccess('Transactions imported');
-        await this.refresh();
+        let transactions: TransactionImport[] | undefined = await firstValueFrom(this.#api.importTransactions(id, data.bank, data.file));
+        transactions = await firstValueFrom(this.#dlgService.open<TransactionImport[] | undefined>(new PolymorpheusComponent(StatementComponent), { data: transactions, dismissible: false, size: 'auto' }), { defaultValue: undefined });
+        if (transactions) {
+          await firstValueFrom(this.#api.saveTransactions(id, transactions));
+          this.#alerts.printSuccess('Transactions imported');
+          await this.refresh();
+        }
       }
     } catch (err) {
       this.#alerts.printError(err);
