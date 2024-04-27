@@ -59,14 +59,12 @@
 
 .category {
     min-width: 20rem;
-    border-radius: 0;
-    border: 0;
 }
 
-.category [tuiWrapper][data-appearance='textfield'] {
-    border: 3px solid black;
-    background-color: pink;
+.table table tbody td.category {
+    padding: 0;
 }
+
 
 .category-level-2 {
     margin-left: 1rem;

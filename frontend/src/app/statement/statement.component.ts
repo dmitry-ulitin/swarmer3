@@ -1,5 +1,5 @@
 import { Component, Inject, computed, inject } from '@angular/core';
-import { TuiButtonModule, TuiDialogContext, TuiTextfieldControllerModule } from '@taiga-ui/core';
+import { TUI_TEXTFIELD_APPEARANCE_DIRECTIVE, TuiButtonModule, TuiDialogContext, TuiTextfieldControllerModule } from '@taiga-ui/core';
 import { POLYMORPHEUS_CONTEXT } from '@tinkoff/ng-polymorpheus';
 import { TransactionImport, TransactionType } from '../models/transaction';
 import { CommonModule } from '@angular/common';
@@ -16,7 +16,14 @@ import { TuiFilterPipeModule } from '@taiga-ui/cdk';
   imports: [CommonModule, ReactiveFormsModule, TuiButtonModule, TuiSelectModule, TuiDataListWrapperModule,
             TuiFilterPipeModule, TuiTextfieldControllerModule],
   templateUrl: './statement.component.html',
-  styleUrl: './statement.component.scss'
+  styleUrl: './statement.component.scss',
+  providers: [
+    {
+        provide: TUI_TEXTFIELD_APPEARANCE_DIRECTIVE,
+        useValue: {
+            appearance: 'table',
+        },
+    }]
 })
 export class StatementComponent {
   records = this.context.data;

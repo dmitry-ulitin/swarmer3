@@ -16,7 +16,7 @@
                 <td><input type="checkbox" [checked]="item.selected" (change)="onToggle(item)"></td>
                 <td>{{item.opdate | date: 'dd/MM/yyyy'}}</td>
                 <td>{{item.debit | currency: item.currency}}</td>
-                <td><tui-select class="category" [valueContent]="categoryValue" [formControl]="category($index)" [tuiTextfieldSize]="'s'" [tuiTextfieldCleaner]="true">
+                <td class="category"><tui-select [valueContent]="categoryValue" [formControl]="category($index)" [tuiTextfieldSize]="'s'" [tuiTextfieldCleaner]="true" [pseudoFocus]="false">
                         no category
                         <tui-data-list-wrapper *tuiDataList
                             [items]="categories() | tuiFilter: matcher: item.type"
