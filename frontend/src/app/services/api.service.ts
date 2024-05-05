@@ -1,11 +1,12 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Group } from '../models/group';
 import { Category } from '../models/category';
 import { DateRange } from '../models/date.range';
-import { Transaction } from '../models/transaction';
+import { Transaction, TransactionImport } from '../models/transaction';
 import { Credentials, Registration } from './auth.service';
+import { Rule } from '../models/rule';
 
 @Injectable({
   providedIn: 'root'
@@ -42,6 +43,26 @@ export class ApiService {
     return !!category.id ? this.http.put<Category>('/api/categories', category) : this.http.post<Category>('/api/categories', category);
   }
 
+  getRules(): Observable<Rule[]> {
+    return this.http.get<Rule[]>('/api/transactions/rules');
+  }
+
+  deleteRule(id: number): Observable<void> {
+    return this.http.delete<void>(`/api/rules/${id}`);
+  }
+
+  addRule(rule: Rule): Observable<Rule> {
+    return this.http.post<Rule>('/api/transactions/rules', rule);
+  }
+
+  updateRule(rule: Rule): Observable<Rule> {
+    return this.http.put<Rule>('/api/transactions/rules', rule);
+  }
+
+  saveRule(rule: Rule): Observable<Rule> {
+    return !!rule.id ? this.updateRule(rule) : this.addRule(rule);
+  }
+
   deleteCategory(id: number): Observable<void> {
     return this.http.delete<void>(`/api/categories/${id}`);
   }
@@ -71,5 +92,25 @@ export class ApiService {
     let params = new HttpParams();
     params = params.set('query', query);
     return this.http.get<string[]>('/api/groups/users', {params: params});
+  }
+
+  getBackup(): Observable<HttpResponse<Blob>> {
+    return this.http.get('/api/data/dump', {responseType: 'blob', observe: 'response'});
+  }
+
+  loadBackup(blob: any) {
+    return this.http.put('/api/data/dump', blob);
+  }
+
+  importTransactions(acc: number, bank: number, file: File): Observable<TransactionImport[]> {
+    const formData: FormData = new FormData();
+    formData.append('file', file, file.name);
+    formData.append('id', acc.toString());
+    formData.append('bank', bank.toString());
+    return this.http.post<TransactionImport[]>('/api/transactions/import', formData);
+  }
+
+  saveTransactions(acc: number, transactions: TransactionImport[]): Observable<void> {
+    return this.http.patch<void>(`/api/transactions/import?account=${acc}`, transactions);
   }
 }

@@ -6,7 +6,7 @@ import { Category } from '../models/category';
 import { AlertService } from './alert.service';
 import { Account } from '../models/account';
 import { Summary } from '../models/summary';
-import { Transaction, TransactionType, TransactionView } from '../models/transaction';
+import { Transaction, TransactionImport, TransactionType, TransactionView } from '../models/transaction';
 import { DateRange } from '../models/date.range';
 import { TuiDialogService } from '@taiga-ui/core';
 import { PolymorpheusComponent } from '@tinkoff/ng-polymorpheus';
@@ -14,6 +14,11 @@ import { TrxEditorComponent } from '../trx.editor/trx.editor.component';
 import { TUI_PROMPT } from '@taiga-ui/kit';
 import { AccEditorComponent } from '../acc.editor/acc.editor.component';
 import { CatEditorComponent } from '../cat.editor/cat.editor.component';
+import { LoadDumpComponent } from '../load/load.dump.component';
+import { LoadStatComponent } from '../load/load.stat.component';
+import { StatementComponent } from '../statement/statement.component';
+import { ConditionType, Rule } from '../models/rule';
+import { RuleComponent } from '../rule/rule.component';
 
 const GET_TRANSACTIONS_LIMIT = 100;
 
@@ -53,6 +58,7 @@ export class DataService {
   groups = computed(() => this.#state().groups.filter(g => !g.deleted));
   allAccounts = computed(() => this.#state().groups.filter(g => !g.deleted).reduce((acc, g) => acc.concat(g.accounts), [] as Account[]).filter(a => !a.deleted));
   selectedAccounts = computed(() => this.allAccounts().filter(a => this.#state().accounts.includes(a.id)));
+  selectedAccount = computed(() => this.selectedAccounts().length === 1 ? this.selectedAccounts()[0] : null);
   selectedGroups = computed(() => this.#state().groups.filter(g => g.accounts.some(a => this.#state().accounts.includes(a.id))));
   selectedGroup = computed(() => this.selectedGroups().length === 1 ? this.selectedGroups()[0] : null);
   total = computed(() => total(this.#state().groups));
@@ -75,11 +81,11 @@ export class DataService {
   async init() {
     await this.refresh();
 
-    let max = this.#state().groups.map(g => g.opdate || '').reduce((max,c) => c > max? c : max);
-    if (max < (this.#state().range.from?.toString('YMD','-') || '')) {
-        await this.setRange(DateRange.all());
+    let max = this.#state().groups.map(g => g.opdate || '').reduce((max, c) => c > max ? c : max);
+    if (max < (this.#state().range.from?.toString('YMD', '-') || '')) {
+      await this.setRange(DateRange.all());
     }
-}
+  }
 
   reset() {
     this.#state.set({ ...this.#default });
@@ -228,7 +234,7 @@ export class DataService {
       }
     }
     return null;
-  } 
+  }
 
   async deleteCategory(id: number) {
     try {
@@ -249,6 +255,16 @@ export class DataService {
       this.#alerts.printError(err);
     }
     return false;
+  }
+
+  async editRule(rule: Rule | undefined, transaction: Partial<Transaction>) {
+    const data = await firstValueFrom(this.#dlgService.open<Rule | undefined>(
+      new PolymorpheusComponent(RuleComponent), { data: { rule, transaction }, dismissible: false}
+    ));
+    if (!!data) {
+      this.#alerts.printSuccess('Rule updated');
+    }
+    return data;
   }
 
   async selectCategory(category: Category | null) {
@@ -365,6 +381,49 @@ export class DataService {
           await firstValueFrom(this.#api.deleteTransaction(transaction.id));
           this.#alerts.printSuccess('Transaction deleted');
           this.patchStateTransactions(transaction, true);
+        }
+      }
+    } catch (err) {
+      this.#alerts.printError(err);
+    }
+  }
+
+  async saveBackup() {
+    try {
+      const data = await firstValueFrom(this.#api.getBackup());
+      const url = window.URL.createObjectURL(data.body as Blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `export_${new Date().toISOString().substring(0, 16)}.json`;
+      link.click();
+    } catch (err) {
+      this.#alerts.printError(err);
+    }
+  }
+
+  async loadBackup() {
+    try {
+      const data = await firstValueFrom(this.#dlgService.open<File>(new PolymorpheusComponent(LoadDumpComponent), { dismissible: false }), { defaultValue: null });
+      if (!!data) {
+        await firstValueFrom(this.#api.loadBackup(data));
+        this.#alerts.printSuccess('Backup loaded');
+        await this.refresh();
+      }
+    } catch (err) {
+      this.#alerts.printError(err);
+    }
+  }
+
+  async importTransactions(id: number) {
+    try {
+      const data = await firstValueFrom(this.#dlgService.open<{ bank: number, file: File }>(new PolymorpheusComponent(LoadStatComponent), { dismissible: false }), { defaultValue: null });
+      if (!!data) {
+        let transactions: TransactionImport[] | undefined = await firstValueFrom(this.#api.importTransactions(id, data.bank, data.file));
+        transactions = await firstValueFrom(this.#dlgService.open<TransactionImport[] | undefined>(new PolymorpheusComponent(StatementComponent), { data: transactions, dismissible: false, size: 'auto' }), { defaultValue: undefined });
+        if (transactions) {
+          await firstValueFrom(this.#api.saveTransactions(id, transactions));
+          this.#alerts.printSuccess('Transactions imported');
+          await this.refresh();
         }
       }
     } catch (err) {

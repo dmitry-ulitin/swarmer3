@@ -40,7 +40,7 @@ export type Transaction = TransactionTransfer | TransactionExpense | Transaction
 
 export type TransactionImport = Transaction & {
     selected: boolean;
-    rule: Rule;
+    rule?: Rule;
 }
 
 export type TransactionView = Transaction & {

@@ -1,0 +1,23 @@
+<tui-select tuiTextfieldSize="m" [formControl]="bank" [valueContent]="bankContent">
+    Bank
+    <tui-data-list-wrapper *tuiDataList [items]="banks" [itemContent]="bankContent"/>
+</tui-select>
+<ng-template #bankContent let-bank>{{bank.name}}</ng-template>
+
+@if(!files.value) {
+<tui-input-files accept=".csv, .txt, .pdf" [formControl]="files" (reject)="onReject($event)"/>
+}
+
+<tui-files class="tui-space_top-1">
+    @if (files.valueChanges | async; as file) {
+    <tui-file [file]="file" (removed)="removeFile()"/>
+    }
+    @if (rejectedFiles$ | async; as file) {
+    <tui-file state="error" [file]="file" (removed)="clearRejected()"/>
+    }
+</tui-files>
+<div class="footer">
+    <button tuiButton type="submit" [appearance]="'primary'" [size]="'s'" (click)="onNext()"
+        [disabled]="!files.value">Next</button>
+    <button tuiButton type="button" [appearance]="'secondary'" [size]="'s'" (click)="onCancel()">Cancel</button>
+</div>

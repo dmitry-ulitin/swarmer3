@@ -8,7 +8,7 @@ export enum ConditionType {
 }
 
 export interface Rule {
-    id: number | null | undefined;
+    id?: number;
     conditionType: ConditionType;
     conditionValue: string;
     category: Category;
