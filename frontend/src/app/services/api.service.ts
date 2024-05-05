@@ -6,6 +6,7 @@ import { Category } from '../models/category';
 import { DateRange } from '../models/date.range';
 import { Transaction, TransactionImport } from '../models/transaction';
 import { Credentials, Registration } from './auth.service';
+import { Rule } from '../models/rule';
 
 @Injectable({
   providedIn: 'root'
@@ -40,6 +41,26 @@ export class ApiService {
 
   saveCategory(category: Category) {
     return !!category.id ? this.http.put<Category>('/api/categories', category) : this.http.post<Category>('/api/categories', category);
+  }
+
+  getRules(): Observable<Rule[]> {
+    return this.http.get<Rule[]>('/api/transactions/rules');
+  }
+
+  deleteRule(id: number): Observable<void> {
+    return this.http.delete<void>(`/api/rules/${id}`);
+  }
+
+  addRule(rule: Rule): Observable<Rule> {
+    return this.http.post<Rule>('/api/transactions/rules', rule);
+  }
+
+  updateRule(rule: Rule): Observable<Rule> {
+    return this.http.put<Rule>('/api/transactions/rules', rule);
+  }
+
+  saveRule(rule: Rule): Observable<Rule> {
+    return !!rule.id ? this.updateRule(rule) : this.addRule(rule);
   }
 
   deleteCategory(id: number): Observable<void> {

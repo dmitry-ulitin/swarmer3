@@ -8,6 +8,10 @@
     overflow: auto;
 }
 
+.fill {
+    flex-grow: 1;
+}
+
 .table {
     width: 100%;
     overflow: auto;
@@ -32,6 +36,7 @@
     font: var(--tui-font-text-s);
     font-weight: bold;
     height: var(--tui-height-s);
+    z-index: 1;
  }
 
  .table table th:last-child {
@@ -57,12 +62,18 @@
     gap: .5rem;
 }
 
-.category {
-    min-width: 20rem;
+td.amount {
+    text-align: right;
 }
 
 .table table tbody td.category {
     padding: 0;
+    min-width: 20rem;
+}
+.table table tbody td.category div {
+    display: flex;
+    gap: .3rem;
+    align-items: center;
 }
 
 

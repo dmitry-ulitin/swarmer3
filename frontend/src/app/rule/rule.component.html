@@ -1,1 +1,37 @@
-<p>rule works!</p>
+<form [formGroup]=form [tuiTextfieldSize]="'s'">
+    <div class="row">
+        <tui-select class="field" formControlName="field" [valueContent]="optionContent">
+            <tui-data-list-wrapper *tuiDataList [items]="fields" [itemContent]="optionContent" [size]="'s'">
+            </tui-data-list-wrapper>
+        </tui-select>
+        <tui-select class="condition" formControlName="condition" [valueContent]="optionContent">
+            <tui-data-list-wrapper *tuiDataList [items]="conditions" [itemContent]="optionContent" [size]="'s'">
+            </tui-data-list-wrapper>
+        </tui-select>
+        <ng-template #optionContent let-option>
+            {{option.name}}
+        </ng-template>
+        <tui-input class="fill" formControlName="conditionValue">
+            condition
+            <input tuiTextfield autocomplete="off" />
+        </tui-input>
+    </div>
+    <tui-select class="fill" formControlName="category" [valueContent]="categoryValue">
+        no category
+        <tui-data-list-wrapper *tuiDataList [items]="categories() | tuiFilter: matcher"
+            [itemContent]="categoryContent" [size]="'s'">
+        </tui-data-list-wrapper>
+    </tui-select>
+    <ng-template #categoryValue let-category>
+        {{category.fullname}}
+    </ng-template>
+    <ng-template #categoryContent let-category>
+        <div [class]="'category-level-' + category.level">{{category.name}}</div>
+    </ng-template>
+    <div class="row">
+        <div class="fill"></div>
+        <button tuiButton type="submit" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()"
+            [disabled]=!form.valid>Save</button>
+        <button tuiButton type="button" [appearance]="'secondary'" [size]="'s'" (click)="onCancel()">Cancel</button>
+    </div>
+</form>

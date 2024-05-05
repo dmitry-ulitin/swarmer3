@@ -1,0 +1,35 @@
+form {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+
+.field {
+    width: 6rem;
+}
+
+.condition {
+    width: 8rem;
+}
+
+.row {
+    display: flex;
+    gap: .5rem;
+}
+
+.fill {
+    flex: 1;
+}
+
+.category-level-2 {
+    margin-left: 1rem;
+}
+
+.category-level-3 {
+    margin-left: 2rem;
+}
+
+.category-level-4 {
+    margin-left: 3rem;
+}
+

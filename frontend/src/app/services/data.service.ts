@@ -17,6 +17,8 @@ import { CatEditorComponent } from '../cat.editor/cat.editor.component';
 import { LoadDumpComponent } from '../load/load.dump.component';
 import { LoadStatComponent } from '../load/load.stat.component';
 import { StatementComponent } from '../statement/statement.component';
+import { ConditionType, Rule } from '../models/rule';
+import { RuleComponent } from '../rule/rule.component';
 
 const GET_TRANSACTIONS_LIMIT = 100;
 
@@ -253,6 +255,16 @@ export class DataService {
       this.#alerts.printError(err);
     }
     return false;
+  }
+
+  async editRule(rule: Rule | undefined, transaction: Partial<Transaction>) {
+    const data = await firstValueFrom(this.#dlgService.open<Rule | undefined>(
+      new PolymorpheusComponent(RuleComponent), { data: { rule, transaction }, dismissible: false}
+    ));
+    if (!!data) {
+      this.#alerts.printSuccess('Rule updated');
+    }
+    return data;
   }
 
   async selectCategory(category: Category | null) {
