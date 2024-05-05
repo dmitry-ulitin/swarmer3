@@ -1,0 +1,30 @@
+@if(income().length > 0) {
+<div class="row">
+    <a tuiLink (click)="onIncome()">Income</a>
+    <div class="amounts credit">
+        @for(s of income(); track s.currency) {
+        <a tuiLink (click)="onCurrency(s.currency)">{{s.credit | currency:s.currency}}</a>
+        }
+    </div>
+</div>
+}
+@if(expenses().length > 0) {
+<div class="row">
+    <a tuiLink (click)="onExpenses()">Expenses</a>
+    <div class="amounts debit">
+        @for(s of expenses(); track s.currency) {
+        <a tuiLink (click)="onCurrency(s.currency)">{{s.debit | currency:s.currency}}</a>
+        }
+    </div>
+</div>
+}
+@if(transfers().length > 0) {
+<div class="row">
+    <a tuiLink (click)="onTransfers()">Transfers</a>
+    <div class="amounts">
+        @for(s of transfers(); track s.currency) {
+        <a tuiLink [class.credit]="s.transfers_credit>s.transfers_debit" [class.debit]="s.transfers_credit<s.transfers_debit" (click)="onCurrency(s.currency)">{{(s.transfers_credit-s.transfers_debit) | currency:s.currency}}</a>
+        }
+    </div>
+</div>
+}

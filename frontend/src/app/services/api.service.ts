@@ -4,9 +4,11 @@ import { Observable } from 'rxjs';
 import { Group } from '../models/group';
 import { Category } from '../models/category';
 import { DateRange } from '../models/date.range';
-import { Transaction, TransactionImport } from '../models/transaction';
+import { Transaction, TransactionImport, TransactionType } from '../models/transaction';
 import { Credentials, Registration } from './auth.service';
 import { Rule } from '../models/rule';
+import { Summary } from '../models/summary';
+import { CategorySum } from '../models/category.sum';
 
 @Injectable({
   providedIn: 'root'
@@ -112,5 +114,22 @@ export class ApiService {
 
   saveTransactions(acc: number, transactions: TransactionImport[]): Observable<void> {
     return this.http.patch<void>(`/api/transactions/import?account=${acc}`, transactions);
+  }
+
+  getSummary(accounts: number[], range: DateRange): Observable<Summary[]> {
+    let params = new HttpParams();
+    params = params.set('accounts', accounts.join(","));
+    params = params.set('from', range?.from?.toString('YMD','-') || '');
+    params = params.set('to', range?.to?.toString('YMD','-') || '');
+    return this.http.get<Summary[]>('/api/transactions/summary', {params: params});
+  }
+
+  getCategoriesSummary(type: TransactionType, accounts: number[], range: DateRange): Observable<CategorySum[]> {
+    let params = new HttpParams();
+    params = params.set('type', type.toString());
+    params = params.set('accounts', accounts.join(","));
+    params = params.set('from', range?.from?.toString('YMD','-') || '');
+    params = params.set('to', range?.to?.toString('YMD','-') || '');
+    return this.http.get<CategorySum[]>('/api/transactions/categories', {params: params});
   }
 }

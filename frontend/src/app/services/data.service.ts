@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { ApiService } from './api.service';
 import { Group, total } from '../models/group';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, forkJoin } from 'rxjs';
 import { Category } from '../models/category';
 import { AlertService } from './alert.service';
 import { Account } from '../models/account';
@@ -19,6 +19,7 @@ import { LoadStatComponent } from '../load/load.stat.component';
 import { StatementComponent } from '../statement/statement.component';
 import { ConditionType, Rule } from '../models/rule';
 import { RuleComponent } from '../rule/rule.component';
+import { CategorySum } from '../models/category.sum';
 
 const GET_TRANSACTIONS_LIMIT = 100;
 
@@ -28,9 +29,11 @@ export interface DataState {
   expanded: number[];
   // transactions
   transactions: TransactionView[];
+  loaded: boolean;
   tid: number | null | undefined;
   summary: Summary[];
-  loaded: boolean;
+  income: CategorySum[];
+  expenses: CategorySum[];
   // categories
   categories: Category[];
   // filters
@@ -47,7 +50,7 @@ export interface DataState {
 export class DataService {
   #api = inject(ApiService);
   #default: DataState = {
-    groups: [], expanded: [], transactions: [], tid: null, summary: [], loaded: false, categories: [],
+    groups: [], expanded: [], transactions: [], loaded: false, tid: null, summary: [], income: [], expenses: [], categories: [],
     search: '', accounts: [], range: DateRange.last30(), category: null, currency: ''
   }
   #state = signal<DataState>(this.#default);
@@ -92,7 +95,7 @@ export class DataService {
   }
 
   async refresh() {
-    await Promise.all([this.getGroups(), this.getCategories(), this.getTransactions(this.#state())]);
+    await Promise.all([this.getGroups(), this.getCategories(), this.getTransactions(this.#state()), this.getSummary(), this.getCategoriesSummary()]);
   }
 
   async getGroups() {
@@ -133,7 +136,7 @@ export class DataService {
       ));
       if (!!data) {
         this.#alerts.printSuccess(`Group '${data.fullname}' updated`);
-        await this.getGroups();
+        await this.refresh();
       }
     }
   }
@@ -148,7 +151,7 @@ export class DataService {
           this.#alerts.printSuccess(`Group '${group.fullname}' deleted`);
           const groups = this.#state().groups.map(g => g.id === group.id ? { ...g, deleted: true } : g);
           this.#state.update(state => ({ ...state, groups }));
-          this.selectAccounts(this.#state().accounts.filter(id => !group.accounts.some(a => a.id === id)));
+          await this.selectAccounts(this.#state().accounts.filter(id => !group.accounts.some(a => a.id === id)));
         }
       }
     } catch (err) {
@@ -156,7 +159,7 @@ export class DataService {
     }
   }
 
-  selectAccounts(ids: number[]) {
+  async selectAccounts(ids: number[]) {
     const prev = this.#state().accounts;
     // check if the same accounts are selected
     if (ids.every(a => prev.includes(a)) && prev.every(a => ids.includes(a))) {
@@ -186,14 +189,12 @@ export class DataService {
         this.#state.update(state => ({ ...state, currency: '' }));
       }
     }
-    this.getTransactions(state).then();
-    //    cxt.dispatch(new GetSummary());
+    await Promise.all([this.getTransactions(this.#state()), this.getSummary(), this.getCategoriesSummary()]);
   }
 
-  deselectAccounts(ids: number[]) {
+  async deselectAccounts(ids: number[]) {
     this.#state.update(state => ({ ...state, accounts: state.accounts.filter(a => !ids.includes(a)) }));
-    this.getTransactions(this.#state()).then();
-    //    cxt.dispatch(new GetSummary());
+    await Promise.all([this.getTransactions(this.#state()), this.getSummary(), this.getCategoriesSummary()]);
   }
 
   async getCategories() {
@@ -244,10 +245,10 @@ export class DataService {
         if (answer) {
           await firstValueFrom(this.#api.deleteCategory(category.id));
           this.#alerts.printSuccess(`Category '${category.fullname}' deleted`);
-          await this.getCategories();
           if (this.#state().category?.id === id) {
-            this.selectCategory(null);
+            this.#state.update(state => ({ ...state, category: null }));
           }
+          await this.refresh();
           return true;
         }
       }
@@ -259,12 +260,37 @@ export class DataService {
 
   async editRule(rule: Rule | undefined, transaction: Partial<Transaction>) {
     const data = await firstValueFrom(this.#dlgService.open<Rule | undefined>(
-      new PolymorpheusComponent(RuleComponent), { data: { rule, transaction }, dismissible: false}
+      new PolymorpheusComponent(RuleComponent), { data: { rule, transaction }, dismissible: false }
     ));
     if (!!data) {
       this.#alerts.printSuccess('Rule updated');
     }
     return data;
+  }
+
+  async getSummary() {
+    try {
+      const state = this.#state();
+      const summary = await firstValueFrom(this.#api.getSummary(state.accounts, state.range), { defaultValue: [] });
+      this.#state.update(state => ({ ...state, summary }));
+    } catch (err) {
+      this.#alerts.printError(err);
+    }
+  }
+
+  async getCategoriesSummary() {
+    try {
+      const state = this.#state();
+      const { income, expenses } = await firstValueFrom(
+        forkJoin({
+          income: this.#api.getCategoriesSummary(TransactionType.Income, state.accounts, state.range),
+          expenses: this.#api.getCategoriesSummary(TransactionType.Expense, state.accounts, state.range)
+        })
+      );
+      this.#state.update(state => ({ ...state, income, expenses }));
+    } catch (err) {
+      this.#alerts.printError(err);
+    }
   }
 
   async selectCategory(category: Category | null) {
@@ -284,7 +310,7 @@ export class DataService {
 
   async setRange(range: DateRange) {
     this.#state.update(state => ({ ...state, range }));
-    await this.getTransactions(this.#state());
+    await Promise.all([this.getTransactions(this.#state()), this.getSummary(), this.getCategoriesSummary()]);
   }
 
   async getTransactions(state: DataState) {
@@ -348,8 +374,9 @@ export class DataService {
       this.#alerts.printSuccess('Transaction created');
       this.patchStateTransactions(data, false);
       if (state.categories.findIndex(c => c.id === data.category?.id) < 0) {
-        this.getCategories();
+        await this.getCategories();
       }
+      await this.getCategoriesSummary();
     }
   }
 
@@ -367,6 +394,7 @@ export class DataService {
         if (state.categories.findIndex(c => c.id === data.category?.id) < 0) {
           this.getCategories();
         }
+        await this.getCategoriesSummary();
       }
     }
   }
@@ -381,6 +409,7 @@ export class DataService {
           await firstValueFrom(this.#api.deleteTransaction(transaction.id));
           this.#alerts.printSuccess('Transaction deleted');
           this.patchStateTransactions(transaction, true);
+          await this.getCategoriesSummary();
         }
       }
     } catch (err) {
@@ -506,7 +535,7 @@ export class DataService {
         s.credit += remove ? -transaction.credit : transaction.credit;
       }
     }
-    // TODO: patch categories
+    // TODO: patch categories summary
     // patch state
     this.#state.update(state => ({ ...state, transactions, groups, tid, summary }));
   }
