@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TuiTextfieldControllerModule } from '@taiga-ui/core';
 import { TuiInputModule, TuiTagModule } from '@taiga-ui/kit';
@@ -9,6 +9,7 @@ import { RangeComponent } from './range/range.component';
 @Component({
   selector: 'app-filters',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, TuiInputModule, TuiTextfieldControllerModule, TuiTagModule, RangeComponent],
   templateUrl: './filters.component.html',
   styleUrl: './filters.component.scss'

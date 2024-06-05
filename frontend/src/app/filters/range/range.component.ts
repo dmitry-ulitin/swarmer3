@@ -1,4 +1,4 @@
-import { Component, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild, inject } from '@angular/core';
 import { DataService } from '../../services/data.service';
 import { TuiButtonModule, TuiDataListModule, TuiHostedDropdownComponent, TuiHostedDropdownModule, TuiSvgModule } from '@taiga-ui/core';
 import { DateRange } from '../../models/date.range';
@@ -6,6 +6,7 @@ import { DateRange } from '../../models/date.range';
 @Component({
   selector: 'app-range',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TuiButtonModule, TuiHostedDropdownModule, TuiDataListModule, TuiSvgModule],
   templateUrl: './range.component.html',
   styleUrl: './range.component.scss'

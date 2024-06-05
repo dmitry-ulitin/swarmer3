@@ -1,4 +1,4 @@
-import { Component, Inject, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject, computed, inject } from '@angular/core';
 import { TUI_TEXTFIELD_APPEARANCE_DIRECTIVE, TuiButtonModule, TuiDialogContext, TuiTextfieldControllerModule } from '@taiga-ui/core';
 import { POLYMORPHEUS_CONTEXT } from '@tinkoff/ng-polymorpheus';
 import { TransactionImport, TransactionType } from '../models/transaction';
@@ -14,6 +14,7 @@ import { map, merge } from 'rxjs';
 @Component({
   selector: 'app-statement',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, ReactiveFormsModule, TuiButtonModule, TuiSelectModule, TuiDataListWrapperModule,
     TuiFilterPipeModule, TuiTextfieldControllerModule],
   templateUrl: './statement.component.html',

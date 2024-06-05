@@ -1,4 +1,4 @@
-import { Component, ViewChild, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../services/auth.service';
 import { TuiButtonModule, TuiDataListModule, TuiDialogService, TuiHostedDropdownComponent, TuiHostedDropdownModule, TuiModeModule, TuiSvgModule } from '@taiga-ui/core';
@@ -11,6 +11,7 @@ import { PolymorpheusComponent } from '@tinkoff/ng-polymorpheus';
 @Component({
   selector: 'app-header',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, TuiButtonModule, TuiModeModule, TuiHostedDropdownModule, TuiDataListModule, TuiSvgModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'

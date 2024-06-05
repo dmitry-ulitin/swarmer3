@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../services/auth.service';
 import { TuiButtonModule, TuiLabelModule, TuiTextfieldControllerModule } from '@taiga-ui/core';
@@ -10,6 +10,7 @@ import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-login',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, ReactiveFormsModule, RouterLink, TuiButtonModule, TuiInputModule, TuiInputPasswordModule, TuiLabelModule, TuiTextfieldControllerModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'

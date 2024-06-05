@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TuiButtonModule, TuiDialogContext } from '@taiga-ui/core';
 import { TuiDataListWrapperModule, TuiFileLike, TuiInputFilesModule, TuiSelectModule } from '@taiga-ui/kit';
@@ -8,6 +8,7 @@ import { Subject } from 'rxjs';
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, ReactiveFormsModule, TuiButtonModule, TuiInputFilesModule, TuiSelectModule, TuiDataListWrapperModule],
   templateUrl: './load.stat.component.html',
   styleUrl: './load.stat.component.scss'

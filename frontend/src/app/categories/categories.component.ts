@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { DataService } from '../services/data.service';
 import { Category } from '../models/category';
 import { TuiButtonModule } from '@taiga-ui/core';
@@ -14,6 +14,7 @@ interface TreeNode {
 @Component({
   selector: 'app-categories',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TuiButtonModule, TuiTreeModule],
   templateUrl: './categories.component.html',
   styleUrl: './categories.component.scss'

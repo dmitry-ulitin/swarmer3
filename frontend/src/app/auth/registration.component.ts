@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { AlertService } from '../services/alert.service';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -11,6 +11,7 @@ import { CURRENCIES_EN } from '../models/currencies';
 @Component({
   selector: 'app-registration',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, ReactiveFormsModule, RouterLink, TuiButtonModule, TuiInputModule, TuiInputPasswordModule,
             TuiLabelModule, TuiTextfieldControllerModule, TuiComboBoxModule, TuiDataListWrapperModule, TuiFilterByInputPipeModule],
   templateUrl: './registration.component.html',

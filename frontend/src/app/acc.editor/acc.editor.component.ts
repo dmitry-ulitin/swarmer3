@@ -1,4 +1,4 @@
-import { Component, Inject, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject, inject } from '@angular/core';
 import { TuiButtonModule, TuiDataListModule, TuiDialogContext, TuiTextfieldControllerModule } from '@taiga-ui/core';
 import { Group, Permission } from '../models/group';
 import { POLYMORPHEUS_CONTEXT } from '@tinkoff/ng-polymorpheus';
@@ -16,6 +16,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-acc.editor',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, ReactiveFormsModule, TuiButtonModule, TuiInputModule, TuiInputNumberModule, TuiComboBoxModule, TuiSelectModule,
     TuiTextfieldControllerModule, TuiDataListModule, TuiDataListWrapperModule, TuiFilterByInputPipeModule, TuiLetModule, TuiAutoFocusModule],
   templateUrl: './acc.editor.component.html',
