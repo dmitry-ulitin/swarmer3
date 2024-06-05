@@ -12,7 +12,7 @@
         </thead>
         <tbody>
             @for (item of records; track $index) {
-            <tr>
+            <tr [class]="'type'+item.type">
                 <td><input type="checkbox" [checked]="item.selected" (change)="onToggle(item)"></td>
                 <td>{{item.opdate | date: 'dd/MM/yyyy'}}</td>
                 <td class="amount">{{item.debit | currency: item.currency}}</td>
