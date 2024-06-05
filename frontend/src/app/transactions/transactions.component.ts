@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { DataService } from '../services/data.service';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { CommonModule } from '@angular/common';
@@ -8,6 +8,7 @@ import { Category } from '../models/category';
 @Component({
   selector: 'app-transactions',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, InfiniteScrollModule, TuiLinkModule],
   templateUrl: './transactions.component.html',
   styleUrl: './transactions.component.scss'

@@ -1,4 +1,4 @@
-import { Component, Inject, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject, computed, inject } from '@angular/core';
 import { POLYMORPHEUS_CONTEXT } from '@tinkoff/ng-polymorpheus';
 import { Transaction, TransactionType } from '../models/transaction';
 import { TuiButtonModule, TuiDialogContext, TuiLabelModule, TuiTextfieldControllerModule } from '@taiga-ui/core';
@@ -13,6 +13,7 @@ import { AlertService } from '../services/alert.service';
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TuiButtonModule, ReactiveFormsModule, TuiInputModule, TuiInputNumberModule, TuiLabelModule,
     TuiTextfieldControllerModule, TuiComboBoxModule, TuiSelectModule, TuiDataListWrapperModule,
     TuiTextareaModule, TuiInputDateModule, TuiFilterPipeModule, TuiFilterByInputPipeModule, TuiAutoFocusModule],

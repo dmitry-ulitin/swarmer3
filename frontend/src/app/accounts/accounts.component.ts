@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DataService } from '../services/data.service';
 import { Group, total } from '../models/group';
@@ -8,6 +8,7 @@ import { TuiLinkModule, TuiSvgModule } from '@taiga-ui/core';
 @Component({
   selector: 'app-accounts',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, TuiSvgModule, TuiLinkModule],
   templateUrl: './accounts.component.html',
   styleUrl: './accounts.component.scss'

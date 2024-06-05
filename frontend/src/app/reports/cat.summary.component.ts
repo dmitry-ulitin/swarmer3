@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { DataService } from '../services/data.service';
 import { Category } from '../models/category';
 import { TuiLinkModule } from '@taiga-ui/core';
@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-cat-summary',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, TuiLinkModule],
   templateUrl: './cat.summary.component.html',
   styleUrl: './cat.summary.component.scss'

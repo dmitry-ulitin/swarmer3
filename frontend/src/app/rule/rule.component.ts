@@ -1,4 +1,4 @@
-import { Component, Inject, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject, computed, inject } from '@angular/core';
 import { Rule } from '../models/rule';
 import { TuiButtonModule, TuiDialogContext, TuiTextfieldControllerModule } from '@taiga-ui/core';
 import { POLYMORPHEUS_CONTEXT } from '@tinkoff/ng-polymorpheus';
@@ -15,6 +15,7 @@ import { firstValueFrom } from 'rxjs';
 @Component({
   selector: 'app-rule',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TuiButtonModule, ReactiveFormsModule, TuiInputModule, TuiSelectModule, TuiTextfieldControllerModule, TuiDataListWrapperModule, TuiFilterPipeModule],
   templateUrl: './rule.component.html',
   styleUrl: './rule.component.scss'

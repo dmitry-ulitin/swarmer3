@@ -1,4 +1,4 @@
-import { Component, Inject, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject, computed, inject } from '@angular/core';
 import { DataService } from '../services/data.service';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TuiButtonModule, TuiDialogContext, TuiTextfieldControllerModule } from '@taiga-ui/core';
@@ -14,6 +14,7 @@ import { firstValueFrom } from 'rxjs';
 @Component({
   selector: 'app-cat.editor',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, TuiButtonModule, TuiInputModule, TuiSelectModule, TuiTextfieldControllerModule,
             TuiDataListWrapperModule, TuiFilterPipeModule, TuiAutoFocusModule],
   templateUrl: './cat.editor.component.html',

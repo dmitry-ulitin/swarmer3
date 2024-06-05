@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { TuiLinkModule } from '@taiga-ui/core';
 import { DataService } from '../services/data.service';
 import { TransactionType } from '../models/transaction';
@@ -7,6 +7,7 @@ import { TransactionType } from '../models/transaction';
 @Component({
   selector: 'app-type-summary',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, TuiLinkModule],
   templateUrl: './type.summary.component.html',
   styleUrl: './type.summary.component.scss'
