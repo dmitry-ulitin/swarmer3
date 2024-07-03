@@ -38,7 +38,16 @@ export class RuleComponent {
     category: new FormControl(this.context.data.rule?.category, { nonNullable: true, validators: [Validators.required] })
   });
 
-  constructor(@Inject(POLYMORPHEUS_CONTEXT) private readonly context: TuiDialogContext<Rule | undefined, { rule?: Rule, transaction: Partial<Transaction> }>) {}
+  constructor(@Inject(POLYMORPHEUS_CONTEXT) private readonly context: TuiDialogContext<Rule | undefined, { rule?: Rule, transaction: Partial<Transaction> }>) {
+    this.form.controls['field'].valueChanges.subscribe((v) => {
+      if (v?.id == 1 && this.transaction.party) {
+        this.form.controls['conditionValue'].setValue(this.transaction.party);
+      }
+      else if (v?.id == 2 && this.transaction.details) {
+        this.form.controls['conditionValue'].setValue(this.transaction.details);
+      }
+    });
+  }
 
   onCancel() {
     this.context.completeWith(undefined);
