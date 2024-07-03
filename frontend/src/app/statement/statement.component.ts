@@ -42,7 +42,9 @@ export class StatementComponent {
       if (changes.data && this.records[changes.rowIndex].party) {
         this.fa.controls.forEach((control, i) => {
           const data = this.records[i];
-          if (!data.category && data.type == this.records[changes.rowIndex].type && this.records[changes.rowIndex].party === data.party) {
+          if (!data.category && data.type == this.records[changes.rowIndex].type &&
+              this.records[changes.rowIndex].party === data.party &&
+              this.records[changes.rowIndex].details === data.details) {
             data.category = changes.data;
             control.setValue(data.category, { emitEvent: false });
           }
