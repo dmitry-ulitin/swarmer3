@@ -67,6 +67,7 @@ public class DataService {
     public void loadDump(Long userId, Dump dump) {
         var owner = userRepository.findById(userId).orElseThrow();
         // remove old data
+        log.info("Removing old data for user {}", userId);
         transactionRepository.removeByOwnerId(userId);
         ruleRepository.removeByOwnerId(userId);
         categoryRepository.removeByOwnerId(userId);
@@ -85,6 +86,9 @@ public class DataService {
                     if (!transactionRepository.existsByAccountIdOrRecipientId(account.getId(), account.getId())) {
                         accountRepository.delete(account);
                         deleted++;
+                    } else {
+                        log.warn("Account {} has transactions, group {} has not been deleted", account.getId(),
+                                group.getId());
                     }
                 }
                 if (deleted == group.getAccounts().size()) {
@@ -95,17 +99,18 @@ public class DataService {
         }
         if (tryToUpdate) {
             // update existing groups
+            var updated = 0;
             for (var group : groups) {
-                var updated = dump.groups().stream().filter(d -> d.id().equals(group.getId())).findFirst().orElse(null);
-                if (updated == null) {
+                var existingGroup = dump.groups().stream().filter(d -> d.id().equals(group.getId())).findFirst().orElse(null);
+                if (existingGroup == null) {
                     group.setDeleted(true);
                     groupRepository.save(group);
                 } else {
-                    group.setName(updated.name());
-                    group.setDeleted(updated.deleted());
-                    group.setUpdated(updated.updated());
+                    group.setName(existingGroup.name());
+                    group.setDeleted(existingGroup.deleted());
+                    group.setUpdated(existingGroup.updated());
                     for (var account : group.getAccounts()) {
-                        var updatedAccount = updated.accounts().stream().filter(a -> a.id().equals(account.getId()))
+                        var updatedAccount = existingGroup.accounts().stream().filter(a -> a.id().equals(account.getId()))
                                 .findFirst().orElse(null);
                         if (updatedAccount == null) {
                             account.setDeleted(true);
@@ -118,7 +123,7 @@ public class DataService {
                         }
                     }
                     // save permissions
-                    for (var updatedAcl : updated.acls()) {
+                    for (var updatedAcl : existingGroup.acls()) {
                         var acl = group.getAcls().stream().filter(a -> a.getUserId().equals(updatedAcl.userId()))
                                 .findFirst()
                                 .orElse(null);
@@ -141,16 +146,19 @@ public class DataService {
                         }
                     }
                     group.getAcls().stream().filter(
-                            a -> updated.acls().stream().noneMatch(p -> p.userId().equals(a.getUserId())))
+                            a -> existingGroup.acls().stream().noneMatch(p -> p.userId().equals(a.getUserId())))
                             .forEach(a -> aclRepository.delete(a));
                     group.setAcls(group.getAcls().stream().filter(
-                            a -> updated.acls().stream().anyMatch(p -> p.userId().equals(a.getUserId())))
+                            a -> existingGroup.acls().stream().anyMatch(p -> p.userId().equals(a.getUserId())))
                             .collect(Collectors.toList()));
                     groupRepository.save(group);
+                    updated++;
                 }
             }
+            log.info("Updated {} groups", updated);
         }
         // insert new groups
+        var inserted = 0;
         for (var g : dump.groups()) {
             var existingGroup = groups.stream().filter(group -> group.getId().equals(g.id())).findFirst().orElse(null);
             if (existingGroup == null) {
@@ -184,8 +192,10 @@ public class DataService {
                     group.getAcls().add(acl);
                 }
                 groupRepository.save(group);
+                inserted++;
             }
         }
+        log.info("Inserted {} groups", inserted);
         // categories
         var catMap = new HashMap<Long, Long>();
         for (var c : dump.categories()) {
@@ -195,7 +205,9 @@ public class DataService {
             categoryRepository.save(category);
             catMap.put(c.id(), category.getId());
         }
+        log.info("Inserted {} categories", dump.categories().size());
         // transactions
+        inserted = 0;
         for (var t : dump.transactions()) {
             var account = t.accountId() == null ? null
                     : accountRepository.findById(accMap.getOrDefault(t.accountId(), t.accountId())).orElse(null);
@@ -212,7 +224,9 @@ public class DataService {
             transactionRepository.save(new Transaction(null, owner, t.opdate(), account, t.debit(),
                     recipient, t.credit(), category, t.currency(), t.party(), t.details(), t.created(),
                     t.updated()));
+            inserted++;
         }
+        log.info("Inserted {} of {} transactions", inserted, dump.transactions().size());
         // rules
         for (var r : dump.rules()) {
             var category = r.categoryId() == null ? null
@@ -220,5 +234,6 @@ public class DataService {
             ruleRepository.save(
                     new Rule(null, userId, r.conditionType(), r.conditionValue(), category, r.created(), r.updated()));
         }
+        log.info("Inserted {} rules", dump.rules().size());
     }
 }

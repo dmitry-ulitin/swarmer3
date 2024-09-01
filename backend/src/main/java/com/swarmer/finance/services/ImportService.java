@@ -87,31 +87,43 @@ public class ImportService {
                 String[] lines = text.split("\\R");
                 boolean table = false;
                 NumberFormat nf = NumberFormat.getInstance(Locale.FRANCE);
-                for (int i = 0; i < lines.length; i++) {
+                for (int i = 0; i < (lines.length - 1); i++) {
                     if (table) {
-                        if (lines[i].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2}")) {
-                            var opdate = LocalDateTime.parse(lines[i], DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
-                            var details = lines[i + 2];
-                            String party = "";
-                            i += 3;
-                            while (!lines[i].replaceAll("\\u00a0|\\+|-", "").matches("^\\d+\\,\\d\\d")) {
-                                party += lines[i++].replaceAll("\\s{2,}.*", "") + " ";
+                        if (lines[i].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2} \\d+ .*")) {
+                            var opdate = LocalDateTime.parse(lines[i].substring(0, 16),
+                                    DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+                            lines[i] = lines[i].substring(17);
+                            var parts = lines[i].split("\\s");
+                            var amount = nf.parse(parts[parts.length - 2].replaceAll("\\u00a0|\\+|-", ""))
+                                    .doubleValue();
+                            var type = parts[parts.length - 2].startsWith("+") ? TransactionType.INCOME
+                                    : TransactionType.EXPENSE;
+                            lines[i] = lines[i].substring(parts[0].length() + 1, lines[i].length()
+                                    - parts[parts.length - 2].length() - parts[parts.length - 1].length() - 2);
+                            var details = lines[i++];
+                            lines[i] = lines[i].substring(11);
+                            String party = lines[i];
+                            if (!lines[i + 1].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2} \\d+ .*")) {
+                                if (lines[i + 2].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2} \\d+ .*")) {
+                                    party += " " + lines[++i];
+                                } else if (lines[i + 3].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2} \\d+ .*")) {
+                                    party += " " + lines[++i] + " " + lines[++i];
+                                }
                             }
-                            var amount = nf.parse(lines[i].replaceAll("\\u00a0|\\+|-", "")).doubleValue();
-                            var type = lines[i].startsWith("-") ? TransactionType.EXPENSE : TransactionType.INCOME;
                             records.add(
                                     new ImportDto(null, opdate, type, Math.abs(amount), Math.abs(amount), null, null,
                                             "RUB", party.trim(), details, true));
                         } else {
                             table = false;
                         }
-                    } else if (lines[i].startsWith(
-                            "\u0421\u0443\u043C\u043C\u0430 \u0432 \u0432\u0430\u043B\u044E\u0442\u0435 \u043E\u043F\u0435\u0440\u0430\u0446\u0438\u0438")) {
+                    } else if (lines[i + 1].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2} \\d+ .*")) {
                         table = true;
                     }
                 }
             }
-        } else {
+        } else
+
+        {
             var format = CSVFormat.DEFAULT.builder().setHeader().setSkipHeaderRecord(true).setIgnoreHeaderCase(true)
                     .setTrim(true).build();
             if (bankId == BankType.TINKOFF) {
