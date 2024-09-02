@@ -121,9 +121,26 @@ public class ImportService {
                     }
                 }
             }
-        } else
-
-        {
+        } else if (bankId == BankType.ALFABANK) {
+            try (var wb = new org.dhatim.fastexcel.reader.ReadableWorkbook(is)) {
+                var sheet = wb.getFirstSheet();
+                var rows = sheet.openStream().skip(1).toList();
+                for (var row : rows) {
+                    if (!row.getCell(0).asString().matches("\\d{2}\\.\\d{2}\\.\\d{4}")) {
+                        continue;
+                    }
+                    var opdate = LocalDate.parse(row.getCell(0).asString(), DateTimeFormatter.ofPattern("dd.MM.yyyy")).atStartOfDay();
+                    var type = row.getCell(12).asString().equals("Приход") ? TransactionType.INCOME : TransactionType.EXPENSE;
+                    var debit = row.getCell(7).asNumber().doubleValue();
+                    var credit = row.getCell(7).asNumber().doubleValue();
+                    var currency = row.getCell(8).asString();
+                    var party = "";
+                    var details = row.getCell(6).asString();
+                    records.add(new ImportDto(null, opdate, type, debit, credit, null, null,
+                        currency.equals("RUR") ? "RUB" : currency, party, details, true));
+                }
+            }
+        } else {
             var format = CSVFormat.DEFAULT.builder().setHeader().setSkipHeaderRecord(true).setIgnoreHeaderCase(true)
                     .setTrim(true).build();
             if (bankId == BankType.TINKOFF) {

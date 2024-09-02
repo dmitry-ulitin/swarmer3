@@ -5,7 +5,7 @@
 <ng-template #bankContent let-bank>{{bank.name}}</ng-template>
 
 @if(!files.value) {
-<tui-input-files accept=".csv, .txt, .pdf" [formControl]="files" (reject)="onReject($event)"/>
+<tui-input-files accept="{{bank.value.accept}}" [formControl]="files" (reject)="onReject($event)"/>
 }
 
 <tui-files class="tui-space_top-1">
