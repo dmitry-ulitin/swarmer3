@@ -6,7 +6,8 @@
                 <th>Date</th>
                 <th>Amount</th>
                 <th>Category</th>
-                <th>Sender/Reciever</th>
+                @if (catname) { <th>Category Name</th> }
+                @if (party) { <th>Sender/Reciever</th> }
                 <th>Details</th>
             </tr>
         </thead>
@@ -29,7 +30,8 @@
                             (click)="onRule($index)"></button>
                     </div>
                 </td>
-                <td>{{item.party}}</td>
+                @if (catname) { <td>{{item.catname}}</td> }
+                @if (party) { <td>{{item.party}}</td> }
                 <td>{{item.details}}</td>
             </tr>
             }

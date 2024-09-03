@@ -100,19 +100,19 @@ public class ImportService {
                                     : TransactionType.EXPENSE;
                             lines[i] = lines[i].substring(parts[0].length() + 1, lines[i].length()
                                     - parts[parts.length - 2].length() - parts[parts.length - 1].length() - 2);
-                            var details = lines[i++];
+                            var catname = lines[i++];
                             lines[i] = lines[i].substring(11);
-                            String party = lines[i];
+                            String details = lines[i];
                             if (!lines[i + 1].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2} \\d+ .*")) {
                                 if (lines[i + 2].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2} \\d+ .*")) {
-                                    party += " " + lines[++i];
+                                    details += " " + lines[++i];
                                 } else if (lines[i + 3].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2} \\d+ .*")) {
-                                    party += " " + lines[++i] + " " + lines[++i];
+                                    details += " " + lines[++i] + " " + lines[++i];
                                 }
                             }
                             records.add(
                                     new ImportDto(null, opdate, type, Math.abs(amount), Math.abs(amount), null, null,
-                                            "RUB", party.trim(), details, true));
+                                            "RUB", null, details.trim(), catname, true));
                         } else {
                             table = false;
                         }
@@ -129,15 +129,18 @@ public class ImportService {
                     if (!row.getCell(0).asString().matches("\\d{2}\\.\\d{2}\\.\\d{4}")) {
                         continue;
                     }
-                    var opdate = LocalDate.parse(row.getCell(0).asString(), DateTimeFormatter.ofPattern("dd.MM.yyyy")).atStartOfDay();
-                    var type = row.getCell(12).asString().equals("Приход") ? TransactionType.INCOME : TransactionType.EXPENSE;
+                    var opdate = LocalDate.parse(row.getCell(0).asString(), DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                            .atStartOfDay();
+                    var type = row.getCell(12).asString().equals("Приход") ? TransactionType.INCOME
+                            : TransactionType.EXPENSE;
                     var debit = row.getCell(7).asNumber().doubleValue();
                     var credit = row.getCell(7).asNumber().doubleValue();
                     var currency = row.getCell(8).asString();
-                    var party = "";
+                    var catname = row.getCell(10).asString();
+                    ;
                     var details = row.getCell(6).asString();
                     records.add(new ImportDto(null, opdate, type, debit, credit, null, null,
-                        currency.equals("RUR") ? "RUB" : currency, party, details, true));
+                            currency.equals("RUR") ? "RUB" : currency, null, details, catname, true));
                 }
             }
         } else {
@@ -172,6 +175,13 @@ public class ImportService {
             if (rule == null) {
                 rule = rules
                         .stream().filter(rl -> rl.getCategory().getType().equals(r.getType())
+                                && rl.getConditionType() == ConditionType.CATNAME_EQUALS
+                                && rl.getConditionValue().equals(r.getCatname()))
+                        .findFirst().orElse(null);
+            }
+            if (rule == null) {
+                rule = rules
+                        .stream().filter(rl -> rl.getCategory().getType().equals(r.getType())
                                 && rl.getConditionType() == ConditionType.PARTY_CONTAINS && r.getParty() != null
                                 && r.getParty().toLowerCase().contains(rl.getConditionValue().toLowerCase()))
                         .findFirst().orElse(null);
@@ -181,6 +191,13 @@ public class ImportService {
                         .stream().filter(rl -> rl.getCategory().getType().equals(r.getType())
                                 && rl.getConditionType() == ConditionType.DETAILS_CONTAINS && r.getDetails() != null
                                 && r.getDetails().toLowerCase().contains(rl.getConditionValue().toLowerCase()))
+                        .findFirst().orElse(null);
+            }
+            if (rule == null) {
+                rule = rules
+                        .stream().filter(rl -> rl.getCategory().getType().equals(r.getType())
+                                && rl.getConditionType() == ConditionType.CATNAME_CONTAINS && r.getCatname() != null
+                                && r.getCatname().toLowerCase().contains(rl.getConditionValue().toLowerCase()))
                         .findFirst().orElse(null);
             }
             if (rule != null) {
@@ -213,7 +230,7 @@ public class ImportService {
             var currency = r.get(13);
             var party = r.get(4);
             var details = r.get(11);
-            return new ImportDto(null, opdate, type, debit, credit, null, null, currency, party, details, true);
+            return new ImportDto(null, opdate, type, debit, credit, null, null, currency, party, details, null, true);
         } else if (bankId == BankType.TINKOFF) {
             NumberFormat nf = NumberFormat.getInstance(Locale.FRANCE);
             try {
@@ -222,11 +239,10 @@ public class ImportService {
                 var type = debit < 0 ? TransactionType.EXPENSE : TransactionType.INCOME;
                 var opdate = LocalDateTime.parse(r.get(0), DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
                 var currency = r.get(5);
-                var party = r.get(11);
-                var details = r.get(9);
-                return new ImportDto(null, opdate, type, Math.abs(debit), Math.abs(credit), null, null, currency, party,
-                        details,
-                        true);
+                var catname = r.get(9);
+                var details = r.get(11);
+                return new ImportDto(null, opdate, type, Math.abs(debit), Math.abs(credit), null, null, currency, null,
+                        details, catname, true);
             } catch (ParseException e) {
                 throw (new NumberFormatException());
             }

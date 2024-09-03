@@ -29,6 +29,8 @@ import { map, merge } from 'rxjs';
 })
 export class StatementComponent {
   records = this.context.data;
+  party = this.context.data.some(r => !!r.party);
+  catname = this.context.data.some(r => !!r.catname);
   #data = inject(DataService);
   categories = computed(() => this.#data.state().categories);
   readonly matcher = (category: Category, type: TransactionType): boolean => category.level > 0 && category.type == type;
@@ -39,12 +41,12 @@ export class StatementComponent {
       control.valueChanges.pipe(map(value => ({ rowIndex: index, data: value })))
     )).subscribe(changes => {
       this.records[changes.rowIndex].category = changes.data;
-      if (changes.data && this.records[changes.rowIndex].party) {
+      if (changes.data) {
         this.fa.controls.forEach((control, i) => {
           const data = this.records[i];
           if (!data.category && data.type == this.records[changes.rowIndex].type &&
-              this.records[changes.rowIndex].party === data.party &&
-              this.records[changes.rowIndex].details === data.details) {
+              (!!this.records[changes.rowIndex].party && this.records[changes.rowIndex].party === data.party ||
+               this.records[changes.rowIndex].catname === data.catname && this.records[changes.rowIndex].details === data.details)) {
             data.category = changes.data;
             control.setValue(data.category, { emitEvent: false });
           }
@@ -70,7 +72,9 @@ export class StatementComponent {
           if (!!data.party &&
             (rule.conditionType == ConditionType.PARTY_EQUALS && data.party.toLowerCase() == rule.conditionValue.toLowerCase() || rule.conditionType == ConditionType.PARTY_CONTAINS && data.party.toLowerCase().includes(rule.conditionValue.toLowerCase()))
             || !!data.details &&
-            (rule.conditionType == ConditionType.DETAILS_EQUALS && data.details.toLowerCase() == rule.conditionValue.toLowerCase() || rule.conditionType == ConditionType.DETAILS_CONTAINS && data.details.toLowerCase().includes(rule.conditionValue.toLowerCase()))) {
+            (rule.conditionType == ConditionType.DETAILS_EQUALS && data.details.toLowerCase() == rule.conditionValue.toLowerCase() || rule.conditionType == ConditionType.DETAILS_CONTAINS && data.details.toLowerCase().includes(rule.conditionValue.toLowerCase()))
+            || !!data.catname &&
+            (rule.conditionType == ConditionType.CATNAME_EQUALS && data.catname.toLowerCase() == rule.conditionValue.toLowerCase() || rule.conditionType == ConditionType.CATNAME_CONTAINS && data.catname.toLowerCase().includes(rule.conditionValue.toLowerCase()))) {
             data.category = rule.category;
             data.rule = rule;
           }

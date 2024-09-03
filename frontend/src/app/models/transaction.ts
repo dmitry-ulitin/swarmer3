@@ -39,6 +39,7 @@ interface TransactionIncome extends TransactionBase {
 export type Transaction = TransactionTransfer | TransactionExpense | TransactionIncome;
 
 export type TransactionImport = Transaction & {
+    catname?: string;
     selected: boolean;
     rule?: Rule;
 }

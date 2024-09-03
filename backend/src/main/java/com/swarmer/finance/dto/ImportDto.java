@@ -27,5 +27,6 @@ public class ImportDto {
     private String currency;
     private String party;
     private String details;
+    private String catname;
     private boolean selected;
 }
