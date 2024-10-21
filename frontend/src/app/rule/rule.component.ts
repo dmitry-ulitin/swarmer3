@@ -25,14 +25,14 @@ export class RuleComponent {
   #api = inject(ApiService);
   #alerts = inject(AlertService);
   transaction = this.context.data.transaction;
-  rule = this.context.data.rule ||  { conditionType: 1, conditionValue: this.transaction.party} ;
+  rule = this.context.data.rule ||  { conditionType: (!!this.transaction.party ? 1 : (!!this.transaction.catname ? 5 : 3)), conditionValue: this.transaction.party || this.transaction.catname || this.transaction.details, category: null }; ;
   categories = computed(() => this.#data.state().categories);
   readonly matcher = (category: Category): boolean => category.level > 0 && category.type == this.transaction.type;
   fields = [{ id: 1, name: 'party' }, { id: 3, name: 'details' }, { id: 5, name: 'cat.name' }];
   conditions = [{ id: 0, name: 'equals' }, { id: 1, name: 'contains' }];
   form = new FormGroup({
     id: new FormControl(this.context.data.rule?.id, { nonNullable: true }),
-    field: new FormControl(this.fields[this.rule.conditionType / 2 - 1], { nonNullable: true, validators: [Validators.required] }),
+    field: new FormControl(this.fields[(this.rule.conditionType - 1) / 2], { nonNullable: true, validators: [Validators.required] }),
     condition: new FormControl(this.conditions[this.rule.conditionType % 2], { nonNullable: true, validators: [Validators.required] }),
     conditionValue: new FormControl(this.rule.conditionValue, { nonNullable: true, validators: [Validators.required] }),
     category: new FormControl(this.context.data.rule?.category, { nonNullable: true, validators: [Validators.required] })

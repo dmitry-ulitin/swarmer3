@@ -77,7 +77,7 @@ public class ImportService {
     }
 
     public List<ImportDto> importFile(InputStream is, BankType bankId, Long accountId, Long userId)
-            throws IOException, ParseException {
+            throws IOException, ParseException, NumberFormatException {
         List<ImportDto> records = new ArrayList<>();
         if (bankId == BankType.SBER) {
             try (PDDocument document = Loader.loadPDF(is.readAllBytes())) {
@@ -131,16 +131,34 @@ public class ImportService {
                     }
                     var opdate = LocalDate.parse(row.getCell(0).asString(), DateTimeFormatter.ofPattern("dd.MM.yyyy"))
                             .atStartOfDay();
-                    var type = row.getCell(12).asString().equals("Приход") ? TransactionType.INCOME
+                    var type = row.getCell(12).asString().equals("Пополнение") ? TransactionType.INCOME
                             : TransactionType.EXPENSE;
                     var debit = row.getCell(7).asNumber().doubleValue();
                     var credit = row.getCell(7).asNumber().doubleValue();
                     var currency = row.getCell(8).asString();
                     var catname = row.getCell(10).asString();
-                    ;
                     var details = row.getCell(6).asString();
                     records.add(new ImportDto(null, opdate, type, debit, credit, null, null,
                             currency.equals("RUR") ? "RUB" : currency, null, details, catname, true));
+                }
+            }
+        } else if (bankId == BankType.UNICREDIT) {
+            try (var wb = new org.dhatim.fastexcel.reader.ReadableWorkbook(is)) {
+                var sheet = wb.getFirstSheet();
+                var rows = sheet.openStream().skip(4).toList();
+                for (var row : rows) {
+                    String date = row.getCell(4).asString().trim();;
+                    if (!date.matches("\\d{2}\\.\\d{2}\\.\\d{4}")) {
+                        continue;
+                    }
+                    var opdate = LocalDate.parse(date, DateTimeFormatter.ofPattern("dd.MM.yyyy")).atStartOfDay();
+                    var debit = Double.parseDouble(row.getCell(1).asString().trim().replace(",", ""));
+                    var credit = debit;
+                    var type = debit > 0 ? TransactionType.INCOME : TransactionType.EXPENSE;
+                    var currency = row.getCell(2).asString().trim();
+                    var details = row.getCell(14).asString().trim();
+                    records.add(new ImportDto(null, opdate, type, Math.abs(debit), Math.abs(credit), null, null,
+                            currency.equals("RUR") ? "RUB" : currency, null, details, null, true));
                 }
             }
         } else {
