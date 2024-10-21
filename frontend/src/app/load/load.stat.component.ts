@@ -14,7 +14,8 @@ import { Subject } from 'rxjs';
   styleUrl: './load.stat.component.scss'
 })
 export class LoadStatComponent {
-  readonly banks = [{ id: 1, name: 'LHV', accept: ".csv" }, { id: 2, name: 'Tinkoff', accept: ".csv" }, { id: 3, name: 'Сбербанк', accept: ".pdf" }, { id: 4, name: 'Альфа-Банк', accept: ".xlsx" }];
+  readonly banks = [{ id: 1, name: 'LHV', accept: ".csv" }, { id: 2, name: 'Tinkoff', accept: ".csv" }, { id: 3, name: 'Сбербанк', accept: ".pdf" },
+    { id: 4, name: 'Альфа-Банк', accept: ".xlsx" }, { id: 5, name: 'Unicredit', accept: ".xls" }];
   readonly files = new FormControl();
   readonly bank = new FormControl(this.banks[0], { nonNullable: true, validators: [Validators.required] });
   readonly rejectedFiles$ = new Subject<TuiFileLike | null>();
