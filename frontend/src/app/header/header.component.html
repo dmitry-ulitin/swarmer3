@@ -40,6 +40,7 @@
             '{{group.fullname}}'</button>
         }
         <button tuiOption (click)="onCategories()">Categories</button>
+        <button tuiOption (click)="onRules()">Rules</button>
         @if (account(); as account) {
         <button tuiOption (click)="onImport(account.id)">Import '{{account.fullname}}' Statement</button>
         }

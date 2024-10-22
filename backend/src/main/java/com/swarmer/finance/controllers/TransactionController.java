@@ -152,4 +152,10 @@ public class TransactionController {
         var userId = ((UserPrincipal) authentication.getPrincipal()).id();
         return importService.updateRule(rule, userId);
     }
+
+    @DeleteMapping("/rules/{id}")
+    void deleteRule(@PathVariable("id") Long id, Authentication authentication) {
+        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
+        importService.deleteRule(id, userId);
+    }
 }

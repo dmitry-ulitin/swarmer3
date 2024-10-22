@@ -7,6 +7,7 @@ import { TransactionType } from '../models/transaction';
 import { Group } from '../models/group';
 import { CategoriesComponent } from '../categories/categories.component';
 import { PolymorpheusComponent } from '@tinkoff/ng-polymorpheus';
+import { RulesComponent } from '../rules/rules.component';
 
 @Component({
   selector: 'app-header',
@@ -64,6 +65,10 @@ export class HeaderComponent {
 
   onCategories() {
     this.#dlgService.open(new PolymorpheusComponent(CategoriesComponent), { header: "Categories", size: 'l' }).subscribe();
+  }
+
+  onRules() {
+    this.#dlgService.open(new PolymorpheusComponent(RulesComponent), { header: "Rules", size: 'auto' }).subscribe();
   }
 
   onSaveBackup() {

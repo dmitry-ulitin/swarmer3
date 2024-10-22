@@ -50,7 +50,7 @@ export class ApiService {
   }
 
   deleteRule(id: number): Observable<void> {
-    return this.http.delete<void>(`/api/rules/${id}`);
+    return this.http.delete<void>(`/api/transactions/${id}`);
   }
 
   addRule(rule: Rule): Observable<Rule> {
