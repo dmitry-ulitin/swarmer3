@@ -17,8 +17,8 @@ import { CatEditorComponent } from '../cat.editor/cat.editor.component';
 import { LoadDumpComponent } from '../load/load.dump.component';
 import { LoadStatComponent } from '../load/load.stat.component';
 import { StatementComponent } from '../statement/statement.component';
-import { ConditionType, Rule } from '../models/rule';
-import { RuleComponent } from '../rule/rule.component';
+import { Rule } from '../models/rule';
+import { RuleEditorComponent } from '../rule.editor/rule.editor.component';
 import { CategorySum } from '../models/category.sum';
 
 const GET_TRANSACTIONS_LIMIT = 100;
@@ -36,6 +36,8 @@ export interface DataState {
   expenses: CategorySum[];
   // categories
   categories: Category[];
+  // rules
+  rules: Rule[];
   // filters
   search: string;
   accounts: number[];
@@ -51,7 +53,7 @@ export class DataService {
   #api = inject(ApiService);
   #default: DataState = {
     groups: [], expanded: [], transactions: [], loaded: false, tid: null, summary: [], income: [], expenses: [], categories: [],
-    search: '', accounts: [], range: DateRange.last30(), category: null, currency: ''
+    rules: [], search: '', accounts: [], range: DateRange.last30(), category: null, currency: ''
   }
   #state = signal<DataState>(this.#default);
   #alerts = inject(AlertService);
@@ -95,7 +97,7 @@ export class DataService {
   }
 
   async refresh() {
-    await Promise.all([this.getGroups(), this.getCategories(), this.getTransactions(this.#state()), this.getSummary(), this.getCategoriesSummary()]);
+    await Promise.all([this.getGroups(), this.getCategories(), this.getRules(), this.getTransactions(this.#state()), this.getSummary(), this.getCategoriesSummary()]);
   }
 
   async getGroups() {
@@ -258,14 +260,43 @@ export class DataService {
     return false;
   }
 
+  async getRules() {
+    try {
+      const rules = await firstValueFrom(this.#api.getRules(), { defaultValue: [] });
+      this.#state.update(state => ({ ...state, rules }));
+    } catch (err) {
+      this.#alerts.printError(err);
+    }
+  }
+
   async editRule(rule: Rule | undefined, transaction: Partial<Transaction>) {
     const data = await firstValueFrom(this.#dlgService.open<Rule | undefined>(
-      new PolymorpheusComponent(RuleComponent), { data: { rule, transaction }, dismissible: false }
+      new PolymorpheusComponent(RuleEditorComponent), { data: { rule, transaction }, dismissible: false }
     ));
     if (!!data) {
       this.#alerts.printSuccess('Rule updated');
+      this.getRules();
     }
     return data;
+  }
+
+  async deleteRule(id: number) {
+    try {
+      const rule = this.#state().rules.find(r => r.id === id);
+      if (!!rule) {
+        const answer = await firstValueFrom(this.#dlgService.open<boolean>(TUI_PROMPT, { size: 's', data: { content: 'Are you sure you want to delete this rule?', yes: 'Yes', no: 'No' } }));
+        if (answer) {
+          await firstValueFrom(this.#api.deleteRule(id));
+          this.#alerts.printSuccess('Rule deleted');
+          const rules = this.#state().rules.filter(r => r.id !== id);
+          this.#state.update(state => ({ ...state, rules }));
+          return true;
+        }
+      }
+    } catch (err) {
+      this.#alerts.printError(err);
+    }
+    return false;
   }
 
   async getSummary() {

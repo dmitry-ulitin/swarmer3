@@ -1,0 +1,26 @@
+<div class="header ">
+    <button tuiIconButton type="button" icon="tuiIconFileMinus" [size]="'s'" [appearance]="'flat'" (click)="onAddEx()"></button>
+    <button tuiIconButton type="button" icon="tuiIconFilePlus" [size]="'s'" [appearance]="'flat'" (click)="onAddInc()"></button>
+    @if(rid >= 0) {
+    <button tuiIconButton type="button" icon="tuiIconEdit" [size]="'s'" [appearance]="'flat'" (click)="onEdit()"></button>
+    <button tuiIconButton type="button" icon="tuiIconTrash" [size]="'s'" [appearance]="'flat'"(click)="onDelete()"></button>
+    }
+</div>
+<div class="table">
+    <table>
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Condition</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (item of rules(); track $index) {
+            <tr [class]="'type'+item.category.type" [class.active]="rid === item.id" (click)="onSelect(item.id)">
+                <td>{{item.category.fullname}}</td>
+                <td>{{ct2str(item.conditionType)}} '{{item.conditionValue}}'</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>

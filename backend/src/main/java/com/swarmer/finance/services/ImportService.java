@@ -76,6 +76,14 @@ public class ImportService {
         return RuleDto.from(ruleRepository.save(entity));
     }
 
+    public void deleteRule(Long ruleId, Long userId) {
+        var entity = ruleRepository.findById(ruleId).orElseThrow();
+        if (!entity.getOwnerId().equals(userId)) {
+            throw new IllegalArgumentException();
+        }
+        ruleRepository.deleteById(ruleId);
+    }
+
     public List<ImportDto> importFile(InputStream is, BankType bankId, Long accountId, Long userId)
             throws IOException, ParseException, NumberFormatException {
         List<ImportDto> records = new ArrayList<>();

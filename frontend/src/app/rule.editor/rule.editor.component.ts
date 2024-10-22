@@ -17,10 +17,10 @@ import { firstValueFrom } from 'rxjs';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TuiButtonModule, ReactiveFormsModule, TuiInputModule, TuiSelectModule, TuiTextfieldControllerModule, TuiDataListWrapperModule, TuiFilterPipeModule],
-  templateUrl: './rule.component.html',
-  styleUrl: './rule.component.scss'
+  templateUrl: './rule.editor.component.html',
+  styleUrl: './rule.editor.component.scss'
 })
-export class RuleComponent {
+export class RuleEditorComponent {
   #data = inject(DataService);
   #api = inject(ApiService);
   #alerts = inject(AlertService);
@@ -32,8 +32,8 @@ export class RuleComponent {
   conditions = [{ id: 0, name: 'equals' }, { id: 1, name: 'contains' }];
   form = new FormGroup({
     id: new FormControl(this.context.data.rule?.id, { nonNullable: true }),
-    field: new FormControl(this.fields[(this.rule.conditionType - 1) / 2], { nonNullable: true, validators: [Validators.required] }),
-    condition: new FormControl(this.conditions[this.rule.conditionType % 2], { nonNullable: true, validators: [Validators.required] }),
+    field: new FormControl(this.fields[(this.rule.conditionType - this.rule.conditionType % 2) / 2], { nonNullable: true, validators: [Validators.required] }),
+    condition: new FormControl(this.conditions[1 - this.rule.conditionType % 2], { nonNullable: true, validators: [Validators.required] }),
     conditionValue: new FormControl(this.rule.conditionValue, { nonNullable: true, validators: [Validators.required] }),
     category: new FormControl(this.context.data.rule?.category, { nonNullable: true, validators: [Validators.required] })
   });
