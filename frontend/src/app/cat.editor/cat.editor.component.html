@@ -1,5 +1,5 @@
 <form [formGroup]=form class="category" [tuiTextfieldSize]="'s'">
-    <label tuiLabel="Parent">
+    <label tuiLabel>Parent
         <tui-select formControlName="parent" [valueContent]="categoryValue">
             no category
             <tui-data-list-wrapper *tuiDataList [items]="categories() | tuiFilter: matcher: type"
@@ -7,7 +7,7 @@
             </tui-data-list-wrapper>
         </tui-select>
     </label>
-    <label tuiLabel="Name">
+    <label tuiLabel>Name
         <tui-input tuiAutoFocus formControlName="name" class="fill" [tuiTextfieldPrefix]="categoryParent">
             {{categoryParent}}category name</tui-input>
     </label>

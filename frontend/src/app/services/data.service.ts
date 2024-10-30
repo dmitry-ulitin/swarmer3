@@ -1,3 +1,4 @@
+import { TUI_CONFIRM } from "@taiga-ui/kit";
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { ApiService } from './api.service';
 import { Group, total } from '../models/group';
@@ -9,9 +10,8 @@ import { Summary } from '../models/summary';
 import { Transaction, TransactionImport, TransactionType, TransactionView } from '../models/transaction';
 import { DateRange } from '../models/date.range';
 import { TuiDialogService } from '@taiga-ui/core';
-import { PolymorpheusComponent } from '@tinkoff/ng-polymorpheus';
+import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 import { TrxEditorComponent } from '../trx.editor/trx.editor.component';
-import { TUI_PROMPT } from '@taiga-ui/kit';
 import { AccEditorComponent } from '../acc.editor/acc.editor.component';
 import { CatEditorComponent } from '../cat.editor/cat.editor.component';
 import { LoadDumpComponent } from '../load/load.dump.component';
@@ -122,7 +122,7 @@ export class DataService {
   async createGroup() {
     const group: Group = { id: 0, fullname: '', is_owner: true, is_coowner: false, is_shared: false, accounts: [{ id: 0, name: '', fullname: '', currency: '', start_balance: 0, balance: 0 }], permissions: [] };
     const data = await firstValueFrom(this.#dlgService.open<Group | undefined>(
-      new PolymorpheusComponent(AccEditorComponent), { data: group, dismissible: false, size: 's' }
+      new PolymorpheusComponent(AccEditorComponent), { data: group, dismissible: false, closeable: false, size: 's' }
     ));
     if (!!data) {
       this.#alerts.printSuccess(`Group '${data.fullname}' created`);
@@ -134,7 +134,7 @@ export class DataService {
     const group = this.#state().groups.find(g => g.id === id);
     if (!!group) {
       const data = await firstValueFrom(this.#dlgService.open<Group | undefined>(
-        new PolymorpheusComponent(AccEditorComponent), { data: group, dismissible: false, size: 's' }
+        new PolymorpheusComponent(AccEditorComponent), { data: group, dismissible: false, closeable: false, size: 's' }
       ));
       if (!!data) {
         this.#alerts.printSuccess(`Group '${data.fullname}' updated`);
@@ -147,7 +147,7 @@ export class DataService {
     try {
       const group = this.#state().groups.find(g => g.id === id);
       if (!!group) {
-        const answer = await firstValueFrom(this.#dlgService.open<boolean>(TUI_PROMPT, { size: 's', data: { content: 'Are you sure you want to delete this group?', yes: 'Yes', no: 'No' } }));
+        const answer = await firstValueFrom(this.#dlgService.open<boolean>(TUI_CONFIRM, { size: 's', data: { content: 'Are you sure you want to delete this group?', yes: 'Yes', no: 'No' } }), { defaultValue: false });
         if (answer) {
           await firstValueFrom(this.#api.deleteGroup(group.id));
           this.#alerts.printSuccess(`Group '${group.fullname}' deleted`);
@@ -213,7 +213,7 @@ export class DataService {
     if (!!parent) {
       const category: Category = { id: 0, name: '', fullname: '', level: parent.level + 1, parent_id: parent.id, type: parent.type };
       const data = await firstValueFrom(this.#dlgService.open<Category | undefined>(
-        new PolymorpheusComponent(CatEditorComponent), { data: category, dismissible: false, size: 's' }
+        new PolymorpheusComponent(CatEditorComponent), { data: category, dismissible: false, closeable: false, size: 's' }
       ));
       if (!!data) {
         this.#alerts.printSuccess(`Category '${data.fullname}' created`);
@@ -228,7 +228,7 @@ export class DataService {
     const category = this.#state().categories.find(c => c.id === id);
     if (!!category) {
       const data = await firstValueFrom(this.#dlgService.open<Category | undefined>(
-        new PolymorpheusComponent(CatEditorComponent), { data: category, dismissible: false, size: 's' }
+        new PolymorpheusComponent(CatEditorComponent), { data: category, dismissible: false, closeable: false, size: 's' }
       ));
       if (!!data) {
         this.#alerts.printSuccess(`Category '${data.fullname}' updated`);
@@ -243,7 +243,7 @@ export class DataService {
     try {
       const category = this.#state().categories.find(c => c.id === id);
       if (!!category) {
-        const answer = await firstValueFrom(this.#dlgService.open<boolean>(TUI_PROMPT, { size: 's', data: { content: 'Are you sure you want to delete this category?', yes: 'Yes', no: 'No' } }));
+        const answer = await firstValueFrom(this.#dlgService.open<boolean>(TUI_CONFIRM, { size: 's', data: { content: 'Are you sure you want to delete this category?', yes: 'Yes', no: 'No' } }), { defaultValue: false });
         if (answer) {
           await firstValueFrom(this.#api.deleteCategory(category.id));
           this.#alerts.printSuccess(`Category '${category.fullname}' deleted`);
@@ -271,7 +271,7 @@ export class DataService {
 
   async editRule(rule: Rule | undefined, transaction: Partial<Transaction>) {
     const data = await firstValueFrom(this.#dlgService.open<Rule | undefined>(
-      new PolymorpheusComponent(RuleEditorComponent), { data: { rule, transaction }, dismissible: false }
+      new PolymorpheusComponent(RuleEditorComponent), { data: { rule, transaction }, dismissible: false, closeable: false }
     ));
     if (!!data) {
       this.#alerts.printSuccess('Rule updated');
@@ -284,7 +284,7 @@ export class DataService {
     try {
       const rule = this.#state().rules.find(r => r.id === id);
       if (!!rule) {
-        const answer = await firstValueFrom(this.#dlgService.open<boolean>(TUI_PROMPT, { size: 's', data: { content: 'Are you sure you want to delete this rule?', yes: 'Yes', no: 'No' } }));
+        const answer = await firstValueFrom(this.#dlgService.open<boolean>(TUI_CONFIRM, { size: 's', data: { content: 'Are you sure you want to delete this rule?', yes: 'Yes', no: 'No' } }), { defaultValue: false });
         if (answer) {
           await firstValueFrom(this.#api.deleteRule(id));
           this.#alerts.printSuccess('Rule deleted');
@@ -399,7 +399,7 @@ export class DataService {
       transaction = type === TransactionType.Income ? { ...base, category, recipient: account } : { ...base, category, account };
     }
     const data = await firstValueFrom(this.#dlgService.open<Transaction | undefined>(
-      new PolymorpheusComponent(TrxEditorComponent), { data: transaction, dismissible: false, size: 's' }
+      new PolymorpheusComponent(TrxEditorComponent), { data: transaction, dismissible: false, closeable: false, size: 's' }
     ));
     if (!!data) {
       this.#alerts.printSuccess('Transaction created');
@@ -416,7 +416,7 @@ export class DataService {
     const transaction = state.transactions.find(t => t.id === state.tid);
     if (!!transaction) {
       const data = await firstValueFrom(this.#dlgService.open<Transaction | undefined>(
-        new PolymorpheusComponent(TrxEditorComponent), { data: transaction, dismissible: false, size: 's' }
+        new PolymorpheusComponent(TrxEditorComponent), { data: transaction, dismissible: false, closeable: false, size: 's' }
       ));
       if (!!data) {
         this.#alerts.printSuccess('Transaction updated');
@@ -435,7 +435,7 @@ export class DataService {
       const state = this.#state();
       const transaction = state.transactions.find(t => t.id === state.tid);
       if (!!transaction) {
-        const answer = await firstValueFrom(this.#dlgService.open<boolean>(TUI_PROMPT, { size: 's', data: { content: 'Are you sure you want to delete this transaction?', yes: 'Yes', no: 'No' } }));
+        const answer = await firstValueFrom(this.#dlgService.open<boolean>(TUI_CONFIRM, { size: 's', data: { content: 'Are you sure you want to delete this transaction?', yes: 'Yes', no: 'No' } }), { defaultValue: false });
         if (answer) {
           await firstValueFrom(this.#api.deleteTransaction(transaction.id));
           this.#alerts.printSuccess('Transaction deleted');
@@ -463,7 +463,7 @@ export class DataService {
 
   async loadBackup() {
     try {
-      const data = await firstValueFrom(this.#dlgService.open<File>(new PolymorpheusComponent(LoadDumpComponent), { dismissible: false }), { defaultValue: null });
+      const data = await firstValueFrom(this.#dlgService.open<File>(new PolymorpheusComponent(LoadDumpComponent), { dismissible: false, closeable: false }), { defaultValue: null });
       if (!!data) {
         await firstValueFrom(this.#api.loadBackup(data));
         this.#alerts.printSuccess('Backup loaded');
@@ -476,10 +476,10 @@ export class DataService {
 
   async importTransactions(id: number) {
     try {
-      const data = await firstValueFrom(this.#dlgService.open<{ bank: number, file: File }>(new PolymorpheusComponent(LoadStatComponent), { dismissible: false }), { defaultValue: null });
+      const data = await firstValueFrom(this.#dlgService.open<{ bank: number, file: File }>(new PolymorpheusComponent(LoadStatComponent), { dismissible: false, closeable: false }), { defaultValue: null });
       if (!!data) {
         let transactions: TransactionImport[] | undefined = await firstValueFrom(this.#api.importTransactions(id, data.bank, data.file));
-        transactions = await firstValueFrom(this.#dlgService.open<TransactionImport[] | undefined>(new PolymorpheusComponent(StatementComponent), { data: transactions, dismissible: false, size: 'auto' }), { defaultValue: undefined });
+        transactions = await firstValueFrom(this.#dlgService.open<TransactionImport[] | undefined>(new PolymorpheusComponent(StatementComponent), { data: transactions, dismissible: false, closeable: false, size: 'auto' }), { defaultValue: undefined });
         if (transactions) {
           await firstValueFrom(this.#api.saveTransactions(id, transactions));
           this.#alerts.printSuccess('Transactions imported');

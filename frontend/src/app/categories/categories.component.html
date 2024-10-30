@@ -1,12 +1,12 @@
 <div class="header">
-    <button tuiIconButton type="button" icon="tuiIconRefreshCw" [size]="'s'" [appearance]="'secondary'"
+    <button tuiIconButton type="button" iconStart="@tui.refresh-cw" [size]="'s'" [appearance]="'secondary'"
         (click)="onRefresh()"></button>
-    <button tuiIconButton type="button" icon="tuiIconPlus" [size]="'s'" [appearance]="'secondary'"
+    <button tuiIconButton type="button" iconStart="@tui.plus" [size]="'s'" [appearance]="'secondary'"
         (click)="onAdd()"></button>
     @if (isEditable) {
-    <button tuiIconButton type="button" icon="tuiIconEdit" [size]="'s'" [appearance]="'secondary'"
+    <button tuiIconButton type="button" iconStart="@tui.pencil" [size]="'s'" [appearance]="'secondary'"
         (click)="onEdit()"></button>
-    <button tuiIconButton type="button" icon="tuiIconTrash" [size]="'s'" [appearance]="'secondary'"
+    <button tuiIconButton type="button" iconStart="@tui.trash" [size]="'s'" [appearance]="'secondary'"
         (click)="onDelete()"></button>
     }
 </div>

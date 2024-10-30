@@ -1,15 +1,16 @@
+import { TuiSelectModule } from "@taiga-ui/legacy";
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TuiButtonModule, TuiDialogContext } from '@taiga-ui/core';
-import { TuiDataListWrapperModule, TuiFileLike, TuiInputFilesModule, TuiSelectModule } from '@taiga-ui/kit';
-import { POLYMORPHEUS_CONTEXT } from '@tinkoff/ng-polymorpheus';
+import { TuiDialogContext, TuiButton } from '@taiga-ui/core';
+import { TuiFileLike, TuiDataListWrapper, TuiFiles } from '@taiga-ui/kit';
+import { POLYMORPHEUS_CONTEXT } from '@taiga-ui/polymorpheus';
 import { Subject } from 'rxjs';
 
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, TuiButtonModule, TuiInputFilesModule, TuiSelectModule, TuiDataListWrapperModule],
+  imports: [CommonModule, ReactiveFormsModule, TuiButton, TuiFiles, TuiSelectModule, TuiDataListWrapper],
   templateUrl: './load.stat.component.html',
   styleUrl: './load.stat.component.scss'
 })

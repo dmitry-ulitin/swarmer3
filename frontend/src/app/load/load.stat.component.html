@@ -4,16 +4,16 @@
 </tui-select>
 <ng-template #bankContent let-bank>{{bank.name}}</ng-template>
 
-@if(!files.value) {
-<tui-input-files accept="{{bank.value.accept}}" [formControl]="files" (reject)="onReject($event)"/>
+@if (!files.value) {
+    <label tuiInputFiles><input accept="{{bank.value.accept}}" tuiInputFiles [formControl]="files" /></label>
 }
 
 <tui-files class="tui-space_top-1">
     @if (files.valueChanges | async; as file) {
-    <tui-file [file]="file" (removed)="removeFile()"/>
+    <tui-file [file]="file" (remove)="removeFile()"/>
     }
     @if (rejectedFiles$ | async; as file) {
-    <tui-file state="error" [file]="file" (removed)="clearRejected()"/>
+    <tui-file state="error" [file]="file" (remove)="clearRejected()"/>
     }
 </tui-files>
 <div class="footer">

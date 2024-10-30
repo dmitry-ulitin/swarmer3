@@ -1,13 +1,14 @@
+import { TuiFilterPipe } from "@taiga-ui/cdk";
+import { TuiTextfieldControllerModule, TuiSelectModule, TUI_TEXTFIELD_APPEARANCE_DIRECTIVE } from "@taiga-ui/legacy";
 import { ChangeDetectionStrategy, Component, Inject, computed, inject } from '@angular/core';
-import { TUI_TEXTFIELD_APPEARANCE_DIRECTIVE, TuiButtonModule, TuiDialogContext, TuiTextfieldControllerModule } from '@taiga-ui/core';
-import { POLYMORPHEUS_CONTEXT } from '@tinkoff/ng-polymorpheus';
+import { TuiDialogContext, TuiButton, TuiAppearance } from '@taiga-ui/core';
+import { POLYMORPHEUS_CONTEXT } from '@taiga-ui/polymorpheus';
 import { TransactionImport, TransactionType } from '../models/transaction';
 import { CommonModule } from '@angular/common';
 import { DataService } from '../services/data.service';
 import { FormArray, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Category } from '../models/category';
-import { TuiDataListWrapperModule, TuiSelectModule } from '@taiga-ui/kit';
-import { TuiFilterPipeModule } from '@taiga-ui/cdk';
+import { TuiDataListWrapper } from '@taiga-ui/kit';
 import { ConditionType } from '../models/rule';
 import { map, merge } from 'rxjs';
 
@@ -15,8 +16,8 @@ import { map, merge } from 'rxjs';
   selector: 'app-statement',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, TuiButtonModule, TuiSelectModule, TuiDataListWrapperModule,
-    TuiFilterPipeModule, TuiTextfieldControllerModule],
+  imports: [CommonModule, ReactiveFormsModule, TuiButton, TuiSelectModule, TuiDataListWrapper,
+    TuiFilterPipe, TuiTextfieldControllerModule, TuiAppearance],
   templateUrl: './statement.component.html',
   styleUrl: './statement.component.scss',
   providers: [

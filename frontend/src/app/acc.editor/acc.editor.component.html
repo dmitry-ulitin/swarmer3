@@ -1,13 +1,13 @@
 <form [formGroup]=form class="group" [tuiTextfieldSize]="'s'" autocomplete="off">
     <tui-input formControlName="fullname" tuiAutoFocus>
         Name
-        <input tuiTextfield autocomplete="off" />
+        <input tuiTextfieldLegacy autocomplete="off" />
     </tui-input>
     @if(isOwnerOrCoowner) {
     <table class="accounts" formArrayName="accounts">
         <tr>
             <td colspan="3">Initial Balances</td>
-            <td><button tuiIconButton type="button" [icon]="'tuiIconPlus'" [size]="'s'" [appearance]="'flat'"
+            <td><button tuiIconButton type="button" [iconStart]="'@tui.plus'" [size]="'s'" [appearance]="'flat'"
                     (click)="onAddAccount()"></button></td>
         </tr>
         @for(account of accounts.controls; track $index) {
@@ -17,12 +17,12 @@
             <td><tui-input-number formControlName="start_balance">0,00</tui-input-number></td>
             <td>
                 <tui-combo-box formControlName="currency" class="currency" [strict]="false">
-                    <input tuiTextfield />
+                    <input tuiTextfieldLegacy />
                     <tui-data-list-wrapper *tuiDataList [items]="currencies | tuiFilterByInput" [size]="'s'" />
                 </tui-combo-box>
             </td>
             <td>
-                <button tuiIconButton type="button" [icon]="'tuiIconTrash'" [size]="'s'" [appearance]="'flat'"
+                <button tuiIconButton type="button" [iconStart]="'@tui.trash'" [size]="'s'" [appearance]="'flat'"
                     [disabled]="!isOwnerOrCoowner || !canDelete || !(!account.value.balance || !account.value.opdate)"
                     (click)="onRemoveAccount($index)"></button>
             </td>
@@ -33,7 +33,7 @@
     <div>Permissions</div>
     <div class="query">
         <tui-input [formControl]="query" [tuiTextfieldCleaner]="true" class="fill" *tuiLet="users$ | async as users">
-            <input tuiTextfield autocomplete="of" placeholder="Type user email" />
+            <input tuiTextfieldLegacy autocomplete="of" placeholder="Type user email" />
             <tui-data-list *tuiDataList>
                 <button *ngFor="let user of users" tuiOption [value]="user" (click)="onSelectedUser(user)">
                     {{ user }}
@@ -44,7 +44,7 @@
             <tui-data-list-wrapper *tuiDataList [items]="options" [itemContent]="optionContent" [size]="'s'" />
         </tui-select>
         <ng-template #optionContent let-option>{{option.name}}</ng-template>
-        <button tuiIconButton type="button" [icon]="'tuiIconPlus'" [size]="'s'" [appearance]="'flat'"
+        <button tuiIconButton type="button" [iconStart]="'@tui.plus'" [size]="'s'" [appearance]="'flat'"
             (click)="onAddPermission()" [disabled]="!selected"></button>
     </div>
     }
@@ -66,7 +66,7 @@
             <td><input type="checkbox" formControlName="is_write" (change)="onToggleWrite($event, $index)"></td>
             <td><input type="checkbox" [disabled]="true" [checked]="true"></td>
             <td>
-                <button tuiIconButton type="button" [icon]="'tuiIconTrash'" [size]="'s'" [appearance]="'flat'"
+                <button tuiIconButton type="button" [iconStart]="'@tui.trash'" [size]="'s'" [appearance]="'flat'"
                     (click)="onRemovePermission($index)" [disabled]="!isOwnerOrCoowner"></button>
             </td>
         </tr>

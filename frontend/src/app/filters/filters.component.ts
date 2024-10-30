@@ -1,7 +1,6 @@
+import { TuiTextfieldControllerModule, TuiInputModule, TuiTagModule } from "@taiga-ui/legacy";
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { TuiTextfieldControllerModule } from '@taiga-ui/core';
-import { TuiInputModule, TuiTagModule } from '@taiga-ui/kit';
 import { DataService } from '../services/data.service';
 import { debounceTime } from 'rxjs';
 import { RangeComponent } from './range/range.component';

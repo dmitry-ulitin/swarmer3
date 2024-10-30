@@ -1,15 +1,15 @@
+import { TuiLink } from "@taiga-ui/core";
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { DataService } from '../services/data.service';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { CommonModule } from '@angular/common';
-import { TuiLinkModule } from '@taiga-ui/core';
 import { Category } from '../models/category';
 
 @Component({
   selector: 'app-transactions',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, InfiniteScrollModule, TuiLinkModule],
+  imports: [CommonModule, InfiniteScrollModule, TuiLink],
   templateUrl: './transactions.component.html',
   styleUrl: './transactions.component.scss'
 })

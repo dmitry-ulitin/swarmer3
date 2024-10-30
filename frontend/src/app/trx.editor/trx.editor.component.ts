@@ -1,11 +1,13 @@
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { TuiTextfieldControllerModule, TuiTextareaModule, TuiComboBoxModule, TuiInputModule, TuiInputDateModule, TuiInputNumberModule, TuiSelectModule } from "@taiga-ui/legacy";
 import { ChangeDetectionStrategy, Component, Inject, computed, inject } from '@angular/core';
-import { POLYMORPHEUS_CONTEXT } from '@tinkoff/ng-polymorpheus';
+import { POLYMORPHEUS_CONTEXT } from '@taiga-ui/polymorpheus';
 import { Transaction, TransactionType } from '../models/transaction';
-import { TuiButtonModule, TuiDialogContext, TuiLabelModule, TuiTextfieldControllerModule } from '@taiga-ui/core';
+import { TuiDialogContext, TuiButton, TuiLabel } from '@taiga-ui/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TuiInputModule, TuiComboBoxModule, TuiDataListWrapperModule, TuiFilterByInputPipeModule, TuiInputNumberModule, TuiSelectModule, TuiTextareaModule, TuiInputDateModule } from '@taiga-ui/kit';
+import { TuiDataListWrapper, TuiFilterByInputPipe } from '@taiga-ui/kit';
 import { DataService } from '../services/data.service';
-import { TuiAutoFocusModule, TuiDay, TuiDestroyService, TuiFilterPipeModule } from '@taiga-ui/cdk';
+import { TuiDay, TuiAutoFocus, TuiFilterPipe } from '@taiga-ui/cdk';
 import { Category } from '../models/category';
 import { firstValueFrom, startWith, takeUntil } from 'rxjs';
 import { ApiService } from '../services/api.service';
@@ -14,15 +16,14 @@ import { AlertService } from '../services/alert.service';
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TuiButtonModule, ReactiveFormsModule, TuiInputModule, TuiInputNumberModule, TuiLabelModule,
-    TuiTextfieldControllerModule, TuiComboBoxModule, TuiSelectModule, TuiDataListWrapperModule,
-    TuiTextareaModule, TuiInputDateModule, TuiFilterPipeModule, TuiFilterByInputPipeModule, TuiAutoFocusModule],
+  imports: [TuiButton, ReactiveFormsModule, TuiInputModule, TuiInputNumberModule, TuiLabel,
+    TuiTextfieldControllerModule, TuiComboBoxModule, TuiSelectModule, TuiDataListWrapper,
+    TuiTextareaModule, TuiInputDateModule, TuiFilterPipe, TuiFilterByInputPipe, TuiAutoFocus],
   templateUrl: './trx.editor.component.html',
   styleUrl: './trx.editor.component.scss'
 })
 export class TrxEditorComponent {
   #data = inject(DataService);
-  #destroy$ = inject(TuiDestroyService);
   #api = inject(ApiService);
   #alerts = inject(AlertService);
   currencies = this.#data.currencies();
@@ -106,7 +107,7 @@ export class TrxEditorComponent {
   }
 
   constructor(@Inject(POLYMORPHEUS_CONTEXT) private readonly context: TuiDialogContext<Transaction | undefined, Transaction>) {
-    this.form.controls['account'].valueChanges.pipe(takeUntil(this.#destroy$)).subscribe(account => {
+    this.form.controls['account'].valueChanges.pipe(takeUntilDestroyed()).subscribe(account => {
       if (account) {
         this.form.controls['dcurrency'].setValue(account.currency);
         if (this.type !== TransactionType.Transfer) {
@@ -123,7 +124,7 @@ export class TrxEditorComponent {
       }
       this.account = account;
     });
-    this.form.controls['recipient'].valueChanges.pipe(takeUntil(this.#destroy$)).subscribe(recipient => {
+    this.form.controls['recipient'].valueChanges.pipe(takeUntilDestroyed()).subscribe(recipient => {
       if (recipient) {
         this.form.controls['ccurrency'].setValue(recipient.currency);
         if (this.type !== TransactionType.Transfer) {
@@ -136,7 +137,7 @@ export class TrxEditorComponent {
       }
       this.recipient = recipient;
     });
-    this.form.controls['type'].valueChanges.pipe(takeUntil(this.#destroy$), startWith(context.data.type)).subscribe(type => {
+    this.form.controls['type'].valueChanges.pipe(takeUntilDestroyed(), startWith(context.data.type)).subscribe(type => {
       let category = this.form.controls['category'].value;
       if (type === TransactionType.Expense) {
         this.form.controls['ccurrency'].enable();

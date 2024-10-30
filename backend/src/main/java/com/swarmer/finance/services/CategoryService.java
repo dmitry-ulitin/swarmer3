@@ -31,9 +31,9 @@ public class CategoryService {
     public List<Category> getCategories(Long userId) {
         var coowners = aclService.findUsers(userId);
         var comparator = Comparator.comparing(Category::getType)
-                .thenComparingInt(c -> c.getParentId() == null ? 0 : 1)
+                .thenComparingInt(c -> c.getParentId() == null ? -1 : 1)
                 .thenComparing((c1, c2) -> c1.getFullName().compareToIgnoreCase(c2.getFullName()))
-                .thenComparingInt(c -> userId.equals(c.getOwnerId()) ? 0 : 1);
+                .thenComparingInt(c -> userId.equals(c.getOwnerId()) ? -1 : 1);
         var categories = categoryRepository
                 .findByOwnerIdIsNullOrOwnerIdIn(coowners.stream().distinct().toList())
                 .stream()
@@ -102,6 +102,7 @@ public class CategoryService {
     public Category saveCategory(Category category, Long userId) {
         Category original = getCategory(category, userId);
         original.setName(category.getName());
+        original.setParentId(category.getParentId());
         original.setUpdated(LocalDateTime.now());
         categoryRepository.save(original);
         // remove dubs

@@ -4,7 +4,7 @@
         <div class="row credit">
             <tui-input-number formControlName="credit" class="fill" tuiAutoFocus>0,00</tui-input-number>
             <tui-combo-box formControlName="ccurrency" class="currency" [strict]="false">
-                <input tuiTextfield />
+                <input tuiTextfieldLegacy />
                 <tui-data-list-wrapper *tuiDataList [items]="currencies | tuiFilterByInput" [size]="'s'">
                 </tui-data-list-wrapper>
             </tui-combo-box>
@@ -14,7 +14,7 @@
         <div class="row debit">
             <tui-input-number formControlName="debit" class="fill" tuiAutoFocus>0,00</tui-input-number>
             <tui-combo-box formControlName="dcurrency" class="currency" [strict]="false">
-                <input tuiTextfield />
+                <input tuiTextfieldLegacy />
                 <tui-data-list-wrapper *tuiDataList [items]="currencies | tuiFilterByInput" [size]="'s'">
                 </tui-data-list-wrapper>
             </tui-combo-box>
@@ -48,7 +48,7 @@
                 [itemContent]="categoryContent" [size]="'s'">
             </tui-data-list-wrapper>
         </tui-select>
-        <button tuiIconButton type="button" icon="tuiIconPlus" [size]="'s'" [appearance]="'icon'"
+        <button tuiIconButton type="button" iconStart="@tui.plus" [size]="'s'" [appearance]="'icon'"
             (click)="onCreateCategory()"></button>
     </div>
     <ng-template #categoryValue let-category>
@@ -62,31 +62,31 @@
     <div class="row">
         <tui-input formControlName="newcategory" class="fill" [tuiTextfieldPrefix]="categoryParent">
             {{categoryParent}}category name</tui-input>
-        <button tuiIconButton type="button" icon="tuiIconCloseLarge" [size]="'s'" [appearance]="'icon'"
+        <button tuiIconButton type="button" iconStart="@tui.x" [size]="'s'" [appearance]="'icon'"
             (click)="onCancelCategory()"></button>
     </div>
     }
     <div class="row">
         <tui-input-date formControlName="opdate" [tuiTextfieldSize]="'s'" class="fill">
-            <input tuiTextfield />
+            <input tuiTextfieldLegacy />
         </tui-input-date>
-        <button tuiIconButton type="button" icon="tuiIconChevronLeft" [size]="'s'" [appearance]="'icon'"
+        <button tuiIconButton type="button" iconStart="@tui.chevron-left" [size]="'s'" [appearance]="'icon'"
             (click)="onYesterday()"></button>
-        <button tuiIconButton type="button" icon="tuiIconToggleOff" [size]="'s'" [appearance]="'icon'"
+        <button tuiIconButton type="button" iconStart="@tui.toggle-off" [size]="'s'" [appearance]="'icon'"
             (click)="onToday()"></button>
-        <button tuiIconButton type="button" icon="tuiIconChevronRight" [size]="'s'" [appearance]="'icon'"
+        <button tuiIconButton type="button" iconStart="@tui.chevron-right" [size]="'s'" [appearance]="'icon'"
             (click)="onTomorrow()"></button>
     </div>
     <tui-textarea formControlName="details" [tuiTextfieldLabelOutside]="true"></tui-textarea>
     <div class="row">
         @if (showExpense) {
-        <button tuiIconButton type="button" icon="tuiIconMinus" [size]="'s'" [appearance]="'flat'" (click)="onExpense()"></button>
+        <button tuiIconButton type="button" iconStart="@tui.minus" [size]="'s'" [appearance]="'flat'" (click)="onExpense()"></button>
         }
         @if (showIncome) {
-        <button tuiIconButton type="button" icon="tuiIconPlus" [size]="'s'" [appearance]="'flat'" (click)="onIncome()"></button>
+        <button tuiIconButton type="button" iconStart="@tui.plus" [size]="'s'" [appearance]="'flat'" (click)="onIncome()"></button>
         }
         @if (showTransfer) {
-        <button tuiIconButton type="button" icon="tuiIconShuffle" [size]="'s'" [appearance]="'flat'" (click)="onTransfer()"></button>
+        <button tuiIconButton type="button" iconStart="@tui.shuffle" [size]="'s'" [appearance]="'flat'" (click)="onTransfer()"></button>
         }
         <div class="fill"></div>
         <button tuiButton type="submit" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()" [disabled]=!form.valid>Save</button>

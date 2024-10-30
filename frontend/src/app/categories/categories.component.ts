@@ -1,8 +1,8 @@
+import { TuiButton } from "@taiga-ui/core";
+import { TuiTree } from "@taiga-ui/kit";
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { DataService } from '../services/data.service';
 import { Category } from '../models/category';
-import { TuiButtonModule } from '@taiga-ui/core';
-import { TuiTreeModule } from '@taiga-ui/kit';
 import { EMPTY_ARRAY, TuiHandler } from '@taiga-ui/cdk';
 import { TransactionType } from '../models/transaction';
 
@@ -15,7 +15,7 @@ interface TreeNode {
   selector: 'app-categories',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TuiButtonModule, TuiTreeModule],
+  imports: [TuiButton, TuiTree],
   templateUrl: './categories.component.html',
   styleUrl: './categories.component.scss'
 })

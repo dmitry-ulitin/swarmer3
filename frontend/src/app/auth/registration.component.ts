@@ -1,19 +1,20 @@
+import { TuiTextfieldControllerModule, TuiComboBoxModule, TuiInputModule, TuiInputPasswordModule } from "@taiga-ui/legacy";
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { AlertService } from '../services/alert.service';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { TuiButtonModule, TuiLabelModule, TuiTextfieldControllerModule } from '@taiga-ui/core';
-import { TuiComboBoxModule, TuiDataListWrapperModule, TuiFilterByInputPipeModule, TuiInputModule, TuiInputPasswordModule } from '@taiga-ui/kit';
+import { TuiButton, TuiLabel } from '@taiga-ui/core';
+import { TuiDataListWrapper, TuiFilterByInputPipe } from '@taiga-ui/kit';
 import { CURRENCIES_EN } from '../models/currencies';
 
 @Component({
   selector: 'app-registration',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, TuiButtonModule, TuiInputModule, TuiInputPasswordModule,
-            TuiLabelModule, TuiTextfieldControllerModule, TuiComboBoxModule, TuiDataListWrapperModule, TuiFilterByInputPipeModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TuiButton, TuiInputModule, TuiInputPasswordModule,
+            TuiLabel, TuiTextfieldControllerModule, TuiComboBoxModule, TuiDataListWrapper, TuiFilterByInputPipe],
   templateUrl: './registration.component.html',
   styleUrl: './registration.component.scss'
 })

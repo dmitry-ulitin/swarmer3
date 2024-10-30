@@ -1,15 +1,14 @@
 @if(data.state().range; as range) {
 @if(range.hasPrev()) {
-<button tuiIconButton type="button" appearance="flat" [size]="'s'" [icon]="'tuiIconChevronLeft'"
+<button tuiIconButton type="button" appearance="flat" [size]="'s'" [iconStart]="'@tui.chevron-left'"
     (click)="prev(range)"></button>
 }
-<tui-hosted-dropdown tuiDropdownAlign="left" [content]="dropdown" [(open)]="open">
-    <button tuiButton type="button" appearance="flat" [size]="'s'" [icon]="'tuiIconCalendar'" [iconRight]="icon">
-        {{range.name}}
-    </button>
-</tui-hosted-dropdown>
+<button tuiButton tuiChevron [tuiDropdown]="dropdown" type="button"
+    appearance="flat" [size]="'s'" [iconStart]="'@tui.calendar'" [(tuiDropdownOpen)]="open">
+    {{range.name}}
+</button>
 @if(range.hasNext()) {
-<button tuiIconButton type="button" appearance="flat" [size]="'s'" [icon]="'tuiIconChevronRight'"
+<button tuiIconButton type="button" appearance="flat" [size]="'s'" [iconStart]="'@tui.chevron-right'"
     (click)="next(range)"></button>
 }
 <ng-template #dropdown>
@@ -18,13 +17,10 @@
         <button tuiOption (click)="onClick(option)">
             {{ option.name }}
             @if(option.same(range)) {
-            <tui-svg src="tuiIconCheck" />
+            <tui-icon icon="@tui.check" [style.height.px]="12" [style.height.py]="12"/>
             }
         </button>
         }
     </tui-data-list>
-</ng-template>
-<ng-template #icon>
-    <tui-svg src="tuiIconChevronDown" class="icon" [class.icon_rotated]="open" />
 </ng-template>
 }

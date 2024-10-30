@@ -1,14 +1,14 @@
+import { TuiButton } from "@taiga-ui/core";
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { DataService } from '../services/data.service';
 import { ConditionType } from '../models/rule';
-import { TuiButtonModule } from '@taiga-ui/core';
 import { TransactionType } from '../models/transaction';
 
 @Component({
   selector: 'app-rules',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TuiButtonModule],
+  imports: [TuiButton],
   templateUrl: './rules.component.html',
   styleUrl: './rules.component.scss'
 })
