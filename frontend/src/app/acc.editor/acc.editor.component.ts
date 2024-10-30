@@ -1,15 +1,17 @@
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { TuiTextfieldControllerModule, TuiComboBoxModule, TuiInputModule, TuiInputNumberModule, TuiSelectModule } from "@taiga-ui/legacy";
 import { ChangeDetectionStrategy, Component, Inject, inject } from '@angular/core';
-import { TuiButtonModule, TuiDataListModule, TuiDialogContext, TuiTextfieldControllerModule } from '@taiga-ui/core';
+import { TuiDialogContext, TuiDataList, TuiButton } from '@taiga-ui/core';
 import { Group, Permission } from '../models/group';
-import { POLYMORPHEUS_CONTEXT } from '@tinkoff/ng-polymorpheus';
+import { POLYMORPHEUS_CONTEXT } from '@taiga-ui/polymorpheus';
 import { DataService } from '../services/data.service';
-import { TuiAutoFocusModule, TuiDestroyService, TuiLetModule } from '@taiga-ui/cdk';
+import { TuiAutoFocus, TuiLet } from '@taiga-ui/cdk';
 import { ApiService } from '../services/api.service';
 import { AlertService } from '../services/alert.service';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { debounceTime, firstValueFrom, map, of, switchMap, tap } from 'rxjs';
 import { Account } from '../models/account';
-import { TuiComboBoxModule, TuiDataListWrapperModule, TuiFilterByInputPipeModule, TuiInputModule, TuiInputNumberModule, TuiSelectModule } from '@taiga-ui/kit';
+import { TuiDataListWrapper, TuiFilterByInputPipe } from '@taiga-ui/kit';
 import { AuthService } from '../services/auth.service';
 import { CommonModule } from '@angular/common';
 
@@ -17,8 +19,8 @@ import { CommonModule } from '@angular/common';
   selector: 'app-acc.editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, TuiButtonModule, TuiInputModule, TuiInputNumberModule, TuiComboBoxModule, TuiSelectModule,
-    TuiTextfieldControllerModule, TuiDataListModule, TuiDataListWrapperModule, TuiFilterByInputPipeModule, TuiLetModule, TuiAutoFocusModule],
+  imports: [CommonModule, ReactiveFormsModule, TuiButton, TuiInputModule, TuiInputNumberModule, TuiComboBoxModule, TuiSelectModule,
+    TuiTextfieldControllerModule, TuiDataList, TuiDataListWrapper, TuiFilterByInputPipe, TuiLet, TuiAutoFocus],
   templateUrl: './acc.editor.component.html',
   styleUrl: './acc.editor.component.scss'
 })

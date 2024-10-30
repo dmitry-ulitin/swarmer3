@@ -15,12 +15,12 @@
 
 @for $i from 1 through 9 {
     .support-#{$i} {
-        background-color: var(--tui-support-0#{$i});
+        background-color: var(--tui-chart-categorical-0#{$i});
     }
 }
 
 @for $i from 10 through 20 {
     .support-#{$i} {
-        background-color: var(--tui-support-#{$i});
+        background-color: var(--tui-chart-categorical-#{$i});
     }
 }

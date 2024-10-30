@@ -1,9 +1,9 @@
 <div class="header ">
-    <button tuiIconButton type="button" icon="tuiIconFileMinus" [size]="'s'" [appearance]="'flat'" (click)="onAddEx()"></button>
-    <button tuiIconButton type="button" icon="tuiIconFilePlus" [size]="'s'" [appearance]="'flat'" (click)="onAddInc()"></button>
+    <button tuiIconButton type="button" iconStart="@tui.file-minus" [size]="'s'" [appearance]="'flat'" (click)="onAddEx()"></button>
+    <button tuiIconButton type="button" iconStart="@tui.file-plus" [size]="'s'" [appearance]="'flat'" (click)="onAddInc()"></button>
     @if(rid >= 0) {
-    <button tuiIconButton type="button" icon="tuiIconEdit" [size]="'s'" [appearance]="'flat'" (click)="onEdit()"></button>
-    <button tuiIconButton type="button" icon="tuiIconTrash" [size]="'s'" [appearance]="'flat'"(click)="onDelete()"></button>
+    <button tuiIconButton type="button" iconStart="@tui.pencil" [size]="'s'" [appearance]="'flat'" (click)="onEdit()"></button>
+    <button tuiIconButton type="button" iconStart="@tui.trash" [size]="'s'" [appearance]="'flat'"(click)="onDelete()"></button>
     }
 </div>
 <div class="table">

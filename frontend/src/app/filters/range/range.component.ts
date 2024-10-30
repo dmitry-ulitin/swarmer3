@@ -1,25 +1,25 @@
 import { ChangeDetectionStrategy, Component, ViewChild, inject } from '@angular/core';
 import { DataService } from '../../services/data.service';
-import { TuiButtonModule, TuiDataListModule, TuiHostedDropdownComponent, TuiHostedDropdownModule, TuiSvgModule } from '@taiga-ui/core';
+import { TuiDataList, TuiDropdown, TuiDropdownOpen, TuiIcon, TuiButton } from '@taiga-ui/core';
 import { DateRange } from '../../models/date.range';
+import { TuiChevron } from '@taiga-ui/kit';
 
 @Component({
   selector: 'app-range',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TuiButtonModule, TuiHostedDropdownModule, TuiDataListModule, TuiSvgModule],
+  imports: [TuiButton, TuiDropdown, TuiDataList, TuiIcon, TuiChevron],
   templateUrl: './range.component.html',
   styleUrl: './range.component.scss'
 })
 export class RangeComponent {
   data = inject(DataService);
-  @ViewChild(TuiHostedDropdownComponent) component?: TuiHostedDropdownComponent;
+  @ViewChild(TuiDropdownOpen) component?: TuiDropdownOpen;
   options = [DateRange.all(), DateRange.last30(), DateRange.last90(), DateRange.lastYear(), DateRange.month(), DateRange.year()];
   open = false;
 
   onClick(option: DateRange) {
     this.open = false;
-    this.component?.nativeFocusableElement?.focus();
     this.data.setRange(option);
   }
 

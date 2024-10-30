@@ -1,19 +1,20 @@
 import { ChangeDetectionStrategy, Component, ViewChild, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../services/auth.service';
-import { TuiButtonModule, TuiDataListModule, TuiDialogService, TuiHostedDropdownComponent, TuiHostedDropdownModule, TuiModeModule, TuiSvgModule } from '@taiga-ui/core';
+import { TuiDialogService, TuiDataList, TuiDropdown, TuiDropdownOpen, TuiIcon, TuiButton } from '@taiga-ui/core';
 import { DataService } from '../services/data.service';
 import { TransactionType } from '../models/transaction';
 import { Group } from '../models/group';
 import { CategoriesComponent } from '../categories/categories.component';
-import { PolymorpheusComponent } from '@tinkoff/ng-polymorpheus';
+import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 import { RulesComponent } from '../rules/rules.component';
+import { TuiChevron } from '@taiga-ui/kit';
 
 @Component({
   selector: 'app-header',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TuiButtonModule, TuiModeModule, TuiHostedDropdownModule, TuiDataListModule, TuiSvgModule],
+  imports: [CommonModule, TuiButton, TuiDropdown, TuiDataList, TuiIcon, TuiChevron],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
@@ -24,10 +25,10 @@ export class HeaderComponent {
   #dlgService = inject(TuiDialogService);
   group = computed(() => this.data.selectedGroup());
 
-  @ViewChild('userMenu') userMenu?: TuiHostedDropdownComponent;
+  @ViewChild('userMenu') userMenu?: TuiDropdownOpen;
 
   onLogout() {
-    this.userMenu?.close();
+    this.userMenu?.toggle(false);
     this.auth.logout();
   }
 

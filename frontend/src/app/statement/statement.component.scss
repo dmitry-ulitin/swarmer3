@@ -27,11 +27,11 @@
 .table table th {
     position: sticky;
     top: 0;
-    background-color: var(--tui-base-01);
-    border: 1px solid var(--tui-base-04);
+    background-color: var(--tui-background-base);
+    border: 1px solid var(--tui-border-normal);
     border-right: 0;
     text-align: left;
-    color: var(--tui-text-02);
+    color: var(--tui-text-secondary);
     padding: 0 .75rem;
     font: var(--tui-font-text-s);
     font-weight: bold;
@@ -40,11 +40,11 @@
  }
 
  .table table th:last-child {
-    border-right: 1px solid var(--tui-base-04);
+    border-right: 1px solid var(--tui-border-normal);
  }
 
  .table table tbody td {
-    border: 1px solid var(--tui-base-04);
+    border: 1px solid var(--tui-border-normal);
     border-top: 0;
     border-right: 0;
     padding: 0 .75rem;
@@ -53,7 +53,7 @@
 }
 
 .table table tbody td:last-child {
-    border-right: 1px solid var(--tui-base-04);
+    border-right: 1px solid var(--tui-border-normal);
 }
 
 .footer {

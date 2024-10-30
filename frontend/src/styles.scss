@@ -31,8 +31,14 @@ body {
     color: #14aa00;
 }
 
+
+tui-dialog button.t-close {
+    top: 0.2rem !important;
+    right: 0.2rem !important;
+}
+
 .t-header {
     color: white;
     background-color: rgb(13, 110, 29);
-    padding: 0.1rem 1rem;
+    padding: 0.4rem 1rem;
 }

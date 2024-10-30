@@ -3,13 +3,13 @@ import { CommonModule } from '@angular/common';
 import { DataService } from '../services/data.service';
 import { Group, total } from '../models/group';
 import { Account } from '../models/account';
-import { TuiLinkModule, TuiSvgModule } from '@taiga-ui/core';
+import { TuiIcon, TuiLink } from '@taiga-ui/core';
 
 @Component({
   selector: 'app-accounts',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TuiSvgModule, TuiLinkModule],
+  imports: [CommonModule, TuiIcon, TuiLink],
   templateUrl: './accounts.component.html',
   styleUrl: './accounts.component.scss'
 })

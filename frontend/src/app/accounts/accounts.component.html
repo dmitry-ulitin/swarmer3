@@ -11,7 +11,7 @@
             }
         </td>
         <td (click)="toggle(g)">
-            <tui-svg *ngIf="isGroupExpandable(g)" src="tuiIconChevronDown" class="icon"></tui-svg>
+            <tui-icon  *ngIf="isGroupExpandable(g)" icon="@tui.chevron-down" class="icon" [style.height.px]="16" [style.height.py]="16"></tui-icon>
         </td>
         <td class="text-end">
             @for(t of total(g); track t.currency) {

@@ -1,11 +1,12 @@
+import { TuiTextfieldControllerModule, TuiInputModule, TuiSelectModule } from "@taiga-ui/legacy";
 import { ChangeDetectionStrategy, Component, Inject, computed, inject } from '@angular/core';
 import { DataService } from '../services/data.service';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TuiButtonModule, TuiDialogContext, TuiTextfieldControllerModule } from '@taiga-ui/core';
-import { TuiDataListWrapperModule, TuiInputModule, TuiSelectModule } from '@taiga-ui/kit';
-import { POLYMORPHEUS_CONTEXT } from '@tinkoff/ng-polymorpheus';
+import { TuiDialogContext, TuiButton } from '@taiga-ui/core';
+import { TuiDataListWrapper } from '@taiga-ui/kit';
+import { POLYMORPHEUS_CONTEXT } from '@taiga-ui/polymorpheus';
 import { Category } from '../models/category';
-import { TuiAutoFocusModule, TuiFilterPipeModule } from '@taiga-ui/cdk';
+import { TuiAutoFocus, TuiFilterPipe } from '@taiga-ui/cdk';
 import { TransactionType } from '../models/transaction';
 import { ApiService } from '../services/api.service';
 import { AlertService } from '../services/alert.service';
@@ -15,8 +16,8 @@ import { firstValueFrom } from 'rxjs';
   selector: 'app-cat.editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, TuiButtonModule, TuiInputModule, TuiSelectModule, TuiTextfieldControllerModule,
-            TuiDataListWrapperModule, TuiFilterPipeModule, TuiAutoFocusModule],
+  imports: [ReactiveFormsModule, TuiButton, TuiInputModule, TuiSelectModule, TuiTextfieldControllerModule,
+            TuiDataListWrapper, TuiFilterPipe, TuiAutoFocus],
   templateUrl: './cat.editor.component.html',
   styleUrl: './cat.editor.component.scss'
 })

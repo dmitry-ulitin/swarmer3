@@ -1,11 +1,11 @@
 <form [formGroup]="form" (ngSubmit)="onLogin()" class="form" [tuiTextfieldSize]="'s'">
-    <label [tuiLabel]="'Email'">
+    <label tuiLabel>{{ 'Email' }}
         <tui-input formControlName="username" required>
             Enter your email
-            <input autocomplete="email" tuiTextfield type="email" />
+            <input autocomplete="email" tuiTextfieldLegacy type="email" />
         </tui-input>
     </label>
-    <label [tuiLabel]="'Password'">
+    <label tuiLabel>{{ 'Password' }}
         <tui-input-password formControlName="password" required>Enter your password</tui-input-password>
     </label>
     <div class="buttons">

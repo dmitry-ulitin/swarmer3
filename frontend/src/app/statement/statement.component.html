@@ -20,13 +20,13 @@
                 <td class="category">
                     <div>
                         <tui-select class="fill" [valueContent]="categoryValue" [formControl]="category($index)"
-                            [tuiTextfieldSize]="'s'" [tuiTextfieldCleaner]="true" [pseudoFocus]="false">
+                            [tuiTextfieldSize]="'s'" [tuiTextfieldCleaner]="true">
                             no category
                             <tui-data-list-wrapper *tuiDataList [items]="categories() | tuiFilter: matcher: item.type"
                                 [itemContent]="categoryContent" [size]="'s'">
                             </tui-data-list-wrapper>
                         </tui-select>
-                        <button tuiIconButton icon="tuiIconSettings" [size]="'s'" [appearance]="'flat'"
+                        <button tuiIconButton iconStart="@tui.settings" [size]="'s'" [appearance]="'flat'"
                             (click)="onRule($index)"></button>
                     </div>
                 </td>

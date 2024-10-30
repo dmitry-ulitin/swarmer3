@@ -1,36 +1,34 @@
 <span class="title">Swarmer Finance</span>
 @if(data.allAccounts().length > 0) {
-<div tuiMode="onDark" class="group">
-    <button tuiIconButton type="button" icon="tuiIconRefreshCw" [size]="'s'" [appearance]="'flat'"
+<div tuiTheme="dark" class="group">
+    <button tuiIconButton type="button" iconStart="@tui.refresh-cw" [size]="'s'" [appearance]="'flat-grayscale'"
         (click)="onRefresh()"></button>
-    <button tuiIconButton type="button" icon="tuiIconMinus" [size]="'s'" [appearance]="'flat'"
+    <button tuiIconButton type="button" iconStart="@tui.minus" [size]="'s'" [appearance]="'flat-grayscale'"
         (click)="onExpense()"></button>
     @if(data.allAccounts().length > 1) {
-    <button tuiIconButton type="button" icon="tuiIconShuffle" [size]="'s'" [appearance]="'flat'"
+    <button tuiIconButton type="button" iconStart="@tui.shuffle" [size]="'s'" [appearance]="'flat-grayscale'"
         (click)="onTransfer()"></button>
     }
-    <button tuiIconButton type="button" icon="tuiIconPlus" [size]="'s'" [appearance]="'flat'"
+    <button tuiIconButton type="button" iconStart="@tui.plus" [size]="'s'" [appearance]="'flat-grayscale'"
         (click)="onIncome()"></button>
 </div>
 }
 @if(!!data.state().tid) {
-<div tuiMode="onDark" class="group">
-    <button tuiIconButton type="button" icon="tuiIconEdit" [size]="'s'" [appearance]="'flat'"
+<div tuiTheme="dark" class="group">
+    <button tuiIconButton type="button" iconStart="@tui.pencil" [size]="'s'" [appearance]="'flat-grayscale'"
         (click)="editTransaction()"></button>
-    <button tuiIconButton type="button" icon="tuiIconTrash" [size]="'s'" [appearance]="'flat'"
+    <button tuiIconButton type="button" iconStart="@tui.trash" [size]="'s'" [appearance]="'flat-grayscale'"
         (click)="deleteTransaction()"></button>
 </div>
 }
 <span class="fill"></span>
 @if (auth.isAuthenticated()) {
-<tui-hosted-dropdown #accMenu [content]="accDropdown" tuiDropdownAlign="left">
-    <button tuiButton type="button" appearance="flat" [size]="'s'" [iconRight]="aicon" tuiMode="onDark">
-        <tui-svg src="tuiIconSettings"></tui-svg>
+<div tuiDropdownOpen [tuiDropdown]="accDropdown">
+    <button tuiButton tuiChevron type="button" appearance="flat-grayscale" [size]="'s'"
+        tuiTheme="dark">
+        <tui-icon icon="@tui.settings"></tui-icon>
     </button>
-</tui-hosted-dropdown>
-<ng-template #aicon>
-    <tui-svg src="tuiIconChevronDown" class="icon" [class.icon_rotated]="accMenu.open"></tui-svg>
-</ng-template>
+</div>
 <ng-template #accDropdown>
     <tui-data-list [size]="'s'">
         @if(group(); as group) {
@@ -48,16 +46,13 @@
         <button tuiOption (click)="onLoadBackup()">Load Backup</button>
     </tui-data-list>
 </ng-template>
-<tui-hosted-dropdown #userMenu [content]="dropdown" tuiDropdownAlign="left">
-    <button tuiButton type="button" appearance="flat" [size]="'s'" [icon]="'tuiIconUser'" [iconRight]="uicon"
-        tuiMode="onDark">{{auth.claims().name}}</button>
-</tui-hosted-dropdown>
+<div tuiDropdownOpen type="button" [tuiDropdown]="dropdown">
+    <button tuiButton tuiChevron appearance="flat-grayscale" [size]="'s'" [iconStart]="'@tui.user'"
+        tuiTheme="dark">{{auth.claims().name}}</button>
+</div>
 <ng-template #dropdown>
-    <tui-data-list>
-        <button tuiOption (click)="onLogout()" [size]="'s'">Logout</button>
+    <tui-data-list [size]="'s'">
+        <button tuiOption (click)="onLogout()">Logout</button>
     </tui-data-list>
-</ng-template>
-<ng-template #uicon>
-    <tui-svg src="tuiIconChevronDown" class="icon" [class.icon_rotated]="userMenu.open"></tui-svg>
 </ng-template>
 }
