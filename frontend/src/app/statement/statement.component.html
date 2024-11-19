@@ -20,7 +20,7 @@
                 <td class="category">
                     <div>
                         <tui-select class="fill" [valueContent]="categoryValue" [formControl]="category($index)"
-                            [tuiTextfieldSize]="'s'" [tuiTextfieldCleaner]="true">
+                            [tuiTextfieldSize]="'s'" [tuiTextfieldCleaner]="true" [focusable]="false" [pseudoFocus]="false" [pseudoActive]="false">
                             no category
                             <tui-data-list-wrapper *tuiDataList [items]="categories() | tuiFilter: matcher: item.type"
                                 [itemContent]="categoryContent" [size]="'s'">
