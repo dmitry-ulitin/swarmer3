@@ -33,14 +33,14 @@
     <tui-data-list [size]="'s'">
         @if(group(); as group) {
         <button tuiOption (click)="editGroup(group)">Edit
-            '{{group.fullname}}'</button>
+            '{{group.fullName}}'</button>
         <button tuiOption (click)="deleteGroup(group)">Delete
-            '{{group.fullname}}'</button>
+            '{{group.fullName}}'</button>
         }
         <button tuiOption (click)="onCategories()">Categories</button>
         <button tuiOption (click)="onRules()">Rules</button>
         @if (account(); as account) {
-        <button tuiOption (click)="onImport(account.id)">Import '{{account.fullname}}' Statement</button>
+        <button tuiOption (click)="onImport(account.id)">Import '{{account.fullName}}' Statement</button>
         }
         <button tuiOption (click)="onSaveBackup()">Save Backup</button>
         <button tuiOption (click)="onLoadBackup()">Load Backup</button>

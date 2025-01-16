@@ -63,7 +63,7 @@ public class GroupService {
     public GroupDto createGroup(GroupDto dto, Long userId) {
         var entity = new AccountGroup();
         entity.setOwner(userRepository.findById(userId).orElseThrow());
-        entity.setName(dto.fullname());
+        entity.setName(dto.fullName());
         entity.setDeleted(false);
         entity.setCreated(LocalDateTime.now());
         entity.setUpdated(LocalDateTime.now());
@@ -78,7 +78,7 @@ public class GroupService {
         if (!dto.permissions().isEmpty()) {
             var acls = dto.permissions().stream().map(p -> {
                 var user = userRepository.findByEmail(p.user().email()).orElseThrow();
-                return new Acl(entity.getId(), entity, user.getId(), user, p.admin(), p.readonly(), null,
+                return new Acl(entity.getId(), entity, user.getId(), user, p.admin(), p.readonly(),
                         null, LocalDateTime.now(), LocalDateTime.now());
             }).toList();
             entity.setAcls(acls);
@@ -90,7 +90,7 @@ public class GroupService {
     public GroupDto updateGroup(GroupDto dto, Long userId) {
         var entity = groupRepository.findById(dto.id()).orElseThrow();
         if (entity.getOwner().getId().equals(userId)) {
-            entity.setName(dto.fullname());
+            entity.setName(dto.fullName());
         }
         entity.setUpdated(LocalDateTime.now());
         // save accounts
@@ -126,12 +126,12 @@ public class GroupService {
             if (acl == null) {
                 entity.getAcls()
                         .add(new Acl(entity.getId(), entity, user.getId(), user, permission.admin(),
-                                permission.readonly(), null,
+                                permission.readonly(),
                                 null, LocalDateTime.now(), LocalDateTime.now()));
             } else {
                 if (acl.getUserId().equals(userId)) {
-                    var fullname = permission.admin() ? entity.getName() : (entity.getName() + " (" + entity.getOwner().getName() + ")");
-                    acl.setName(dto.fullname().equals(fullname) ? null : dto.fullname());
+                    var fullName = permission.admin() ? entity.getName() : (entity.getName() + " (" + entity.getOwner().getName() + ")");
+                    acl.setName(dto.fullName().equals(fullName) ? null : dto.fullName());
                 }
                 acl.setAdmin(permission.admin());
                 acl.setReadonly(permission.readonly());

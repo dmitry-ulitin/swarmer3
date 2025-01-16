@@ -23,14 +23,14 @@ export class TypeSummaryComponent {
   }
 
   onExpenses() {
-    this.#data.selectCategory({id: TransactionType.Expense, name: "Expenses", fullname: "Expenses", level: 0, type: TransactionType.Expense, parent_id: null});
+    this.#data.selectCategory({id: TransactionType.Expense, name: "Expenses", fullName: "Expenses", level: 0, type: TransactionType.Expense, parentId: null});
   }
 
   onIncome() {
-    this.#data.selectCategory({id: TransactionType.Income, name: "Income", fullname: "Income", level: 0, type: TransactionType.Income, parent_id: null});
+    this.#data.selectCategory({id: TransactionType.Income, name: "Income", fullName: "Income", level: 0, type: TransactionType.Income, parentId: null});
   }
 
   onTransfers() {
-    this.#data.selectCategory({id: TransactionType.Transfer, name: "Transfers", fullname: "Transfers", level: 0, type: TransactionType.Transfer, parent_id: null});
+    this.#data.selectCategory({id: TransactionType.Transfer, name: "Transfers", fullName: "Transfers", level: 0, type: TransactionType.Transfer, parentId: null});
   }
 }

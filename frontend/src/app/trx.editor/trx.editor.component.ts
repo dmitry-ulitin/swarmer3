@@ -16,7 +16,7 @@ import { AlertService } from '../services/alert.service';
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TuiButton, ReactiveFormsModule, TuiInputModule, TuiInputNumberModule, TuiLabel,
+  imports: [TuiButton, ReactiveFormsModule, TuiInputModule, TuiInputNumberModule,
     TuiTextfieldControllerModule, TuiComboBoxModule, TuiSelectModule, TuiDataListWrapper,
     TuiTextareaModule, TuiInputDateModule, TuiFilterPipe, TuiFilterByInputPipe, TuiAutoFocus],
   templateUrl: './trx.editor.component.html',
@@ -103,7 +103,7 @@ export class TrxEditorComponent {
 
   get categoryParent(): string {
     const category = this.form.controls['category'].value;
-    return category == null ? '' : (category.fullname + ' / ');
+    return category == null ? '' : (category.fullName + ' / ');
   }
 
   constructor(@Inject(POLYMORPHEUS_CONTEXT) private readonly context: TuiDialogContext<Transaction | undefined, Transaction>) {
@@ -229,7 +229,7 @@ export class TrxEditorComponent {
       const opdate = value.opdate.getFormattedDay('YMD', '-') + ' ' + this.timepart;
       if (this.newcategory && !!value.newcategory) {
         let parent = value.category;
-        value.category = { id: 0, name: value.newcategory, fullname: (parent ? (parent.fullname + ' / ') : '') + value.newcategory, level: parent ? parent.level + 1 : 1, type: value.type, parent_id: parent ? parent.id : value.type }
+        value.category = { id: 0, name: value.newcategory, fullName: (parent ? (parent.fullName + ' / ') : '') + value.newcategory, level: parent ? parent.level + 1 : 1, type: value.type, parentId: parent ? parent.id : value.type }
       }
 
       let transaction: Transaction | undefined = undefined;

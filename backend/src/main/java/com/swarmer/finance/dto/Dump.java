@@ -4,10 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public record Dump(
-                @JsonProperty("owner_id") Long ownerId,
+                Long ownerId,
                 LocalDateTime created,
                 List<DumpGroup> groups,
                 List<DumpCategory> categories,

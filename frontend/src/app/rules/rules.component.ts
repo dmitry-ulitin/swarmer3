@@ -14,7 +14,7 @@ import { TransactionType } from '../models/transaction';
 })
 export class RulesComponent {
   #data = inject(DataService);
-  rules = computed(() => this.#data.state().rules.sort((a, b) => a.category.fullname.localeCompare(b.category.fullname)));
+  rules = computed(() => this.#data.state().rules.sort((a, b) => a.category.fullName.localeCompare(b.category.fullName)));
   rid = -1;
   ct2str = (ct: ConditionType) => { return ['party', 'details','category name'][(ct - ct % 2) / 2] + [' contains', ' equals'][ct % 2]; }
 

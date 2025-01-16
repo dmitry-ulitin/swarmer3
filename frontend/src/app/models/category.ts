@@ -5,8 +5,8 @@ import { TransactionType } from "./transaction";
 export interface Category {
     id: number;
     name: string;
-    fullname: string;
+    fullName: string;
     level: number;
     type: TransactionType;
-    parent_id: number | null;
+    parentId: number | null;
 }

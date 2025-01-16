@@ -27,7 +27,6 @@ public class Acl {
     @Column(name = "is_admin") Boolean admin;
     @Column(name = "is_readonly") Boolean readonly;
     String name;
-    Boolean deleted;
     LocalDateTime created;
     LocalDateTime updated;
 }

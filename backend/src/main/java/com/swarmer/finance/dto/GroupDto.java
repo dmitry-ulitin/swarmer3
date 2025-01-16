@@ -8,9 +8,9 @@ import com.swarmer.finance.models.AccountGroup;
 
 public record GroupDto(
 		Long id,
-		@JsonProperty("owner_id") Long ownerId,
+		Long ownerId,
 		String ownerEmail,
-		String fullname,
+		String fullName,
 		@JsonProperty("is_owner") Boolean owner,
 		@JsonProperty("is_coowner") Boolean coowner,
 		@JsonProperty("is_shared") Boolean shared,
@@ -25,10 +25,10 @@ public record GroupDto(
 				&& (group.getOwner().getId().equals(userId) || acl.getUser().getId().equals(userId)));
 		var shared = !group.getOwner().getId().equals(userId)
 				&& group.getAcls().stream().noneMatch(acl -> acl.getAdmin());
-		var fullname = group.getName();
+		var fullName = group.getName();
 		if (shared) {
 			var acl = group.getAcls().stream().filter(a -> a.getUserId().equals(userId)).findFirst().orElse(null);
-			fullname = acl != null && acl.getName() != null ? acl.getName()
+			fullName = acl != null && acl.getName() != null ? acl.getName()
 					: (group.getName() + " (" + group.getOwner().getName() + ")");
 		}
 		var permissions = group.getAcls().stream().map(acl -> Permission.from(acl))
@@ -43,7 +43,7 @@ public record GroupDto(
 							.filter(b -> account.getId().equals(b.getAccountId()) || account.getId().equals(b.getRecipientId()))
 							.map(TransactionSum::getOpdate).filter(o -> o != null).max(LocalDateTime::compareTo)
 							.orElse(null);
-					return AccountDto.from(account, userId, account.getStart_balance() + balance, opdate);
+					return AccountDto.from(account, userId, account.getStartBalance() + balance, opdate);
 				})
 				.sorted((a, b) -> a.id().compareTo(b.id()))
 				.collect(java.util.stream.Collectors.toList());
@@ -59,7 +59,7 @@ public record GroupDto(
 				group.getId(),
 				group.getOwner().getId(),
 				group.getOwner().getEmail(),
-				fullname,
+				fullName,
 				owner,
 				coowner,
 				shared,

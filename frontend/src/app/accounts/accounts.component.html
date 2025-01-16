@@ -3,10 +3,10 @@
     <tr [class.expanded]="data.state().expanded.includes(g.id)" [class.owner]="g.is_owner" [class.coowner]="g.is_coowner"
         [class.shared]="g.is_shared">
         <td [class.active]="isGroupSelected(g)" (click)="selectGroup(g, $event)">
-            <a class="group" tuiLink>{{g.fullname}}</a>
+            <a class="group" tuiLink>{{g.fullName}}</a>
             @for(a of g.accounts; track a.id) {
                 @if(!a.deleted) {
-                    <a class="account" tuiLink  [class.active]="isAccountSelected(a)" (click)="selectAccount(a, $event)">{{a.fullname}}</a>
+                    <a class="account" tuiLink  [class.active]="isAccountSelected(a)" (click)="selectAccount(a, $event)">{{a.fullName}}</a>
                 }
             }
         </td>

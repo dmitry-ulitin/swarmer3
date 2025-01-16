@@ -2,7 +2,7 @@
     [tuiTextfieldSize]="'s'" />
 <app-range />
 @if(data.state().category; as category) {
-<tui-tag [value]="category.fullname" [removable]="true" (edited)="removeCategory()" status="custom"
+<tui-tag [value]="category.fullName" [removable]="true" (edited)="removeCategory()" status="custom"
     class="support-20" />
 }
 @if(data.state().currency; as currency) {

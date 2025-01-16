@@ -1,6 +1,6 @@
 @for(i of income(); track i.category.id) {
     <div class="row">
-        <a tuiLink (click)="setCategory(i.category)">{{i.category.fullname}}</a>
+        <a tuiLink (click)="setCategory(i.category)">{{i.category.fullName}}</a>
         <div class="amounts credit">
             @for(a of i.amounts; track a.currency) {
                 <div>{{a.value | currency:a.currency}}</div>
@@ -11,7 +11,7 @@
 <hr>
 @for(e of expenses(); track e.category.id) {
     <div class="row">
-        <a tuiLink (click)="setCategory(e.category)">{{e.category.fullname}}</a>
+        <a tuiLink (click)="setCategory(e.category)">{{e.category.fullName}}</a>
         <div class="amounts debit">
             @for(a of e.amounts; track a.currency) {
                 <div>{{a.value | currency:a.currency}}</div>

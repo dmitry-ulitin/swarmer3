@@ -3,14 +3,12 @@ package com.swarmer.finance.dto;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.swarmer.finance.models.Category;
 import com.swarmer.finance.models.Transaction;
 import com.swarmer.finance.models.TransactionType;
 
 public record TransactionDto(
     Long id,
-	@JsonProperty("owner_id")
     Long ownerId,
     @JsonFormat(shape=JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss[XXX]")
     LocalDateTime opdate,

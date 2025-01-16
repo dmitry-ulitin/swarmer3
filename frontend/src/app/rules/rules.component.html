@@ -17,7 +17,7 @@
         <tbody>
             @for (item of rules(); track $index) {
             <tr [class]="'type'+item.category.type" [class.active]="rid === item.id" (click)="onSelect(item.id)">
-                <td>{{item.category.fullname}}</td>
+                <td>{{item.category.fullName}}</td>
                 <td>{{ct2str(item.conditionType)}} '{{item.conditionValue}}'</td>
             </tr>
             }

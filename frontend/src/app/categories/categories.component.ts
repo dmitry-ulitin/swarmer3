@@ -32,13 +32,13 @@ export class CategoriesComponent {
 
   get isEditable(): boolean {
     // check if map contains all parents of the selected node
-    let parent_id = this.selected;
-    while (parent_id > TransactionType.Correction) {
-      let key = [...this.map.keys()].find(n => n.category.id === parent_id);
-      if (!key || parent_id !== this.selected && key.children.length > 0 && !this.map.get(key)) {
+    let parentId = this.selected;
+    while (parentId > TransactionType.Correction) {
+      let key = [...this.map.keys()].find(n => n.category.id === parentId);
+      if (!key || parentId !== this.selected && key.children.length > 0 && !this.map.get(key)) {
         return false;
       }
-      parent_id = key.category.parent_id || 1;
+      parentId = key.category.parentId || 1;
     };
     return this.selected > TransactionType.Correction;
   }
@@ -69,7 +69,7 @@ export class CategoriesComponent {
       let key = [...this.map.keys()].find(n => n.category.id === this.selected);
       if (key) {
         this.map.delete(key);
-        this.selected = key.category.parent_id || TransactionType.Expense;
+        this.selected = key.category.parentId || TransactionType.Expense;
       }
     }
   }

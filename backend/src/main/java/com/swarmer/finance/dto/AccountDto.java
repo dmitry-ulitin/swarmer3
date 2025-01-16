@@ -2,16 +2,15 @@ package com.swarmer.finance.dto;
 
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.swarmer.finance.models.Account;
 
 public record AccountDto(
         Long id,
         String name,
-        String fullname,
+        String fullName,
         String currency,
         Double balance,
-        @JsonProperty("start_balance") Double startBalance,
+        Double startBalance,
         LocalDateTime opdate,
         Boolean deleted) {
     public static AccountDto from(Account account, Long userId, Double balance, LocalDateTime opdate) {
@@ -31,7 +30,7 @@ public record AccountDto(
                 accfullname,
                 account.getCurrency(),
                 balance,
-                account.getStart_balance(),
+                account.getStartBalance(),
                 opdate,
                 account.getDeleted());
     }

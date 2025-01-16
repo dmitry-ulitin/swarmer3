@@ -11,7 +11,6 @@ public record DumpAcl(
         Boolean admin,
         Boolean readonly,
         String name,
-        Boolean deleted,
         LocalDateTime created,
         LocalDateTime updated) {
     public static DumpAcl from(Acl acl) {
@@ -20,7 +19,6 @@ public record DumpAcl(
                 acl.getAdmin(),
                 acl.getReadonly(),
                 acl.getName(),
-                acl.getDeleted(),
                 acl.getCreated(),
                 acl.getUpdated());
     }
@@ -31,7 +29,6 @@ public record DumpAcl(
                 acl.admin(),
                 acl.readonly(),
                 acl.name(),
-                acl.deleted(),
                 acl.created(),
                 acl.updated());
     }

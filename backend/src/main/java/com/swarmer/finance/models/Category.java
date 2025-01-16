@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -28,8 +27,8 @@ public class Category {
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "category_seq")
 	@SequenceGenerator(name = "category_seq", sequenceName = "categories_id_seq", allocationSize = 1)
 	Long id;
-	@JsonProperty("owner_id") Long ownerId;
-	@JsonProperty("parent_id") Long parentId;
+	Long ownerId;
+	Long parentId;
 	@JsonIgnore	@ManyToOne
 	@JoinColumn(name="parentId", insertable=false, updatable=false)
 	Category parent;
@@ -37,7 +36,7 @@ public class Category {
 	@JsonIgnore	LocalDateTime created;
 	@JsonIgnore	LocalDateTime updated;
 
-	@JsonProperty("type") public TransactionType getType() {
+	public TransactionType getType() {
 		var root = this;
 		while (root.getParent() != null) {
 			root = root.getParent();
@@ -46,11 +45,11 @@ public class Category {
 		return Stream.of(TransactionType.values()).filter(c -> rootId == c.getValue()).findFirst().orElseThrow(IllegalArgumentException::new);
 	}
 
-	@JsonProperty("level") public Long getLevel() {
+	public Long getLevel() {
 		return parent == null ? 0 : (1 + parent.getLevel());
 	}
 
-	@JsonProperty("fullname") public String getFullName() {
+	public String getFullName() {
 		return parent == null || parent.getId() < 4 ? name : parent.getFullName() + " / " + name;
 	}
 }

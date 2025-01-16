@@ -12,7 +12,7 @@
             {{categoryParent}}category name</tui-input>
     </label>
     <ng-template #categoryValue let-category>
-        {{category.fullname}}
+        {{category.fullName}}
     </ng-template>
     <ng-template #categoryContent let-category>
         <div [class]="'category-level-' + category.level">{{category.name}}</div>

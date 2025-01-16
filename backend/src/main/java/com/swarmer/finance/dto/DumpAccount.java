@@ -6,7 +6,7 @@ public record DumpAccount(
         Long id,
         String name,
         String currency,
-        Double start_balance,
+        Double startBalance,
         Boolean deleted,
         LocalDateTime created,
         LocalDateTime updated
@@ -16,7 +16,7 @@ public record DumpAccount(
                 account.getId(),
                 account.getName(),
                 account.getCurrency(),
-                account.getStart_balance(),
+                account.getStartBalance(),
                 account.getDeleted(),
                 account.getCreated(),
                 account.getUpdated()

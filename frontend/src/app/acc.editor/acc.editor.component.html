@@ -1,5 +1,5 @@
 <form [formGroup]=form class="group" [tuiTextfieldSize]="'s'" autocomplete="off">
-    <tui-input formControlName="fullname" tuiAutoFocus>
+    <tui-input formControlName="fullName" tuiAutoFocus>
         Name
         <input tuiTextfieldLegacy autocomplete="off" />
     </tui-input>
@@ -14,7 +14,7 @@
         @if (!account.value.deleted) {
         <tr [formGroupName]="$index">
             <td><tui-input formControlName="name">{{getAccount($index).getRawValue().currency}}</tui-input></td>
-            <td><tui-input-number formControlName="start_balance">0,00</tui-input-number></td>
+            <td><tui-input-number formControlName="startBalance">0,00</tui-input-number></td>
             <td>
                 <tui-combo-box formControlName="currency" class="currency" [strict]="false">
                     <input tuiTextfieldLegacy />

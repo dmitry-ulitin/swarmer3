@@ -1,5 +1,5 @@
 {
-    "owner_id": 6,
+    "ownerId": 6,
     "created": "2023-04-16T12:56:31.753757628",
     "groups": [
         {
@@ -10,7 +10,7 @@
                     "id": 61,
                     "name": null,
                     "currency": "EUR",
-                    "start_balance": 0.0,
+                    "startBalance": 0.0,
                     "deleted": false,
                     "created": "2023-04-13T13:55:23.553812",
                     "updated": "2023-04-13T13:55:23.553822"
@@ -29,7 +29,6 @@
                     "admin": false,
                     "readonly": false,
                     "name": null,
-                    "deleted": null,
                     "created": "2023-04-13T14:02:07.743695",
                     "updated": "2023-04-14T13:41:39.84768"
                 }
@@ -39,7 +38,7 @@
                     "id": 62,
                     "name": null,
                     "currency": "EUR",
-                    "start_balance": 4432.33,
+                    "startBalance": 4432.33,
                     "deleted": false,
                     "created": "2023-04-13T13:55:46.389993",
                     "updated": "2023-04-14T13:41:39.843525"
@@ -58,7 +57,6 @@
                     "admin": true,
                     "readonly": false,
                     "name": null,
-                    "deleted": null,
                     "created": "2023-04-13T14:01:24.758489",
                     "updated": "2023-04-13T14:01:24.758496"
                 }
@@ -68,7 +66,7 @@
                     "id": 68,
                     "name": "",
                     "currency": "USD",
-                    "start_balance": 900.0,
+                    "startBalance": 900.0,
                     "deleted": false,
                     "created": "2023-04-15T12:33:26.489943",
                     "updated": "2023-04-15T12:33:45.45739"
@@ -77,7 +75,7 @@
                     "id": 63,
                     "name": null,
                     "currency": "EUR",
-                    "start_balance": 1400.0,
+                    "startBalance": 1400.0,
                     "deleted": false,
                     "created": "2023-04-13T13:56:45.614234",
                     "updated": "2023-04-13T14:01:24.754956"
@@ -91,105 +89,105 @@
     ],
     "categories": [
         {
-            "parent_id": 2,
+            "parentId": 2,
             "id": 5026,
             "name": "Interest",
             "created": "2023-04-14T12:29:14.73339",
             "updated": "2023-04-14T13:37:21.39489"
         },
         {
-            "parent_id": 1,
+            "parentId": 1,
             "id": 5028,
             "name": "Service",
             "created": "2023-04-14T12:44:18.133361",
             "updated": "2023-04-14T13:37:21.292045"
         },
         {
-            "parent_id": 1,
+            "parentId": 1,
             "id": 5030,
             "name": "Entertainment",
             "created": "2023-04-14T12:45:31.043631",
             "updated": "2023-04-15T21:47:49.285552"
         },
         {
-            "parent_id": 1,
+            "parentId": 1,
             "id": 5031,
             "name": "Bills",
             "created": "2023-04-14T12:45:41.909702",
             "updated": "2023-04-15T21:47:15.553383"
         },
         {
-            "parent_id": 1,
+            "parentId": 1,
             "id": 5036,
             "name": "Food",
             "created": "2023-04-14T12:47:12.916099",
             "updated": "2023-04-15T21:47:52.476868"
         },
         {
-            "parent_id": 1,
+            "parentId": 1,
             "id": 5038,
             "name": "Transport",
             "created": "2023-04-14T12:47:47.970408",
             "updated": "2023-04-15T21:48:13.562403"
         },
         {
-            "parent_id": 1,
+            "parentId": 1,
             "id": 5039,
             "name": "Clothes",
             "created": "2023-04-14T13:30:52.273196",
             "updated": "2023-04-15T21:47:46.582153"
         },
         {
-            "parent_id": 1,
+            "parentId": 1,
             "id": 5059,
             "name": "Car",
             "created": "2023-04-14T13:37:21.365891",
             "updated": "2023-04-14T13:37:21.36619"
         },
         {
-            "parent_id": 1,
+            "parentId": 1,
             "id": 5060,
             "name": "Healthcare",
             "created": "2023-04-14T13:37:21.368362",
             "updated": "2023-04-15T21:48:01.794598"
         },
         {
-            "parent_id": 1,
+            "parentId": 1,
             "id": 5062,
             "name": "Household",
             "created": "2023-04-14T13:37:21.374802",
             "updated": "2023-04-15T21:46:47.876728"
         },
         {
-            "parent_id": 2,
+            "parentId": 2,
             "id": 5078,
             "name": "Rent",
             "created": "2023-04-14T13:40:56.681628",
             "updated": "2023-04-15T21:49:14.301472"
         },
         {
-            "parent_id": 1,
+            "parentId": 1,
             "id": 5080,
             "name": "Traveling",
             "created": "2023-04-14T13:40:56.688168",
             "updated": "2023-04-15T21:26:12.624422"
         },
         {
-            "parent_id": 1,
+            "parentId": 1,
             "id": 5153,
             "name": "Gift",
             "created": "2023-04-16T12:26:48.739019",
             "updated": "2023-04-16T12:26:48.739031"
         },
         {
-            "parent_id": 5036,
+            "parentId": 5036,
             "id": 5035,
             "name": "Restorants",
             "created": "2023-04-14T12:46:52.566955",
             "updated": "2023-04-15T21:47:58.371995"
         },
         {
-            "parent_id": 5036,
+            "parentId": 5036,
             "id": 5037,
             "name": "Food supplies",
             "created": "2023-04-14T12:47:12.915498",

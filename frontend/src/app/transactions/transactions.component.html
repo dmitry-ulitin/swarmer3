@@ -3,14 +3,14 @@
          (click)="selectTransaction(t.id)">
         <div class="t-row">
             @if (t.account && t.recipient) {
-                <div class="t-left"><a class="account" tuiLink (click)="selectAccount(t.account.id, $event)">{{t.account.fullname}}</a> ➜ <a class="account" tuiLink (click)="selectAccount(t.recipient.id, $event)">{{t.recipient.fullname}}</a></div>
+                <div class="t-left"><a class="account" tuiLink (click)="selectAccount(t.account.id, $event)">{{t.account.fullName}}</a> ➜ <a class="account" tuiLink (click)="selectAccount(t.recipient.id, $event)">{{t.recipient.fullName}}</a></div>
             } @else {
-                <div class="t-left"><a class="category" tuiLink (click)="selectCategory(t.category || null, $event)">{{t.category?.fullname || '-'}}</a></div>
+                <div class="t-left"><a class="category" tuiLink (click)="selectCategory(t.category || null, $event)">{{t.category?.fullName || '-'}}</a></div>
             }
             <div class="t-right" [class]="'type'+t.type">{{t.amount.value | currency:t.amount.currency}}</div>
         </div>
         <div class="t-row">
-            <div class="t-left">{{t.opdate | date:'shortDate'}} <a class="account" tuiLink (click)="selectAccount(t.balance.aid, $event)">{{t.balance.fullname}}</a> {{t.party}}</div>
+            <div class="t-left">{{t.opdate | date:'shortDate'}} <a class="account" tuiLink (click)="selectAccount(t.balance.aid, $event)">{{t.balance.fullName}}</a> {{t.party}}</div>
             <div class="t-right text-black-50">{{t.balance.balance | currency:t.balance.currency}}</div>
         </div>
         <div class="t-row t-long">{{t.details}}</div>

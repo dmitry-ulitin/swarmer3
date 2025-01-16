@@ -3,9 +3,9 @@
 export interface Account {
     id: number;
     name: string;
-    fullname: string;
+    fullName: string;
     currency: string;
-    start_balance: number;
+    startBalance: number;
     balance?: number;
     deleted?: boolean;
     opdate?: string;

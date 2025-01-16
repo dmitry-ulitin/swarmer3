@@ -77,7 +77,7 @@ public class TransactionService {
             if (transaction.getAccount() != null && calcBalances) {
                 accountBalance = accBalances.get(transaction.getAccount().getId());
                 if (accountBalance == null) {
-                    accountBalance = transaction.getAccount().getStart_balance();
+                    accountBalance = transaction.getAccount().getStartBalance();
                     accountBalance -= rawBalnces.stream()
                             .filter(b -> transaction.getAccount().getId().equals(b.getAccountId()))
                             .mapToDouble(b -> b.getDebit()).sum();
@@ -91,7 +91,7 @@ public class TransactionService {
             if (transaction.getRecipient() != null && calcBalances) {
                 recipientBalance = accBalances.get(transaction.getRecipient().getId());
                 if (recipientBalance == null) {
-                    recipientBalance = transaction.getRecipient().getStart_balance();
+                    recipientBalance = transaction.getRecipient().getStartBalance();
                     recipientBalance -= rawBalnces.stream()
                             .filter(b -> transaction.getRecipient().getId().equals(b.getAccountId()))
                             .mapToDouble(b -> b.getDebit()).sum();
@@ -120,7 +120,7 @@ public class TransactionService {
         }
         var balances = getBalances(ai, null, transaction.getOpdate(), transaction.getId());
         if (transaction.getAccount() != null) {
-            accountBalance = transaction.getAccount().getStart_balance();
+            accountBalance = transaction.getAccount().getStartBalance();
             accountBalance -= balances.stream().filter(b -> transaction.getAccount().getId().equals(b.getAccountId()))
                     .mapToDouble(b -> b.getDebit()).sum();
             accountBalance += balances.stream().filter(b -> transaction.getAccount().getId().equals(b.getRecipientId()))
@@ -128,7 +128,7 @@ public class TransactionService {
             accountBalance -= transaction.getDebit();
         }
         if (transaction.getRecipient() != null) {
-            recipientBalance = transaction.getRecipient().getStart_balance();
+            recipientBalance = transaction.getRecipient().getStartBalance();
             recipientBalance -= balances.stream()
                     .filter(b -> transaction.getRecipient().getId().equals(b.getAccountId()))
                     .mapToDouble(b -> b.getDebit()).sum();

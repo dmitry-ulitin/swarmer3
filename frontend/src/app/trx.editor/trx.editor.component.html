@@ -36,7 +36,7 @@
         </tui-select>
         }
         <ng-template #accountContent let-account>
-            {{account.fullname}}
+            {{account.fullName}}
         </ng-template>
     </div>
     @if(showCategory && !newcategory) {
@@ -52,7 +52,7 @@
             (click)="onCreateCategory()"></button>
     </div>
     <ng-template #categoryValue let-category>
-        {{category.fullname}}
+        {{category.fullName}}
     </ng-template>
     <ng-template #categoryContent let-category>
         <div [class]="'category-level-' + category.level">{{category.name}}</div>

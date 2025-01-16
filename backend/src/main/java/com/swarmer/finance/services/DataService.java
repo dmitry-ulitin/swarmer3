@@ -94,14 +94,15 @@ public class DataService {
                 if (deleted == group.getAccounts().size()) {
                     groupRepository.delete(group);
                 }
-            }            
+            }
             groups.clear();
         }
         if (tryToUpdate) {
             // update existing groups
             var updated = 0;
             for (var group : groups) {
-                var existingGroup = dump.groups().stream().filter(d -> d.id().equals(group.getId())).findFirst().orElse(null);
+                var existingGroup = dump.groups().stream().filter(d -> d.id().equals(group.getId())).findFirst()
+                        .orElse(null);
                 if (existingGroup == null) {
                     group.setDeleted(true);
                     groupRepository.save(group);
@@ -110,14 +111,15 @@ public class DataService {
                     group.setDeleted(existingGroup.deleted());
                     group.setUpdated(existingGroup.updated());
                     for (var account : group.getAccounts()) {
-                        var updatedAccount = existingGroup.accounts().stream().filter(a -> a.id().equals(account.getId()))
+                        var updatedAccount = existingGroup.accounts().stream()
+                                .filter(a -> a.id().equals(account.getId()))
                                 .findFirst().orElse(null);
                         if (updatedAccount == null) {
                             account.setDeleted(true);
                         } else {
                             account.setName(updatedAccount.name());
                             account.setCurrency(updatedAccount.currency());
-                            account.setStart_balance(updatedAccount.start_balance());
+                            account.setStartBalance(updatedAccount.startBalance());
                             account.setDeleted(updatedAccount.deleted());
                             account.setUpdated(updatedAccount.updated());
                         }
@@ -138,7 +140,7 @@ public class DataService {
                                     .add(new Acl(group.getId(), group, updatedAcl.userId(), user,
                                             updatedAcl.admin(),
                                             updatedAcl.readonly(), updatedAcl.name(),
-                                            updatedAcl.deleted(), updatedAcl.created(), updatedAcl.updated()));
+                                            updatedAcl.created(), updatedAcl.updated()));
                         } else {
                             acl.setAdmin(updatedAcl.admin());
                             acl.setReadonly(updatedAcl.readonly());
@@ -172,7 +174,7 @@ public class DataService {
                 group.setAcls(new ArrayList<>());
                 groupRepository.save(group);
                 for (var a : g.accounts()) {
-                    var account = new Account(null, group, a.name(), a.currency(), a.start_balance(), a.deleted(),
+                    var account = new Account(null, group, a.name(), a.currency(), a.startBalance(), a.deleted(),
                             a.created(), a.updated());
                     accountRepository.save(account);
                     accMap.put(a.id(), account.getId());
@@ -186,8 +188,7 @@ public class DataService {
                         continue;
                     }
                     var acl = new Acl(group.getId(), group, a.userId(), user, a.admin(), a.readonly(),
-                            a.name(),
-                            a.deleted(), a.created(), a.updated());
+                            a.name(), a.created(), a.updated());
                     aclRepository.save(acl);
                     group.getAcls().add(acl);
                 }

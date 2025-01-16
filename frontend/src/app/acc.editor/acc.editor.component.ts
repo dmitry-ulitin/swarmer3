@@ -41,9 +41,9 @@ export class AccEditorComponent {
   acc2form = (acc: Account) => new FormGroup({
     id: new FormControl(acc.id, { nonNullable: true }),
     name: new FormControl(acc.name, { nonNullable: true }),
-    fullname: new FormControl(acc.fullname, { nonNullable: true }),
+    fullName: new FormControl(acc.fullName, { nonNullable: true }),
     currency: new FormControl({ value: acc.currency || this.#auth.claims().currency || 'EUR', disabled: !!acc.id }, { nonNullable: true, validators: [Validators.required] }),
-    start_balance: new FormControl({ value: acc.start_balance, disabled: !!acc.id }, { nonNullable: true, validators: [Validators.required] }),
+    startBalance: new FormControl({ value: acc.startBalance, disabled: !!acc.id }, { nonNullable: true, validators: [Validators.required] }),
     balance: new FormControl(acc.balance, { nonNullable: true, validators: [Validators.required] }),
     deleted: new FormControl(acc.deleted, { nonNullable: true }),
     opdate: new FormControl(acc.opdate, { nonNullable: true })
@@ -58,7 +58,7 @@ export class AccEditorComponent {
 
   form = new FormGroup({
     id: new FormControl(this.context.data.id, { nonNullable: true }),
-    fullname: new FormControl(this.context.data.fullname, { nonNullable: true, validators: [Validators.required] }),
+    fullName: new FormControl(this.context.data.fullName, { nonNullable: true, validators: [Validators.required] }),
     is_owner: new FormControl(this.context.data.is_owner, { nonNullable: true }),
     is_coowner: new FormControl(this.context.data.is_coowner, { nonNullable: true }),
     is_shared: new FormControl(this.context.data.is_shared, { nonNullable: true }),
@@ -92,7 +92,7 @@ export class AccEditorComponent {
   }
 
   onAddAccount(): void {
-    this.accounts.push(this.acc2form({ id: 0, name: '', fullname: '', currency: '', start_balance: 0, balance: 0 }));
+    this.accounts.push(this.acc2form({ id: 0, name: '', fullName: '', currency: '', startBalance: 0, balance: 0 }));
     this.checkCanDelete();
   }
 

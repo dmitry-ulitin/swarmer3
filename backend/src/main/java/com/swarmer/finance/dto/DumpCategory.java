@@ -2,12 +2,11 @@ package com.swarmer.finance.dto;
 
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.swarmer.finance.models.Category;
 
 public record DumpCategory(
         Long id,
-        @JsonProperty("parent_id") Long parentId,
+        Long parentId,
         String name,
         LocalDateTime created,
         LocalDateTime updated

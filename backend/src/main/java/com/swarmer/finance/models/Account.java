@@ -26,7 +26,7 @@ public class Account {
     @ManyToOne AccountGroup group;
     String name;
     String currency;
-    Double start_balance;
+    Double startBalance;
     Boolean deleted;
     LocalDateTime created;
     LocalDateTime updated;
