@@ -18,11 +18,11 @@ export class ApiService {
   constructor(private http: HttpClient) { }
 
   login(credentials: Credentials): Observable<any> {
-    return this.http.post<any>('/api/login', credentials);
+    return this.http.post<any>('/api/auth/login', credentials);
   }
 
   register(registration: Registration): Observable<any> {
-    return this.http.post<any>('/api/register', registration);
+    return this.http.post<any>('/api/auth/register', registration);
   }
 
   getGroups(opdate: string): Observable<Group[]> {

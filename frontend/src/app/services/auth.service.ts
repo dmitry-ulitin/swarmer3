@@ -39,22 +39,22 @@ export class AuthService {
 
   async login(credentials: Credentials) {
     const response = await firstValueFrom(this.#api.login(credentials));
-    if (!response?.access_token) {
+    if (!response?.token) {
       throw new Error('Incorrect username or password');
     }
-    localStorage.setItem(this.#tokenKey, response.access_token);
-    this.#state.set(response.access_token);
+    localStorage.setItem(this.#tokenKey, response.token);
+    this.#state.set(response.token);
     this.#router.navigate(['']);
     this.#data.init();
   }
 
   async register(registration: Registration) {
     const response = await firstValueFrom(this.#api.register(registration));
-    if (!response?.access_token) {
+    if (!response?.token) {
       throw new Error('Registration error');
     }
-    localStorage.setItem(this.#tokenKey, response.access_token);
-    this.#state.set(response.access_token);
+    localStorage.setItem(this.#tokenKey, response.token);
+    this.#state.set(response.token);
     this.#router.navigate(['']);
     this.#data.init();
   }

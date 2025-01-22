@@ -19,7 +19,7 @@ export class LoginComponent {
   #auth = inject(AuthService);
   #alerts = inject(AlertService);
   form = new FormGroup({
-    username: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
+    email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
     password: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
   });
 

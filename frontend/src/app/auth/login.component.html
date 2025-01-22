@@ -1,6 +1,6 @@
 <form [formGroup]="form" (ngSubmit)="onLogin()" class="form" [tuiTextfieldSize]="'s'">
     <label tuiLabel>{{ 'Email' }}
-        <tui-input formControlName="username" required>
+        <tui-input formControlName="email" required>
             Enter your email
             <input autocomplete="email" tuiTextfieldLegacy type="email" />
         </tui-input>

@@ -22,7 +22,7 @@ import com.swarmer.finance.models.User;
 import com.swarmer.finance.repositories.UserRepository;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/auth")
 class AuthController {
 	private final UserRepository userRepository;
 	private final AuthenticationManager authenticationManager;
@@ -47,7 +47,7 @@ class AuthController {
 		user = userRepository.save(user);
 		user = userRepository.findById(user.getId()).orElse(null);
 		var token = generateToken(user);
-		return Collections.singletonMap("access_token", token);
+		return Collections.singletonMap("token", token);
 	}
 
 	@PostMapping("/login")
@@ -58,7 +58,7 @@ class AuthController {
 			var authentication = authenticationManager.authenticate(authInputToken);
 			var user = (User) authentication.getPrincipal();
 			var token = generateToken(user);
-			return Collections.singletonMap("access_token", token);
+			return Collections.singletonMap("token", token);
 		} catch (Exception e) {
 			return Collections.singletonMap("error", e.getMessage());
 		}

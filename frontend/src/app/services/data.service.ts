@@ -86,7 +86,7 @@ export class DataService {
   async init() {
     await this.refresh();
 
-    let max = this.#state().groups.map(g => g.opdate || '').reduce((max, c) => c > max ? c : max);
+    let max = this.#state().groups.map(g => g.opdate || '').reduce((max, c) => c > max ? c : max, '');
     if (max < (this.#state().range.from?.toString('YMD', '-') || '')) {
       await this.setRange(DateRange.all());
     }
