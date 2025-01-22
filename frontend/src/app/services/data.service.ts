@@ -120,7 +120,7 @@ export class DataService {
   }
 
   async createGroup() {
-    const group: Group = { id: 0, fullName: '', is_owner: true, is_coowner: false, is_shared: false, accounts: [{ id: 0, name: '', fullName: '', currency: '', startBalance: 0, balance: 0 }], permissions: [] };
+    const group: Group = { id: 0, fullName: '', owner: true, coowner: false, shared: false, accounts: [{ id: 0, name: '', fullName: '', currency: '', startBalance: 0, balance: 0 }], permissions: [] };
     const data = await firstValueFrom(this.#dlgService.open<Group | undefined>(
       new PolymorpheusComponent(AccEditorComponent), { data: group, dismissible: false, closeable: false, size: 's' }
     ));

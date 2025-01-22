@@ -1,7 +1,7 @@
 <table class="groups">
     @for(g of data.groups(); track g.id) {
-    <tr [class.expanded]="data.state().expanded.includes(g.id)" [class.owner]="g.is_owner" [class.coowner]="g.is_coowner"
-        [class.shared]="g.is_shared">
+    <tr [class.expanded]="data.state().expanded.includes(g.id)" [class.owner]="g.owner" [class.coowner]="g.coowner"
+        [class.shared]="g.shared">
         <td [class.active]="isGroupSelected(g)" (click)="selectGroup(g, $event)">
             <a class="group" tuiLink>{{g.fullName}}</a>
             @for(a of g.accounts; track a.id) {

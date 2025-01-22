@@ -10,5 +10,5 @@ import lombok.Data;
 public class CategorySum {
     Category category;
     String currency;
-    Double amount;
+    Double sum;
 }

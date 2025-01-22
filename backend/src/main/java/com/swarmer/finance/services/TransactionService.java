@@ -317,7 +317,7 @@ public class TransactionService {
         var categoryIdSums = entityManager.createQuery(criteriaQuery).getResultList();
         var categorySums = categoryIdSums.stream()
                 .map(r -> new CategorySum(r.getId() == null ? null : entityManager.find(Category.class, r.getId()),
-                        r.getCurrency(), r.getAmount()))
+                        r.getCurrency(), r.getSum()))
                 .toList();
         // group by to parent category
         for (var cs : categorySums) {
@@ -338,7 +338,7 @@ public class TransactionService {
                 .collect(Collectors.groupingBy(cs -> Pair.of(cs.getCurrency(), cs.getCategory())));
         return groups.entrySet().stream().map(e -> e.getValue().stream()
                 .reduce(new CategorySum(e.getKey().getSecond(), e.getKey().getFirst(), .0), (a, g) -> {
-                    a.setAmount(a.getAmount() + g.getAmount());
+                    a.setSum(a.getSum() + g.getSum());
                     return a;
                 })).sorted((a, b) -> a.getCategory().getFullName().compareToIgnoreCase(b.getCategory().getFullName()))
                 .toList();

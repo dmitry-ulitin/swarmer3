@@ -5,9 +5,9 @@ import { User } from './user';
 export interface Group {
     id: number;
     fullName: string;
-    is_owner: boolean;
-    is_coowner: boolean;
-    is_shared: boolean;
+    owner: boolean;
+    coowner: boolean;
+    shared: boolean;
     accounts: Account[];
     permissions: Permission[];
     deleted?: boolean;
@@ -17,8 +17,8 @@ export interface Group {
 
 export interface Permission {
     user: User;
-    is_readonly: boolean;
-    is_admin: boolean;
+    readonly: boolean;
+    admin: boolean;
 }
 
 const add = (balance: Map<string, number>, amount: Group[] | Account[] | Group | Account) => {

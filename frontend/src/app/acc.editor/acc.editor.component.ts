@@ -51,24 +51,24 @@ export class AccEditorComponent {
 
   user2form = (p: Permission) => new FormGroup({
     user: new FormControl(p.user, { nonNullable: true }),
-    is_readonly: new FormControl(p.is_readonly && !p.is_admin, { nonNullable: true }),
-    is_write: new FormControl({ value: !p.is_readonly || p.is_admin, disabled: !this.isOwnerOrCoowner }, { nonNullable: true }),
-    is_admin: new FormControl({ value: p.is_admin, disabled: !this.isOwnerOrCoowner }, { nonNullable: true })
+    readonly: new FormControl(p.readonly && !p.admin, { nonNullable: true }),
+    write: new FormControl({ value: !p.readonly || p.admin, disabled: !this.isOwnerOrCoowner }, { nonNullable: true }),
+    admin: new FormControl({ value: p.admin, disabled: !this.isOwnerOrCoowner }, { nonNullable: true })
   });
 
   form = new FormGroup({
     id: new FormControl(this.context.data.id, { nonNullable: true }),
     fullName: new FormControl(this.context.data.fullName, { nonNullable: true, validators: [Validators.required] }),
-    is_owner: new FormControl(this.context.data.is_owner, { nonNullable: true }),
-    is_coowner: new FormControl(this.context.data.is_coowner, { nonNullable: true }),
-    is_shared: new FormControl(this.context.data.is_shared, { nonNullable: true }),
+    owner: new FormControl(this.context.data.owner, { nonNullable: true }),
+    coowner: new FormControl(this.context.data.coowner, { nonNullable: true }),
+    shared: new FormControl(this.context.data.shared, { nonNullable: true }),
     accounts: new FormArray(this.context.data.accounts.map(this.acc2form)),
     permissions: new FormArray(this.context.data.permissions.map(this.user2form)),
     ownerEmail: new FormControl(this.context.data.ownerEmail, { nonNullable: true })
   });
 
   get isOwnerOrCoowner(): boolean {
-    return !!this.context.data.is_owner || !!this.context.data.is_coowner;
+    return !!this.context.data.owner || !!this.context.data.coowner;
   }
 
   get accounts(): FormArray {
@@ -119,7 +119,7 @@ export class AccEditorComponent {
 
   onAddPermission() {
     const option = this.rights.value || this.options[0];
-    this.permissions.push(this.user2form({ user: { id: 0, email: this.selected, name: '' }, is_readonly: option.id === 0, is_admin: option.id === 3 }));
+    this.permissions.push(this.user2form({ user: { id: 0, email: this.selected, name: '' }, readonly: option.id === 0, admin: option.id === 3 }));
     this.query.setValue('');
     this.rights.setValue(this.options[0]);
   }

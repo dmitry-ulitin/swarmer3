@@ -3,7 +3,6 @@ package com.swarmer.finance.dto;
 import java.util.List;
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.swarmer.finance.models.AccountGroup;
 
 public record GroupDto(
@@ -11,9 +10,9 @@ public record GroupDto(
 		Long ownerId,
 		String ownerEmail,
 		String fullName,
-		@JsonProperty("is_owner") Boolean owner,
-		@JsonProperty("is_coowner") Boolean coowner,
-		@JsonProperty("is_shared") Boolean shared,
+		Boolean owner,
+		Boolean coowner,
+		Boolean shared,
 		List<AccountDto> accounts,
 		List<Permission> permissions,
 		LocalDateTime opdate,

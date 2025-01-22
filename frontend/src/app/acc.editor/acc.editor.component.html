@@ -62,8 +62,8 @@
         @if (isOwnerOrCoowner || acl.value.user.email == email) {
         <tr [formGroupName]="$index">
             <td>{{acl.value.user.email}}</td>
-            <td><input type="checkbox" formControlName="is_admin" (change)="onToggleAdmin($event, $index)"></td>
-            <td><input type="checkbox" formControlName="is_write" (change)="onToggleWrite($event, $index)"></td>
+            <td><input type="checkbox" formControlName="admin" (change)="onToggleAdmin($event, $index)"></td>
+            <td><input type="checkbox" formControlName="write" (change)="onToggleWrite($event, $index)"></td>
             <td><input type="checkbox" [disabled]="true" [checked]="true"></td>
             <td>
                 <button tuiIconButton type="button" [iconStart]="'@tui.trash'" [size]="'s'" [appearance]="'flat'"

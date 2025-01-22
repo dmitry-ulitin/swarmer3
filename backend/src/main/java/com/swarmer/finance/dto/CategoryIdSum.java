@@ -8,5 +8,5 @@ import lombok.Data;
 public class CategoryIdSum {
     Long id;
     String currency;
-    Double amount;
+    Double sum;
 }

@@ -19,7 +19,7 @@ export class CatSummaryComponent {
     return [...state.income.filter(s => !state.currency || state.currency === s.currency).reduce((a, i) => {
       const key = i.category?.id || 0;
       const s = a.get(key) || { category: { ...i.category, id: key < 3 ? -key : key, fullName: key < 3 ? "No Category" : i.category?.fullName }, amounts: [] };
-      s.amounts.push({ value: i.amount, currency: i.currency });
+      s.amounts.push({ value: i.sum, currency: i.currency });
       a.set(key, s);
       return a;
     }, new Map<number, { category: Category, amounts: { value: number, currency: string }[] }>()).values()];
@@ -29,7 +29,7 @@ export class CatSummaryComponent {
     return [...state.expenses.filter(s => !state.currency || state.currency === s.currency).reduce((a, e) => {
       const key = e.category?.id || 0;
       const s = a.get(key) || { category: { ...e.category, id: key < 3 ? -key : key, fullName: key < 3 ? "No Category" : e.category?.fullName }, amounts: [] };
-      s.amounts.push({ value: e.amount, currency: e.currency });
+      s.amounts.push({ value: e.sum, currency: e.currency });
       a.set(key, s);
       return a;
     }, new Map<number, { category: Category, amounts: { value: number, currency: string }[] }>()).values()];
