@@ -74,8 +74,8 @@ public class TransactionController {
         return transactionService.createTransaction(group, userId);
     }
 
-    @PutMapping
-    TransactionDto updateTransaction(@RequestBody TransactionDto group, Authentication authentication) {
+    @PutMapping("/{id}")
+    TransactionDto updateTransaction(@RequestBody TransactionDto group, @PathVariable Long id, Authentication authentication) {
         var userId = ((UserPrincipal) authentication.getPrincipal()).id();
         return transactionService.updateTransaction(group, userId);
     }

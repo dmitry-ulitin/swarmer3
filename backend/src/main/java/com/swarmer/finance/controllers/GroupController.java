@@ -51,18 +51,18 @@ public class GroupController {
         return groupService.createGroup(group, userId);
     }
 
-    @PutMapping
+    @PutMapping("/{id}")
     @Transactional
-    GroupDto updateGroup(@RequestBody GroupDto group, Authentication authentication) {
+    GroupDto updateGroup(@RequestBody GroupDto group, @PathVariable Long id, Authentication authentication) {
         var userId = ((UserPrincipal) authentication.getPrincipal()).id();
         return groupService.updateGroup(group, userId);
     }
 
-    @DeleteMapping("/{groupId}")
+    @DeleteMapping("/{id}")
     @Transactional
-    void deleteGroup(@PathVariable("groupId") Long groupId, Authentication authentication) {
+    void deleteGroup(@PathVariable("id") Long id, Authentication authentication) {
         var userId = ((UserPrincipal) authentication.getPrincipal()).id();
-        groupService.deleteGroup(groupId, userId);
+        groupService.deleteGroup(id, userId);
     }
 
     @GetMapping(value="users")

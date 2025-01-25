@@ -39,9 +39,9 @@ public class CategoryController {
 		return categoryService.getCategory(category, userId);
 	}
 
-    @PutMapping
+    @PutMapping("/{id}")
     @Transactional
-	Category updateCategory(@RequestBody Category category, Authentication authentication) {
+	Category updateCategory(@RequestBody Category category, @PathVariable Long id, Authentication authentication) {
         var userId = ((UserPrincipal)authentication.getPrincipal()).id();
 		return categoryService.saveCategory(category, userId);
 	}

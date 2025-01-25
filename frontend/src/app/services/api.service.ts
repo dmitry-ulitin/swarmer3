@@ -30,7 +30,7 @@ export class ApiService {
   }
 
   saveGroup(group: Group): Observable<Group> {
-    return !!group.id ? this.http.put<Group>('/api/groups', group) : this.http.post<Group>('/api/groups', group);
+    return !!group.id ? this.http.put<Group>(`/api/groups/${group.id}`, group) : this.http.post<Group>('/api/groups', group);
   }
 
   deleteGroup(id: number): Observable<void> {
@@ -42,7 +42,7 @@ export class ApiService {
   }
 
   saveCategory(category: Category) {
-    return !!category.id ? this.http.put<Category>('/api/categories', category) : this.http.post<Category>('/api/categories', category);
+    return !!category.id ? this.http.put<Category>(`/api/categories/${category.id}`, category) : this.http.post<Category>('/api/categories', category);
   }
 
   getRules(): Observable<Rule[]> {
@@ -75,15 +75,15 @@ export class ApiService {
     params = params.set('search', search);
     params = params.set('category', typeof category === 'number' ? category : '');
     params = params.set('currency', currency);
-    params = params.set('from', range?.from?.toString('YMD','-') || '');
-    params = params.set('to', range?.to?.toString('YMD','-') || '');
+    params = params.set('from', range?.from?.toString('YMD', '-') || '');
+    params = params.set('to', range?.to?.toString('YMD', '-') || '');
     params = params.set('offset', offset);
     params = params.set('limit', limit);
-    return this.http.get<Transaction[]>('/api/transactions', {params: params});
+    return this.http.get<Transaction[]>('/api/transactions', { params: params });
   }
 
   saveTransaction(transaction: Transaction): Observable<Transaction> {
-    return !!transaction.id ? this.http.put<Transaction>('/api/transactions', transaction) : this.http.post<Transaction>('/api/transactions', transaction);
+    return !!transaction.id ? this.http.put<Transaction>(`/api/transactions/${transaction.id}`, transaction) : this.http.post<Transaction>('/api/transactions', transaction);
   }
 
   deleteTransaction(id: number): Observable<void> {
@@ -93,11 +93,11 @@ export class ApiService {
   getUsers(query: string): Observable<string[]> {
     let params = new HttpParams();
     params = params.set('query', query);
-    return this.http.get<string[]>('/api/groups/users', {params: params});
+    return this.http.get<string[]>('/api/groups/users', { params: params });
   }
 
   getBackup(): Observable<HttpResponse<Blob>> {
-    return this.http.get('/api/data/dump', {responseType: 'blob', observe: 'response'});
+    return this.http.get('/api/data/dump', { responseType: 'blob', observe: 'response' });
   }
 
   loadBackup(blob: any) {
@@ -119,17 +119,17 @@ export class ApiService {
   getSummary(accounts: number[], range: DateRange): Observable<Summary[]> {
     let params = new HttpParams();
     params = params.set('accounts', accounts.join(","));
-    params = params.set('from', range?.from?.toString('YMD','-') || '');
-    params = params.set('to', range?.to?.toString('YMD','-') || '');
-    return this.http.get<Summary[]>('/api/transactions/summary', {params: params});
+    params = params.set('from', range?.from?.toString('YMD', '-') || '');
+    params = params.set('to', range?.to?.toString('YMD', '-') || '');
+    return this.http.get<Summary[]>('/api/transactions/summary', { params: params });
   }
 
   getCategoriesSummary(type: TransactionType, accounts: number[], range: DateRange): Observable<CategorySum[]> {
     let params = new HttpParams();
     params = params.set('type', type.toString());
     params = params.set('accounts', accounts.join(","));
-    params = params.set('from', range?.from?.toString('YMD','-') || '');
-    params = params.set('to', range?.to?.toString('YMD','-') || '');
-    return this.http.get<CategorySum[]>('/api/transactions/categories', {params: params});
+    params = params.set('from', range?.from?.toString('YMD', '-') || '');
+    params = params.set('to', range?.to?.toString('YMD', '-') || '');
+    return this.http.get<CategorySum[]>('/api/transactions/categories', { params: params });
   }
 }
