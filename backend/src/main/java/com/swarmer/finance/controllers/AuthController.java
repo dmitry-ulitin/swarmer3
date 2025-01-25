@@ -53,7 +53,7 @@ class AuthController {
 	@PostMapping("/login")
 	Map<String, Object> login(@RequestBody LoginCredentials credentials) {
 		try {
-			var authInputToken = new UsernamePasswordAuthenticationToken(credentials.getUsername(),
+			var authInputToken = new UsernamePasswordAuthenticationToken(credentials.getEmail(),
 					credentials.getPassword());
 			var authentication = authenticationManager.authenticate(authInputToken);
 			var user = (User) authentication.getPrincipal();
