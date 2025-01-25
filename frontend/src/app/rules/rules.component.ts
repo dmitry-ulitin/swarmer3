@@ -16,7 +16,7 @@ export class RulesComponent {
   #data = inject(DataService);
   rules = computed(() => this.#data.state().rules.sort((a, b) => a.category.fullName.localeCompare(b.category.fullName)));
   rid = -1;
-  ct2str = (ct: ConditionType) => { return ['party', 'details','category name'][(ct - ct % 2) / 2] + [' contains', ' equals'][ct % 2]; }
+  ct2str = (ct: ConditionType) => { return ['party', 'details','category name'][(ct + ct % 2) / 2 - 1] + [' contains', ' equals'][ct % 2]; }
 
   onSelect(id?: number) {
     this.rid = id ?? -1;

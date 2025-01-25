@@ -58,7 +58,7 @@ export class ApiService {
   }
 
   updateRule(rule: Rule): Observable<Rule> {
-    return this.http.put<Rule>('/api/transactions/rules', rule);
+    return this.http.put<Rule>(`/api/transactions/rules/${rule.id}`, rule);
   }
 
   saveRule(rule: Rule): Observable<Rule> {

@@ -33,7 +33,7 @@ export class RuleEditorComponent {
   conditions = [{ id: 0, name: 'equals' }, { id: 1, name: 'contains' }];
   form = new FormGroup({
     id: new FormControl(this.context.data.rule?.id, { nonNullable: true }),
-    field: new FormControl(this.fields[(this.rule.conditionType - this.rule.conditionType % 2) / 2], { nonNullable: true, validators: [Validators.required] }),
+    field: new FormControl(this.fields[(this.rule.conditionType + this.rule.conditionType % 2) / 2 - 1], { nonNullable: true, validators: [Validators.required] }),
     condition: new FormControl(this.conditions[1 - this.rule.conditionType % 2], { nonNullable: true, validators: [Validators.required] }),
     conditionValue: new FormControl(this.rule.conditionValue, { nonNullable: true, validators: [Validators.required] }),
     category: new FormControl(this.context.data.rule?.category, { nonNullable: true, validators: [Validators.required] })
