@@ -130,16 +130,16 @@ export class AccEditorComponent {
 
   onToggleAdmin(event: any, index: number): void {
     if (event.target.checked) {
-      this.getPermission(index).get('is_readonly')?.setValue(false);
-      this.getPermission(index).get('is_write')?.setValue(true);
-      this.getPermission(index).get('is_write')?.disable();
+      this.getPermission(index).get('readonly')?.setValue(false);
+      this.getPermission(index).get('write')?.setValue(true);
+      this.getPermission(index).get('write')?.disable();
     } else {
-      this.getPermission(index).get('is_write')?.enable();
+      this.getPermission(index).get('write')?.enable();
     }
   }
 
   onToggleWrite(event: any, index: number): void {
-    this.getPermission(index).get('is_readonly')?.setValue(!event.target.checked);
+    this.getPermission(index).get('readonly')?.setValue(!event.target.checked);
   }
 
   onCancel() {
