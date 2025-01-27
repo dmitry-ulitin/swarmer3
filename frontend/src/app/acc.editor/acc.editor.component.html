@@ -58,7 +58,7 @@
             <td></td>
         </tr>
         }
-        @for(acl of permissions.controls; track $index) {
+        @for(acl of permissions.controls; track acl.value.user.email) {
         @if (isOwnerOrCoowner || acl.value.user.email == email) {
         <tr [formGroupName]="$index">
             <td>{{acl.value.user.email}}</td>
