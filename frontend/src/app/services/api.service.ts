@@ -97,11 +97,11 @@ export class ApiService {
   }
 
   getBackup(): Observable<HttpResponse<Blob>> {
-    return this.http.get('/api/data/dump', { responseType: 'blob', observe: 'response' });
+    return this.http.get('/api/backup', { responseType: 'blob', observe: 'response' });
   }
 
   loadBackup(blob: any) {
-    return this.http.put('/api/data/dump', blob);
+    return this.http.put('/api/backup', blob);
   }
 
   importTransactions(acc: number, bank: number, file: File): Observable<TransactionImport[]> {

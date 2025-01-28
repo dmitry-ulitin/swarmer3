@@ -12,7 +12,7 @@ import com.swarmer.finance.dto.Dump;
 import com.swarmer.finance.services.DataService;
 
 @RestController
-@RequestMapping("/api/data")
+@RequestMapping("/api/backup")
 public class DataController {
     private final DataService dataService;
 
@@ -20,13 +20,13 @@ public class DataController {
         this.dataService = dataService;
     }
 
-    @GetMapping("/dump")
+    @GetMapping
     public Dump getDump(Authentication authentication) {
         var userId = ((UserPrincipal) authentication.getPrincipal()).id();
         return dataService.getDump(userId);
     }
 
-    @PutMapping("/dump")
+    @PutMapping
     public void loadDump(@RequestBody Dump dump, Authentication authentication) {
         var userId = ((UserPrincipal) authentication.getPrincipal()).id();
         dataService.loadDump(userId, dump);
