@@ -13,9 +13,9 @@ export class AlertService {
   }
 
   printError(error: any) {
-    if (error?.status !== 403) {
+    if (error?.status !== 401) {
       const statusText: { [id: string]: string } = { 403: 'Forbidden', 500: 'Internal Server Error' };
-      const message = statusText[error?.status] || error?.statusText || error?.message || error;
+      const message = error?.error?.message || error?.message || statusText[error?.status] || error?.statusText || error;
       this.#zone.run(() => this.#alertService.open(message, { appearance: 'error' }).subscribe());
     }
   }

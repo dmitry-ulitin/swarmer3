@@ -1,14 +1,14 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { EMPTY, catchError, of } from 'rxjs';
-import { DataService } from '../services/data.service';
+import { AuthService } from '../services/auth.service';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
-  const data = inject(DataService);
+  const auth = inject(AuthService);
   return next(req).pipe(catchError((err) => {
-    if (err.status === 403) {
-      // auto logout if 403 response returned from api
-      data.reset();
+    if (err.status === 401) {
+      // auto logout if 401 response returned from api
+      auth.logout();
       return EMPTY;
     }
     throw err;
