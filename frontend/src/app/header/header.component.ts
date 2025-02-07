@@ -8,13 +8,13 @@ import { Group } from '../models/group';
 import { CategoriesComponent } from '../categories/categories.component';
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 import { RulesComponent } from '../rules/rules.component';
-import { TuiChevron } from '@taiga-ui/kit';
+import { TuiChevron, TuiDataListDropdownManager } from '@taiga-ui/kit';
 
 @Component({
   selector: 'app-header',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TuiButton, TuiDropdown, TuiDataList, TuiIcon, TuiChevron],
+  imports: [CommonModule, TuiButton, TuiDropdown, TuiDataList, TuiIcon, TuiChevron, TuiDataListDropdownManager],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
@@ -42,6 +42,10 @@ export class HeaderComponent {
 
   onIncome() {
     this.data.createTransaction(TransactionType.Income);
+  }
+
+  onCorrection() {
+    this.data.createTransaction(TransactionType.Correction);
   }
 
   onRefresh() {

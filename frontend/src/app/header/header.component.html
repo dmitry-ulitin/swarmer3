@@ -24,26 +24,37 @@
 <span class="fill"></span>
 @if (auth.isAuthenticated()) {
 <div tuiDropdownOpen [tuiDropdown]="accDropdown">
-    <button tuiButton tuiChevron type="button" appearance="flat-grayscale" [size]="'s'"
-        tuiTheme="dark">
+    <button tuiButton tuiChevron type="button" appearance="flat-grayscale" [size]="'s'" tuiTheme="dark">
         <tui-icon icon="@tui.settings"></tui-icon>
     </button>
 </div>
 <ng-template #accDropdown>
-    <tui-data-list [size]="'s'">
+    <tui-data-list [size]="'s'" tuiDataListDropdownManager>
         @if(group(); as group) {
         <button tuiOption (click)="editGroup(group)">Edit
             '{{group.fullName}}'</button>
         <button tuiOption (click)="deleteGroup(group)">Delete
             '{{group.fullName}}'</button>
         }
-        <button tuiOption (click)="onCategories()">Categories</button>
-        <button tuiOption (click)="onRules()">Rules</button>
         @if (account(); as account) {
         <button tuiOption (click)="onImport(account.id)">Import '{{account.fullName}}' Statement</button>
         }
+        @if(data.allAccounts().length > 0) {
+        <button iconEnd="@tui.chevron-right" tuiDropdownManual tuiDropdownSided tuiOption
+            type="button" [tuiDropdown]="trxDropdown">New Transaction</button>
+        }
+        <button tuiOption (click)="onCategories()">Categories</button>
+        <button tuiOption (click)="onRules()">Rules</button>
         <button tuiOption (click)="onSaveBackup()">Save Backup</button>
         <button tuiOption (click)="onLoadBackup()">Load Backup</button>
+    </tui-data-list>
+</ng-template>
+<ng-template #trxDropdown>
+    <tui-data-list [size]="'s'">
+        <button tuiOption (click)="onExpense()" iconEnd="@tui.minus">Expense</button>
+        <button tuiOption (click)="onTransfer()" iconEnd="@tui.shuffle">Transfer</button>
+        <button tuiOption (click)="onIncome()" iconEnd="@tui.plus">Income</button>
+        <button tuiOption (click)="onCorrection()" iconEnd="@tui.pencil">Correction</button>
     </tui-data-list>
 </ng-template>
 <div tuiDropdownOpen type="button" [tuiDropdown]="dropdown">
