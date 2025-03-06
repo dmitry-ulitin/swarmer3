@@ -107,7 +107,7 @@ export class TrxEditorComponent {
   }
 
   constructor(@Inject(POLYMORPHEUS_CONTEXT) private readonly context: TuiDialogContext<Transaction | undefined, Transaction>) {
-    this.form.controls['account'].valueChanges.pipe(takeUntilDestroyed()).subscribe(account => {
+    this.form.controls['account'].valueChanges.pipe(takeUntilDestroyed(), startWith(context.data.account)).subscribe(account => {
       if (account) {
         this.form.controls['dcurrency'].setValue(account.currency);
         if (this.type !== TransactionType.Transfer) {
