@@ -1,14 +1,16 @@
 package com.swarmer.finance.dto;
 
+import java.math.BigDecimal;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class Summary{
+public class Summary {
     private String currency;
-    private Double debit;
-    private Double credit;
-    private Double transfers_debit;
-    private Double transfers_credit;
+    private BigDecimal debit;
+    private BigDecimal credit;
+    private BigDecimal transfers_debit;
+    private BigDecimal transfers_credit;
 }

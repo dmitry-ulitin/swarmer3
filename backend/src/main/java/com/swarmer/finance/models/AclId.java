@@ -1,13 +1,16 @@
 package com.swarmer.finance.models;
 
+import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.io.Serializable;
 
+@Embeddable
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class AclId {
-    private Long userId;
+@AllArgsConstructor
+public class AclId implements Serializable {
     private Long groupId;
-}
+    private Long userId;
+} 

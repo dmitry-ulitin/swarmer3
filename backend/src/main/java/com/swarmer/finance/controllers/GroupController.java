@@ -1,72 +1,63 @@
 package com.swarmer.finance.controllers;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
-import org.springframework.security.core.Authentication;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import com.swarmer.finance.dto.GroupDto;
-import com.swarmer.finance.dto.UserPrincipal;
+import com.swarmer.finance.security.UserPrincipal;
 import com.swarmer.finance.services.GroupService;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/groups")
 public class GroupController {
+
     private final GroupService groupService;
 
+    @Autowired
     public GroupController(GroupService groupService) {
         this.groupService = groupService;
     }
 
     @GetMapping
-    @Transactional
-    Iterable<GroupDto> getGroups(Authentication authentication,
-            @RequestParam(required = false, defaultValue = "") String opdate) {
-        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
-        return groupService.getGroups(userId, opdate == null || opdate.isBlank() ? null
-                : LocalDateTime.parse(opdate, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[XXX]")));
-    }
-
-    @GetMapping("/{groupId}")
-    @Transactional
-    GroupDto getGroup(@PathVariable("groupId") Long groupId, Authentication authentication) {
-        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
-        return groupService.getGroup(groupId, userId);
+    public ResponseEntity<List<GroupDto>> getGroups(@AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime opdate) {
+        Long userId = principal.getUserDto().id();
+        return ResponseEntity.ok(groupService.getGroups(userId, opdate));
     }
 
     @PostMapping
-    @Transactional
-    GroupDto createGroup(@RequestBody GroupDto group, Authentication authentication) {
-        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
-        return groupService.createGroup(group, userId);
+    public ResponseEntity<GroupDto> createGroup(@AuthenticationPrincipal UserPrincipal principal,
+            @RequestBody GroupDto groupDto) {
+        Long userId = principal.getUserDto().id();
+        return ResponseEntity.ok(groupService.createGroup(groupDto, userId));
     }
 
     @PutMapping("/{id}")
-    @Transactional
-    GroupDto updateGroup(@RequestBody GroupDto group, @PathVariable Long id, Authentication authentication) {
-        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
-        return groupService.updateGroup(group, userId);
+    public ResponseEntity<GroupDto> updateGroup(@PathVariable Long id, @AuthenticationPrincipal UserPrincipal principal,
+            @RequestBody GroupDto groupDto) {
+        if (!id.equals(groupDto.id())) {
+            throw new IllegalArgumentException("Group id doesn't match");
+        }
+        Long userId = principal.getUserDto().id();
+        return ResponseEntity.ok(groupService.updateGroup(groupDto, userId));
     }
+
 
     @DeleteMapping("/{id}")
-    @Transactional
-    void deleteGroup(@PathVariable("id") Long id, Authentication authentication) {
-        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
+    public ResponseEntity<Void> deleteGroup(@PathVariable Long id, @AuthenticationPrincipal UserPrincipal principal) {
+        Long userId = principal.getUserDto().id();
         groupService.deleteGroup(id, userId);
+        return ResponseEntity.noContent().build();
     }
 
-    @GetMapping(value="users")
-    public Iterable<String> findUsers(@RequestParam String query) {
-        return groupService.findUsers(query);
-    }    
+    @GetMapping("users")
+    public ResponseEntity<List<String>> findUsers(@RequestParam String query) {
+        return ResponseEntity.ok(groupService.findUsers(query));
+    }
 }

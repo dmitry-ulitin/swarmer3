@@ -4,34 +4,40 @@ import java.time.LocalDateTime;
 
 import com.swarmer.finance.models.Account;
 
+import java.math.BigDecimal;
+
 public record AccountDto(
         Long id,
         String name,
         String fullName,
         String currency,
-        Double balance,
-        Double startBalance,
+        BigDecimal startBalance,
+        BigDecimal balance,
         LocalDateTime opdate,
-        Boolean deleted) {
-    public static AccountDto from(Account account, Long userId, Double balance, LocalDateTime opdate) {
-        var accfullname = account.getGroup().getName();
-        if (account.getName() != null && !account.getName().isBlank()) {
-            accfullname += " " + account.getName();
-        } else if (account.getGroup().getAccounts().stream().filter(a -> a.getDeleted() == null || !a.getDeleted()).count() > 1) {
-            accfullname += " " + account.getCurrency();
+        boolean deleted) {
+    public static AccountDto fromEntity(Account entity, Long userId, BigDecimal balance, LocalDateTime opdate) {
+        if (entity == null) {
+            return null;
         }
-		var shared = !account.getGroup().getOwner().getId().equals(userId) && account.getGroup().getAcls().stream().noneMatch(acl -> acl.getAdmin());		
+        var fullname = entity.getGroup().getName();
+        if (entity.getName() != null && !entity.getName().isBlank()) {
+            fullname += " " + entity.getName();
+        } else if (entity.getGroup().getAccounts().stream().filter(a -> !a.isDeleted()).count() > 1) {
+            fullname += " " + entity.getCurrency();
+        }
+        var shared = !entity.getGroup().getOwner().getId().equals(userId) && entity.getGroup().getAcls().stream()
+                .noneMatch(acl -> acl.getUser().getId().equals(userId) && acl.isAdmin());
         if (shared) {
-            accfullname += " (" + account.getGroup().getOwner().getName() + ")";
+            fullname += " (" + entity.getGroup().getOwner().getName() + ")";
         }
         return new AccountDto(
-                account.getId(),
-                account.getName(),
-                accfullname,
-                account.getCurrency(),
+                entity.getId(),
+                entity.getName(),
+                fullname,
+                entity.getCurrency(),
+                entity.getStartBalance(),
                 balance,
-                account.getStartBalance(),
                 opdate,
-                account.getDeleted());
+                entity.isDeleted());
     }
 }

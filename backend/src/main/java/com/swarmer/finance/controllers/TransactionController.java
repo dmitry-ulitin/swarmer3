@@ -1,24 +1,11 @@
 package com.swarmer.finance.controllers;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Collection;
-import java.util.List;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -27,135 +14,170 @@ import com.swarmer.finance.dto.ImportDto;
 import com.swarmer.finance.dto.RuleDto;
 import com.swarmer.finance.dto.Summary;
 import com.swarmer.finance.dto.TransactionDto;
-import com.swarmer.finance.dto.UserPrincipal;
 import com.swarmer.finance.models.BankType;
-import com.swarmer.finance.models.TransactionTypeConverter;
+import com.swarmer.finance.models.TransactionType;
+import com.swarmer.finance.security.UserPrincipal;
 import com.swarmer.finance.services.ImportService;
 import com.swarmer.finance.services.TransactionService;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
 @RestController
 @RequestMapping("/api/transactions")
-@Transactional
 public class TransactionController {
+
     private final TransactionService transactionService;
     private final ImportService importService;
 
+    @Autowired
     public TransactionController(TransactionService transactionService, ImportService importService) {
         this.transactionService = transactionService;
         this.importService = importService;
     }
 
     @GetMapping
-    List<TransactionDto> getTransactions(Authentication authentication,
-            @RequestParam(required = false, defaultValue = "") Collection<Long> accounts,
-            @RequestParam(required = false, defaultValue = "") String search,
-            @RequestParam(required = false, defaultValue = "") Long category,
-            @RequestParam(required = false, defaultValue = "") String currency,
-            @RequestParam(required = false, defaultValue = "") String from,
-            @RequestParam(required = false, defaultValue = "") String to,
-            @RequestParam(required = false, defaultValue = "0") int offset,
-            @RequestParam(required = false, defaultValue = "0") int limit) {
-        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
-        LocalDateTime fromDate = from.isBlank() ? null : LocalDate.parse(from).atStartOfDay();
-        LocalDateTime toDate = to.isBlank() ? null : LocalDate.parse(to).atTime(LocalTime.MAX);
-        return transactionService.getTransactions(userId, accounts, search, category, currency, fromDate, toDate,
-                offset, limit);
+    public ResponseEntity<List<TransactionDto>> getTransactions(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(required = false) Set<Long> accounts,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long category,
+            @RequestParam(required = false) String currency,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "20") int limit) {
+        Long userId = principal.getUserDto().id();
+        return ResponseEntity.ok(transactionService.getTransactions(userId, accounts, search, category, currency,
+                from == null ? null : from.atStartOfDay(), to == null ? null : to.atTime(LocalTime.MAX), offset,
+                limit));
     }
 
     @GetMapping("/{id}")
-    TransactionDto getTransaction(@PathVariable("id") Long id, Authentication authentication) {
-        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
-        return transactionService.getTransaction(id, userId);
+    public ResponseEntity<TransactionDto> getTransaction(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        Long userId = principal.getUserDto().id();
+        return ResponseEntity.ok(transactionService.getTransaction(id, userId));
     }
 
     @PostMapping
-    TransactionDto createTransaction(@RequestBody TransactionDto group, Authentication authentication) {
-        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
-        return transactionService.createTransaction(group, userId);
+    public ResponseEntity<TransactionDto> createTransaction(
+            @RequestBody TransactionDto transaction,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        Long userId = principal.getUserDto().id();
+        return ResponseEntity.ok(transactionService.createTransaction(transaction, userId));
     }
 
     @PutMapping("/{id}")
-    TransactionDto updateTransaction(@RequestBody TransactionDto group, @PathVariable Long id, Authentication authentication) {
-        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
-        return transactionService.updateTransaction(group, userId);
+    public ResponseEntity<TransactionDto> updateTransaction(
+            @PathVariable Long id,
+            @RequestBody TransactionDto transaction,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        Long userId = principal.getUserDto().id();
+        // Ensure the ID in the path matches the transaction
+        if (!id.equals(transaction.id())) {
+            throw new IllegalArgumentException("Transaction ID mismatch");
+        }
+        return ResponseEntity.ok(transactionService.updateTransaction(transaction, userId));
     }
 
     @DeleteMapping("/{id}")
-    void deleteTransaction(@PathVariable("id") Long id, Authentication authentication) {
-        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
+    public ResponseEntity<Void> deleteTransaction(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        Long userId = principal.getUserDto().id();
         transactionService.deleteTransaction(id, userId);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/summary")
-    Collection<Summary> getSummary(Authentication authentication,
-            @RequestParam(required = false, defaultValue = "") String from,
-            @RequestParam(required = false, defaultValue = "") String to,
-            @RequestParam(required = false, defaultValue = "") Collection<Long> accounts) {
-        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
-        LocalDateTime fromDate = from.isBlank() ? null : LocalDate.parse(from).atStartOfDay();
-        LocalDateTime toDate = to.isBlank() ? null : LocalDate.parse(to).atTime(LocalTime.MAX);
-        return transactionService.getSummary(userId, accounts, fromDate, toDate);
+    public ResponseEntity<Collection<Summary>> getSummary(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(required = false) Set<Long> accounts,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        Long userId = principal.getUserDto().id();
+        return ResponseEntity.ok(transactionService.getSummary(userId, accounts,
+                from == null ? null : from.atStartOfDay(), to == null ? null : to.atTime(LocalTime.MAX)));
     }
 
-    @GetMapping("/categories")
-    Collection<CategorySum> getCategoriesSummary(Authentication authentication,
-            @RequestParam(required = false, defaultValue = "1") Long type,
-            @RequestParam(required = false, defaultValue = "") String from,
-            @RequestParam(required = false, defaultValue = "") String to,
-            @RequestParam(required = false, defaultValue = "") Collection<Long> accounts) {
-        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
-        LocalDateTime fromDate = from.isBlank() ? null : LocalDate.parse(from).atStartOfDay();
-        LocalDateTime toDate = to.isBlank() ? null : LocalDate.parse(to).atTime(LocalTime.MAX);
-        return transactionService.getCategoriesSummary(userId,
-                new TransactionTypeConverter().convertToEntityAttribute(type), accounts, fromDate, toDate);
+    @GetMapping("categories")
+    public ResponseEntity<Collection<CategorySum>> getSummaryByCategories(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(required = false) Set<Long> accounts,
+            @RequestParam(required = false, defaultValue = "1") int type,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        Long userId = principal.getUserDto().id();
+        return ResponseEntity
+                .ok(transactionService.getCategoriesSummary(userId, TransactionType.fromValue(type), accounts,
+                        from == null ? null : from.atStartOfDay(), to == null ? null : to.atTime(LocalTime.MAX)));
     }
 
-    @PostMapping("/import")
-    List<ImportDto> importFile(@RequestParam("file") MultipartFile file, @RequestParam("id") Long accountId,
-            @RequestParam("bank") Long bankId, Authentication authentication) {
-        try {
-            var userId = ((UserPrincipal) authentication.getPrincipal()).id();
-            var bank = BankType.fromValue(bankId);
-            return importService.importFile(file.getInputStream(), bank, accountId, userId);
-        } catch (Exception e) {
+    @GetMapping("rules")
+    public ResponseEntity<Collection<RuleDto>> getRules(@AuthenticationPrincipal UserPrincipal principal) {
+        Long userId = principal.getUserDto().id();
+        return ResponseEntity.ok(importService.getRules(userId));
+    }
+
+    @PostMapping("rules")
+    public ResponseEntity<RuleDto> createRule(
+            @RequestBody RuleDto rule,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        Long userId = principal.getUserDto().id();
+        return ResponseEntity.ok(importService.createRule(rule, userId));
+    }
+
+    @PutMapping("rules/{id}")
+    public ResponseEntity<RuleDto> updateRule(
+            @PathVariable Long id,
+            @RequestBody RuleDto rule,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        Long userId = principal.getUserDto().id();
+        // Ensure the ID in the path matches the rule
+        if (!id.equals(rule.id())) {
+            throw new IllegalArgumentException("Rule ID mismatch");
+        }
+        return ResponseEntity.ok(importService.updateRule(id, rule, userId));
+    }
+
+    @DeleteMapping("rules/{id}")
+    public ResponseEntity<Void> deleteRule(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        Long userId = principal.getUserDto().id();
+        importService.deleteRule(id, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("import")
+    public ResponseEntity<List<ImportDto>> importFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(required = false, defaultValue = "1") int bank,
+            @RequestParam Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        Long userId = principal.getUserDto().id();
+        try (InputStream inputStream = file.getInputStream()) {
+            return ResponseEntity.ok(importService.importFile(inputStream, BankType.fromValue(bank), id, userId));
+        } catch (IOException | ParseException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad input file", e);
         }
     }
 
-    @PatchMapping("/import")
-    void saveImport(@RequestBody List<ImportDto> records, @RequestParam("account") Long accountId,
-            Authentication authentication) {
-        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
-        transactionService.saveImport(records, accountId, userId);
-    }
-
-    @GetMapping("/rules")
-    List<RuleDto> getRules(Authentication authentication) {
-        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
-        return importService.getRules(userId);
-    }
-
-    @GetMapping("/rules/{id}")
-    RuleDto getRule(@PathVariable("id") Long id, Authentication authentication) {
-        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
-        return importService.getRuleById(id, userId);
-    }
-
-    @PostMapping("/rules")
-    RuleDto addRule(@RequestBody RuleDto rule, Authentication authentication) {
-        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
-        return importService.addRule(rule, userId);
-    }
-
-    @PutMapping("/rules/{id}")
-    RuleDto updateRule(@RequestBody RuleDto rule, @PathVariable Long id, Authentication authentication) {
-        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
-        return importService.updateRule(rule, userId);
-    }
-
-    @DeleteMapping("/rules/{id}")
-    void deleteRule(@PathVariable("id") Long id, Authentication authentication) {
-        var userId = ((UserPrincipal) authentication.getPrincipal()).id();
-        importService.deleteRule(id, userId);
+    @PatchMapping("import")
+    public ResponseEntity<Void> importTransactions(
+            @RequestBody List<ImportDto> records,
+            @RequestParam Long account,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        Long userId = principal.getUserDto().id();
+        transactionService.saveImport(userId, account, records);
+        return ResponseEntity.ok().build();
     }
 }

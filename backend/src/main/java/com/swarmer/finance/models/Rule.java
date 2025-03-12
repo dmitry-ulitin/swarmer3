@@ -1,32 +1,37 @@
 package com.swarmer.finance.models;
 
-import java.time.LocalDateTime;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "rules")
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "rules")
 public class Rule {
     @Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "rule_seq")
-	@SequenceGenerator(name = "rule_seq", sequenceName = "rules_id_seq", allocationSize = 1)
-    Long id;   
-	Long ownerId;
-    ConditionType conditionType;
-    String conditionValue;
-    @ManyToOne Category category;
-    LocalDateTime created;
-    LocalDateTime updated;
-}
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(name = "owner_id", nullable = false)
+    private Long ownerId;
+    
+    @Column(name = "condition_type", nullable = false)
+    private ConditionType conditionType;
+    
+    @Column(name = "condition_value", nullable = false)
+    private String conditionValue;
+    
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+    
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime created = LocalDateTime.now();
+    
+    @Column(nullable = false)
+    private LocalDateTime updated = LocalDateTime.now();
+} 

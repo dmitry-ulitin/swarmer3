@@ -1,25 +1,27 @@
 package com.swarmer.finance.models;
 
-import java.util.stream.Stream;
-
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum BankType {
-    LHV(1L), TINKOFF(2L), SBER(3L), ALFABANK(4L), UNICREDIT(5L), CAIXA(6L);
-    private final Long value;
-    private BankType(Long value) {
+    LHV(1), TINKOFF(2), SBER(3), ALFABANK(4), UNICREDIT(5), CAIXA(6);
+
+    private final int value;
+
+    BankType(int value) {
         this.value = value;
     }
 
     @JsonValue
-    public Long getValue() {
+    public int getValue() {
         return value;
     }
-    
-    public static BankType fromValue(Long value) {
-        if (value == null) {
-            return null;
+
+    public static BankType fromValue(int value) {
+        for (BankType type : BankType.values()) {
+            if (type.value == value) {
+                return type;
+            }
         }
-        return Stream.of(BankType.values()).filter(c -> value == c.getValue()).findFirst().orElseThrow(IllegalArgumentException::new);
+        throw new IllegalArgumentException("Unknown BankType value: " + value);
     }
 }

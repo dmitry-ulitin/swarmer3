@@ -1,5 +1,5 @@
 {
-    "ownerId": 7,
+    "ownerId": 2,
     "created": "2023-04-16T15:00:12.951244954",
     "groups": [
         {
@@ -25,7 +25,7 @@
             "id": 30,
             "acls": [
                 {
-                    "user_id": 6,
+                    "userId": 1,
                     "admin": false,
                     "readonly": true,
                     "name": null,
@@ -62,7 +62,7 @@
             "id": 31,
             "acls": [
                 {
-                    "user_id": 6,
+                    "userId": 1,
                     "admin": false,
                     "readonly": true,
                     "name": "SEB",
@@ -217,9 +217,9 @@
     ],
     "transactions": [
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5141,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5141,
             "id": 7766,
             "opdate": "2023-04-12T00:00:00",
             "debit": 220.52,
@@ -231,9 +231,9 @@
             "updated": "2023-04-15T12:26:44.423128"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5083,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5083,
             "id": 7698,
             "opdate": "2023-03-02T00:00:00",
             "debit": 3.3,
@@ -245,9 +245,9 @@
             "updated": "2023-04-15T12:26:44.262163"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5083,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5083,
             "id": 7699,
             "opdate": "2023-03-02T00:00:00",
             "debit": 3.5,
@@ -259,9 +259,9 @@
             "updated": "2023-04-15T12:26:44.264032"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5083,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5083,
             "id": 7700,
             "opdate": "2023-03-02T00:00:00",
             "debit": 4.3,
@@ -273,9 +273,9 @@
             "updated": "2023-04-15T12:26:44.265757"
         },
         {
-            "account_id": null,
-            "recipient_id": 65,
-            "category_id": 5087,
+            "accountId": null,
+            "recipientId": 65,
+            "categoryId": 5087,
             "id": 7704,
             "opdate": "2023-03-05T00:00:00",
             "debit": 4.48,
@@ -287,9 +287,9 @@
             "updated": "2023-04-15T12:26:44.281852"
         },
         {
-            "account_id": null,
-            "recipient_id": 65,
-            "category_id": 5087,
+            "accountId": null,
+            "recipientId": 65,
+            "categoryId": 5087,
             "id": 7705,
             "opdate": "2023-03-05T00:00:00",
             "debit": 77.84,
@@ -301,9 +301,9 @@
             "updated": "2023-04-15T12:26:44.283083"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5083,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5083,
             "id": 7706,
             "opdate": "2023-03-05T00:00:00",
             "debit": 3.3,
@@ -315,9 +315,9 @@
             "updated": "2023-04-15T12:26:44.284465"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5083,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5083,
             "id": 7708,
             "opdate": "2023-03-06T00:00:00",
             "debit": 29.5,
@@ -329,9 +329,9 @@
             "updated": "2023-04-15T12:26:44.289023"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5101,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5101,
             "id": 7711,
             "opdate": "2023-03-07T00:00:00",
             "debit": 30.06,
@@ -343,9 +343,9 @@
             "updated": "2023-04-15T12:26:44.298841"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5083,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5083,
             "id": 7712,
             "opdate": "2023-03-09T00:00:00",
             "debit": 53.0,
@@ -357,9 +357,9 @@
             "updated": "2023-04-15T12:26:44.300543"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5103,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5103,
             "id": 7715,
             "opdate": "2023-03-09T00:00:00",
             "debit": 145.25,
@@ -371,9 +371,9 @@
             "updated": "2023-04-15T12:26:44.309447"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5083,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5083,
             "id": 7718,
             "opdate": "2023-03-12T00:00:00",
             "debit": 3.0,
@@ -385,9 +385,9 @@
             "updated": "2023-04-15T12:26:44.316021"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5140,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5140,
             "id": 7716,
             "opdate": "2023-03-10T00:00:00",
             "debit": 10.0,
@@ -399,9 +399,9 @@
             "updated": "2023-04-15T12:26:44.31245"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5140,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5140,
             "id": 7717,
             "opdate": "2023-03-10T00:00:00",
             "debit": 1.0,
@@ -413,9 +413,9 @@
             "updated": "2023-04-15T12:26:44.314195"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5127,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5127,
             "id": 7707,
             "opdate": "2023-03-05T00:00:00",
             "debit": 12.79,
@@ -427,9 +427,9 @@
             "updated": "2023-04-15T12:26:44.287176"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5101,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5101,
             "id": 7696,
             "opdate": "2023-03-01T00:00:00",
             "debit": 55.99,
@@ -441,9 +441,9 @@
             "updated": "2023-04-15T12:26:44.254231"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5101,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5101,
             "id": 7702,
             "opdate": "2023-03-03T00:00:00",
             "debit": 20.91,
@@ -455,9 +455,9 @@
             "updated": "2023-04-15T12:26:44.272882"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5103,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5103,
             "id": 7714,
             "opdate": "2023-03-09T00:00:00",
             "debit": 279.99,
@@ -469,9 +469,9 @@
             "updated": "2023-04-15T12:26:44.306719"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5103,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5103,
             "id": 7713,
             "opdate": "2023-03-09T00:00:00",
             "debit": 3.0,
@@ -483,9 +483,9 @@
             "updated": "2023-04-15T12:26:44.303772"
         },
         {
-            "account_id": null,
-            "recipient_id": 65,
-            "category_id": 5126,
+            "accountId": null,
+            "recipientId": 65,
+            "categoryId": 5126,
             "id": 7697,
             "opdate": "2023-03-01T00:00:00",
             "debit": 2320.17,
@@ -497,9 +497,9 @@
             "updated": "2023-04-15T12:26:44.259204"
         },
         {
-            "account_id": 62,
-            "recipient_id": null,
-            "category_id": 5127,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5127,
             "id": 7668,
             "opdate": "2023-04-02T00:00:00",
             "debit": 10.0,
@@ -511,9 +511,9 @@
             "updated": "2023-04-15T21:59:02.769847"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5128,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5128,
             "id": 7710,
             "opdate": "2023-03-07T00:00:00",
             "debit": 12.0,
@@ -525,9 +525,9 @@
             "updated": "2023-04-15T12:26:44.295271"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5083,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5083,
             "id": 7722,
             "opdate": "2023-03-13T00:00:00",
             "debit": 6.4,
@@ -539,9 +539,9 @@
             "updated": "2023-04-15T12:26:44.329301"
         },
         {
-            "account_id": 65,
-            "recipient_id": 67,
-            "category_id": null,
+            "accountId": 65,
+            "recipientId": 67,
+            "categoryId": null,
             "id": 7778,
             "opdate": "2023-03-15T13:43:40",
             "debit": 500.0,
@@ -553,9 +553,9 @@
             "updated": "2023-04-16T13:44:42.957887"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5110,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5110,
             "id": 7730,
             "opdate": "2023-03-19T00:00:00",
             "debit": 50.0,
@@ -567,9 +567,9 @@
             "updated": "2023-04-15T12:26:44.346845"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5112,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5112,
             "id": 7732,
             "opdate": "2023-03-20T00:00:00",
             "debit": 86.05,
@@ -581,9 +581,9 @@
             "updated": "2023-04-15T12:26:44.350509"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5083,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5083,
             "id": 7738,
             "opdate": "2023-03-24T00:00:00",
             "debit": 7.7,
@@ -595,9 +595,9 @@
             "updated": "2023-04-15T12:26:44.363128"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5119,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5119,
             "id": 7739,
             "opdate": "2023-03-24T00:00:00",
             "debit": 31.0,
@@ -609,9 +609,9 @@
             "updated": "2023-04-15T12:26:44.367574"
         },
         {
-            "account_id": null,
-            "recipient_id": 65,
-            "category_id": 5123,
+            "accountId": null,
+            "recipientId": 65,
+            "categoryId": 5123,
             "id": 7743,
             "opdate": "2023-03-31T00:00:00",
             "debit": 1137.98,
@@ -623,9 +623,9 @@
             "updated": "2023-04-15T12:26:44.380913"
         },
         {
-            "account_id": null,
-            "recipient_id": 65,
-            "category_id": 5126,
+            "accountId": null,
+            "recipientId": 65,
+            "categoryId": 5126,
             "id": 7746,
             "opdate": "2023-04-03T00:00:00",
             "debit": 3148.8,
@@ -637,9 +637,9 @@
             "updated": "2023-04-15T12:26:44.38731"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5083,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5083,
             "id": 7747,
             "opdate": "2023-04-04T00:00:00",
             "debit": 25.8,
@@ -651,9 +651,9 @@
             "updated": "2023-04-15T12:26:44.388704"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5128,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5128,
             "id": 7748,
             "opdate": "2023-04-04T00:00:00",
             "debit": 35.0,
@@ -665,9 +665,9 @@
             "updated": "2023-04-15T12:26:44.392985"
         },
         {
-            "account_id": null,
-            "recipient_id": 65,
-            "category_id": 5087,
+            "accountId": null,
+            "recipientId": 65,
+            "categoryId": 5087,
             "id": 7749,
             "opdate": "2023-04-05T00:00:00",
             "debit": 0.94,
@@ -679,9 +679,9 @@
             "updated": "2023-04-15T12:26:44.394241"
         },
         {
-            "account_id": null,
-            "recipient_id": 65,
-            "category_id": 5087,
+            "accountId": null,
+            "recipientId": 65,
+            "categoryId": 5087,
             "id": 7750,
             "opdate": "2023-04-05T00:00:00",
             "debit": 86.18,
@@ -693,9 +693,9 @@
             "updated": "2023-04-15T12:26:44.395397"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5140,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5140,
             "id": 7745,
             "opdate": "2023-04-03T00:00:00",
             "debit": 31.0,
@@ -707,9 +707,9 @@
             "updated": "2023-04-15T12:26:44.385241"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5141,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5141,
             "id": 7740,
             "opdate": "2023-03-24T00:00:00",
             "debit": 251.17,
@@ -721,9 +721,9 @@
             "updated": "2023-04-15T12:26:44.37335"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5112,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5112,
             "id": 7728,
             "opdate": "2023-03-17T00:00:00",
             "debit": 24.0,
@@ -735,9 +735,9 @@
             "updated": "2023-04-15T12:26:44.342137"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5112,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5112,
             "id": 7729,
             "opdate": "2023-03-17T00:00:00",
             "debit": 72.9,
@@ -749,9 +749,9 @@
             "updated": "2023-04-15T12:26:44.344743"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5112,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5112,
             "id": 7731,
             "opdate": "2023-03-20T00:00:00",
             "debit": 61.98,
@@ -763,9 +763,9 @@
             "updated": "2023-04-15T12:26:44.348837"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5127,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5127,
             "id": 7744,
             "opdate": "2023-04-02T00:00:00",
             "debit": 24.0,
@@ -777,9 +777,9 @@
             "updated": "2023-04-15T12:26:44.383334"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5101,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5101,
             "id": 7741,
             "opdate": "2023-03-26T00:00:00",
             "debit": 86.58,
@@ -791,9 +791,9 @@
             "updated": "2023-04-15T12:26:44.375136"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5110,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5110,
             "id": 7721,
             "opdate": "2023-03-12T00:00:00",
             "debit": 5.47,
@@ -805,9 +805,9 @@
             "updated": "2023-04-15T12:26:44.327134"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5128,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5128,
             "id": 7719,
             "opdate": "2023-03-12T00:00:00",
             "debit": 24.8,
@@ -819,9 +819,9 @@
             "updated": "2023-04-15T12:26:44.320132"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5128,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5128,
             "id": 7720,
             "opdate": "2023-03-12T00:00:00",
             "debit": 39.7,
@@ -833,9 +833,9 @@
             "updated": "2023-04-15T12:26:44.322815"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7763,
             "opdate": "2023-04-11T00:00:00",
             "debit": 25.47,
@@ -847,9 +847,9 @@
             "updated": "2023-04-15T12:26:44.417977"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5083,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5083,
             "id": 7764,
             "opdate": "2023-04-12T00:00:00",
             "debit": 7.4,
@@ -861,9 +861,9 @@
             "updated": "2023-04-15T12:26:44.419018"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7701,
             "opdate": "2023-03-02T00:00:00",
             "debit": 170.87,
@@ -875,9 +875,9 @@
             "updated": "2023-04-15T12:26:44.268987"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7724,
             "opdate": "2023-03-13T00:00:00",
             "debit": 8.0,
@@ -889,9 +889,9 @@
             "updated": "2023-04-15T12:26:44.333719"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7709,
             "opdate": "2023-03-06T00:00:00",
             "debit": 233.25,
@@ -903,9 +903,9 @@
             "updated": "2023-04-15T12:26:44.29246"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7723,
             "opdate": "2023-03-13T00:00:00",
             "debit": 11.2,
@@ -917,9 +917,9 @@
             "updated": "2023-04-15T12:26:44.332003"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7725,
             "opdate": "2023-03-14T00:00:00",
             "debit": 17.0,
@@ -931,9 +931,9 @@
             "updated": "2023-04-15T12:26:44.336044"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7726,
             "opdate": "2023-03-16T00:00:00",
             "debit": 30.0,
@@ -945,9 +945,9 @@
             "updated": "2023-04-15T12:26:44.338233"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7727,
             "opdate": "2023-03-16T00:00:00",
             "debit": 16.45,
@@ -959,9 +959,9 @@
             "updated": "2023-04-15T12:26:44.340098"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7733,
             "opdate": "2023-03-20T00:00:00",
             "debit": 5.35,
@@ -973,9 +973,9 @@
             "updated": "2023-04-15T12:26:44.352196"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7734,
             "opdate": "2023-03-20T00:00:00",
             "debit": 29.0,
@@ -987,9 +987,9 @@
             "updated": "2023-04-15T12:26:44.354262"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7735,
             "opdate": "2023-03-23T00:00:00",
             "debit": 6.25,
@@ -1001,9 +1001,9 @@
             "updated": "2023-04-15T12:26:44.356613"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7736,
             "opdate": "2023-03-24T00:00:00",
             "debit": 28.09,
@@ -1015,9 +1015,9 @@
             "updated": "2023-04-15T12:26:44.359228"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7737,
             "opdate": "2023-03-24T00:00:00",
             "debit": 8.65,
@@ -1029,9 +1029,9 @@
             "updated": "2023-04-15T12:26:44.361655"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7742,
             "opdate": "2023-03-30T00:00:00",
             "debit": 865.96,
@@ -1043,9 +1043,9 @@
             "updated": "2023-04-15T12:26:44.377488"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7751,
             "opdate": "2023-04-05T00:00:00",
             "debit": 12.65,
@@ -1057,9 +1057,9 @@
             "updated": "2023-04-15T12:26:44.3974"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7752,
             "opdate": "2023-04-08T00:00:00",
             "debit": 371.66,
@@ -1071,9 +1071,9 @@
             "updated": "2023-04-15T12:26:44.399009"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7753,
             "opdate": "2023-04-08T00:00:00",
             "debit": 11.2,
@@ -1085,9 +1085,9 @@
             "updated": "2023-04-15T12:26:44.400567"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7754,
             "opdate": "2023-04-08T00:00:00",
             "debit": 1.11,
@@ -1099,9 +1099,9 @@
             "updated": "2023-04-15T12:26:44.402095"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7755,
             "opdate": "2023-04-08T00:00:00",
             "debit": 2.11,
@@ -1113,9 +1113,9 @@
             "updated": "2023-04-15T12:26:44.403923"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7756,
             "opdate": "2023-04-09T00:00:00",
             "debit": 1.11,
@@ -1127,9 +1127,9 @@
             "updated": "2023-04-15T12:26:44.406381"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7758,
             "opdate": "2023-04-10T00:00:00",
             "debit": 3.73,
@@ -1141,9 +1141,9 @@
             "updated": "2023-04-15T12:26:44.409616"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7759,
             "opdate": "2023-04-10T00:00:00",
             "debit": 40.95,
@@ -1155,9 +1155,9 @@
             "updated": "2023-04-15T12:26:44.411496"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7761,
             "opdate": "2023-04-11T00:00:00",
             "debit": 11.46,
@@ -1169,9 +1169,9 @@
             "updated": "2023-04-15T12:26:44.414057"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5139,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5139,
             "id": 7762,
             "opdate": "2023-04-11T00:00:00",
             "debit": 9.27,
@@ -1183,9 +1183,9 @@
             "updated": "2023-04-15T12:26:44.415805"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5140,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5140,
             "id": 7757,
             "opdate": "2023-04-10T00:00:00",
             "debit": 10.0,
@@ -1197,9 +1197,9 @@
             "updated": "2023-04-15T12:26:44.407691"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5140,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5140,
             "id": 7760,
             "opdate": "2023-04-10T00:00:00",
             "debit": 1.0,
@@ -1211,9 +1211,9 @@
             "updated": "2023-04-15T12:26:44.412407"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5101,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5101,
             "id": 7765,
             "opdate": "2023-04-12T00:00:00",
             "debit": 27.06,
@@ -1225,9 +1225,9 @@
             "updated": "2023-04-15T12:26:44.420096"
         },
         {
-            "account_id": 65,
-            "recipient_id": null,
-            "category_id": 5101,
+            "accountId": 65,
+            "recipientId": null,
+            "categoryId": 5101,
             "id": 7703,
             "opdate": "2023-03-04T00:00:00",
             "debit": 41.04,
@@ -1239,9 +1239,9 @@
             "updated": "2023-04-15T12:26:44.279156"
         },
         {
-            "account_id": 65,
-            "recipient_id": 64,
-            "category_id": null,
+            "accountId": 65,
+            "recipientId": 64,
+            "categoryId": null,
             "id": 7775,
             "opdate": "2023-03-02T13:35:37",
             "debit": 190.0,
@@ -1253,9 +1253,9 @@
             "updated": "2023-04-16T13:35:52.25268"
         },
         {
-            "account_id": 64,
-            "recipient_id": null,
-            "category_id": 5127,
+            "accountId": 64,
+            "recipientId": null,
+            "categoryId": 5127,
             "id": 7776,
             "opdate": "2023-03-07T13:37:05",
             "debit": 20.0,
@@ -1267,9 +1267,9 @@
             "updated": "2023-04-16T13:37:24.466329"
         },
         {
-            "account_id": 64,
-            "recipient_id": null,
-            "category_id": 5151,
+            "accountId": 64,
+            "recipientId": null,
+            "categoryId": 5151,
             "id": 7777,
             "opdate": "2023-03-14T13:37:29",
             "debit": 15.0,
@@ -1283,7 +1283,7 @@
     ],
     "rules": [
         {
-            "category_id": 5083,
+            "categoryId": 5083,
             "id": 142,
             "conditionType": 2,
             "conditionValue": "BOLT.EU",
@@ -1291,7 +1291,7 @@
             "updated": "2023-04-15T12:14:58.359408"
         },
         {
-            "category_id": 5087,
+            "categoryId": 5087,
             "id": 145,
             "conditionType": 4,
             "conditionValue": "Interest received",
@@ -1299,7 +1299,7 @@
             "updated": "2023-04-15T12:16:40.96711"
         },
         {
-            "category_id": 5139,
+            "categoryId": 5139,
             "id": 143,
             "conditionType": 2,
             "conditionValue": "RYANAIR",
@@ -1307,7 +1307,7 @@
             "updated": "2023-04-15T12:15:17.021531"
         },
         {
-            "category_id": 5140,
+            "categoryId": 5140,
             "id": 149,
             "conditionType": 4,
             "conditionValue": "monthly fee",
@@ -1315,7 +1315,7 @@
             "updated": "2023-04-15T12:19:28.963058"
         },
         {
-            "category_id": 5112,
+            "categoryId": 5112,
             "id": 151,
             "conditionType": 1,
             "conditionValue": "MARKS & SPENCER",
@@ -1323,7 +1323,7 @@
             "updated": "2023-04-15T12:21:26.945797"
         },
         {
-            "category_id": 5127,
+            "categoryId": 5127,
             "id": 146,
             "conditionType": 1,
             "conditionValue": "KFC KRISTIINE",
@@ -1331,7 +1331,7 @@
             "updated": "2023-04-15T12:17:36.334246"
         },
         {
-            "category_id": 5101,
+            "categoryId": 5101,
             "id": 141,
             "conditionType": 2,
             "conditionValue": "Selver",
@@ -1339,7 +1339,7 @@
             "updated": "2023-04-15T12:14:35.993806"
         },
         {
-            "category_id": 5101,
+            "categoryId": 5101,
             "id": 144,
             "conditionType": 2,
             "conditionValue": "LIDO",
@@ -1347,7 +1347,7 @@
             "updated": "2023-04-15T12:16:03.720662"
         },
         {
-            "category_id": 5103,
+            "categoryId": 5103,
             "id": 148,
             "conditionType": 1,
             "conditionValue": "KRISTIINE KESKUSE EURO",
@@ -1355,7 +1355,7 @@
             "updated": "2023-04-15T12:18:57.380111"
         },
         {
-            "category_id": 5128,
+            "categoryId": 5128,
             "id": 147,
             "conditionType": 1,
             "conditionValue": "KAMIKADZE GRILL-RESTO",
@@ -1363,7 +1363,7 @@
             "updated": "2023-04-15T12:18:17.441885"
         },
         {
-            "category_id": 5128,
+            "categoryId": 5128,
             "id": 150,
             "conditionType": 2,
             "conditionValue": "RESTORAN",
