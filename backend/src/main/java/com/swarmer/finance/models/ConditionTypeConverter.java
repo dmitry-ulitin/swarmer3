@@ -1,7 +1,5 @@
 package com.swarmer.finance.models;
 
-import java.util.stream.Stream;
-
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
@@ -18,6 +16,6 @@ public class ConditionTypeConverter implements AttributeConverter<ConditionType,
         if (dbData == null) {
             return null;
         }
-        return Stream.of(ConditionType.values()).filter(c -> dbData == c.getValue()).findFirst().orElseThrow(IllegalArgumentException::new);
+        return ConditionType.fromValue(dbData);
     }
 }

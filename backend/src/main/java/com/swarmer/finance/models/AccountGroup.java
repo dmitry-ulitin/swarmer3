@@ -1,36 +1,41 @@
 package com.swarmer.finance.models;
 
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.SequenceGenerator;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+@Entity
+@Table(name = "account_groups")
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "account_groups")
 public class AccountGroup {
-	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "account_groups_seq")
-	@SequenceGenerator(name = "account_groups_seq", sequenceName = "account_groups_id_seq", allocationSize = 1)
-	Long id;
-	@ManyToOne User owner;
-	@OneToMany(mappedBy = "group", cascade = CascadeType.ALL) List<Acl> acls;
-	@OneToMany(mappedBy = "group", cascade = CascadeType.ALL) List<Account> accounts;
-	String name;
-    Boolean deleted;
-	LocalDateTime created;
-	LocalDateTime updated;
-}
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
+
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Account> accounts;
+
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL)
+    private List<Acl> acls;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime created = LocalDateTime.now();
+
+    @Column(nullable = false)
+    private LocalDateTime updated = LocalDateTime.now();
+} 

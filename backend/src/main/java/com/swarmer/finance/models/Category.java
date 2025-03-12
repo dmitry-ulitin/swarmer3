@@ -1,55 +1,34 @@
 package com.swarmer.finance.models;
 
-import java.time.LocalDateTime;
-import java.util.stream.Stream;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "categories")
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "categories")
 public class Category {
     @Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "category_seq")
-	@SequenceGenerator(name = "category_seq", sequenceName = "categories_id_seq", allocationSize = 1)
-	Long id;
-	Long ownerId;
-	Long parentId;
-	@JsonIgnore	@ManyToOne
-	@JoinColumn(name="parentId", insertable=false, updatable=false)
-	Category parent;
-	String name;
-	@JsonIgnore	LocalDateTime created;
-	@JsonIgnore	LocalDateTime updated;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false)
+    private Long ownerId;
+    
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    private Category parent;
 
-	public TransactionType getType() {
-		var root = this;
-		while (root.getParent() != null) {
-			root = root.getParent();
-		}
-		final var rootId = root.getId();
-		return Stream.of(TransactionType.values()).filter(c -> rootId == c.getValue()).findFirst().orElseThrow(IllegalArgumentException::new);
-	}
+    @Column(nullable = false)
+    private String name;
 
-	public Long getLevel() {
-		return parent == null ? 0 : (1 + parent.getLevel());
-	}
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime created = LocalDateTime.now();
 
-	public String getFullName() {
-		return parent == null || parent.getId() < 4 ? name : parent.getFullName() + " / " + name;
-	}
+    @Column(nullable = false)
+    private LocalDateTime updated = LocalDateTime.now();
 }

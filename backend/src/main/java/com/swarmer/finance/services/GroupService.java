@@ -1,161 +1,204 @@
 package com.swarmer.finance.services;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.swarmer.finance.dto.GroupDto;
+import com.swarmer.finance.exceptions.ResourceNotFoundException;
 import com.swarmer.finance.models.Account;
 import com.swarmer.finance.models.AccountGroup;
 import com.swarmer.finance.models.Acl;
-import com.swarmer.finance.repositories.GroupRepository;
-import com.swarmer.finance.repositories.AccountRepository;
+import com.swarmer.finance.models.AclId;
+import com.swarmer.finance.repositories.AccountGroupRepository;
+import com.swarmer.finance.repositories.AclRepository;
 import com.swarmer.finance.repositories.UserRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class GroupService {
-    private final GroupRepository groupRepository;
-    private final AccountRepository accountRepository;
+    private final AccountGroupRepository groupRepository;
+    private final AclRepository aclRepository;
     private final UserRepository userRepository;
     private final TransactionService transactionService;
-    private final AclService aclService;
 
-    public GroupService(GroupRepository groupRepository, AccountRepository accountRepository, UserRepository userRepository,
-            TransactionService transactionService,
-            AclService aclService) {
+    public GroupService(AccountGroupRepository groupRepository, AclRepository aclRepository,
+            UserRepository userRepository, TransactionService transactionService) {
         this.groupRepository = groupRepository;
-        this.accountRepository = accountRepository;
+        this.aclRepository = aclRepository;
         this.userRepository = userRepository;
         this.transactionService = transactionService;
-        this.aclService = aclService;
     }
 
+    @Transactional
     public List<GroupDto> getGroups(Long userId, LocalDateTime opdate) {
-        var aids = aclService.findAccounts(userId).map(a -> a.getId()).toList();
-        var balances = transactionService.getBalances(aids, null, opdate, null);
-        var userGroups = groupRepository.findByOwnerIdInOrderById(List.of(userId)).stream()
-                .map(g -> GroupDto.from(g, userId, balances))
-                .sorted((a, b) -> a.id().compareTo(b.id()))
+        var userGroups = groupRepository.findByOwnerIdOrderById(userId);
+        var sharedGroups = aclRepository.findByUserIdOrderByGroupId(userId).stream()
+                .map(acl -> acl.getGroup())
+                .filter(group -> !group.getOwner().getId().equals(userId))
                 .toList();
-        var sharedGroups = aclService.findByUserId(userId)
-                .map(a -> GroupDto.from(a.getGroup(), userId, balances))
-                .sorted((a, b) -> a.id().compareTo(b.id()))
-                .collect(Collectors.toList());
-
-        var allGroups = userGroups.stream().filter(GroupDto::owner).collect(Collectors.toList());
-
-        allGroups.addAll(userGroups.stream().filter(GroupDto::coowner).toList());
-        allGroups.addAll(sharedGroups.stream().filter(GroupDto::coowner).toList());
-        allGroups.addAll(sharedGroups.stream().filter(GroupDto::shared).toList());
-
+        var accList = Stream.concat(userGroups.stream(), sharedGroups.stream())
+                .flatMap(group -> group.getAccounts().stream())
+                .map(account -> account.getId())
+                .toList();
+        var balances = transactionService.getBalances(accList, null, opdate, null);
+        var allGroups = userGroups.stream().map(g -> GroupDto.fromEntity(g, userId, balances))
+                .filter(GroupDto::owner).collect(Collectors.toList());
+        allGroups.addAll(userGroups.stream()
+                .map(g -> GroupDto.fromEntity(g, userId, balances))
+                .filter(GroupDto::coowner)
+                .toList());
+        allGroups.addAll(sharedGroups.stream()
+                .map(g -> GroupDto.fromEntity(g, userId, balances))
+                .filter(GroupDto::coowner)
+                .toList());
+        allGroups.addAll(sharedGroups.stream()
+                .map(g -> GroupDto.fromEntity(g, userId, balances))
+                .filter(GroupDto::shared)
+                .toList());
         return allGroups;
     }
 
+    @Transactional
     public GroupDto getGroup(Long groupId, Long userId) {
-        var group = groupRepository.findById(groupId).orElseThrow();
-        var aids = group.getAccounts().stream().map(a -> a.getId()).toList();
-        var balances = transactionService.getBalances(aids);
-        return GroupDto.from(group, userId, balances);
+        var group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + groupId));
+        var accList = group.getAccounts().stream().map(account -> account.getId()).toList();
+        var balances = transactionService.getBalances(accList, null, null, null);
+        return GroupDto.fromEntity(group, userId, balances);
     }
 
+    @Transactional
     public GroupDto createGroup(GroupDto dto, Long userId) {
-        var entity = new AccountGroup();
-        entity.setOwner(userRepository.findById(userId).orElseThrow());
-        entity.setName(dto.fullName());
-        entity.setDeleted(false);
-        entity.setCreated(LocalDateTime.now());
-        entity.setUpdated(LocalDateTime.now());
-        var accounts = dto.accounts().stream().filter(account -> (account.deleted() == null || !account.deleted()))
-                .map(account -> new Account(null, entity, account.name(), account.currency(),
-                        account.startBalance() == null ? .0 : account.startBalance(), false,
-                        LocalDateTime.now(), LocalDateTime.now()))
-                .toList();
-        entity.setAccounts(accounts);
-        entity.setAcls(List.of());
-        groupRepository.save(entity);
-        if (!dto.permissions().isEmpty()) {
-            var acls = dto.permissions().stream().map(p -> {
-                var user = userRepository.findByEmail(p.user().email()).orElseThrow();
-                return new Acl(entity.getId(), entity, user.getId(), user, p.admin(), p.readonly(),
-                        null, LocalDateTime.now(), LocalDateTime.now());
-            }).toList();
-            entity.setAcls(acls);
-            groupRepository.save(entity);
-        }
-        return getGroup(entity.getId(), userId);
+        var group = new AccountGroup();
+        group.setOwner(userRepository.findById(userId).orElseThrow());
+        group.setName(dto.fullName());
+        group.setAccounts(dto.accounts().stream().map(a -> {
+            var account = new Account();
+            account.setGroup(group);
+            account.setName(a.name());
+            account.setCurrency(a.currency());
+            account.setStartBalance(a.startBalance());
+            return account;
+        }).toList());
+        group.setAcls(dto.permissions().stream().map(p -> {
+            var acl = new Acl();
+            acl.setGroup(group);
+            acl.setUser(userRepository.findByEmailIgnoreCase(p.user().email()).orElseThrow(
+                    () -> new UsernameNotFoundException("User not found with email: " + p.user().email())));
+            acl.setId(new AclId(group.getId(), acl.getUser().getId()));
+            acl.setAdmin(p.admin());
+            acl.setReadonly(p.readonly() && !p.admin());
+            return acl;
+        }).toList());
+        groupRepository.save(group);
+        return GroupDto.fromEntity(group, userId, List.of());
     }
 
+    @Transactional
     public GroupDto updateGroup(GroupDto dto, Long userId) {
-        var entity = groupRepository.findById(dto.id()).orElseThrow();
-        if (entity.getOwner().getId().equals(userId)) {
-            entity.setName(dto.fullName());
+        var group = groupRepository.findById(dto.id()).orElseThrow();
+        var admin = true;
+        if (!group.getOwner().getId().equals(userId)) {
+            var acl = group.getAcls().stream().filter(a -> a.getUser().getId().equals(userId)).findFirst().orElse(null);
+            if (acl == null || acl.isReadonly()) {
+                throw new RuntimeException("Not owner");
+            }
+            admin = acl.isAdmin();
+            var fullName = admin ? group.getName() : (group.getName() + " (" + acl.getUser().getName() + ")");
+            acl.setName(dto.fullName().equals(fullName) ? null : dto.fullName());
+        } else {
+            group.setName(dto.fullName());
         }
-        entity.setUpdated(LocalDateTime.now());
-        // save accounts
-        for (var account : dto.accounts()) {
-            if (account.id() == null || account.id() == 0) {
-                if ((account.deleted() == null || !account.deleted())) {
-                    var accountEntity = new Account(null, entity, account.name(), account.currency(),
-                            account.startBalance() == null ? .0 : account.startBalance(), false,
-                            LocalDateTime.now(), LocalDateTime.now());
-                    entity.getAccounts().add(accountEntity);
-                }
-            } else {
-                Account accountEntity = entity.getAccounts().stream().filter(a -> account.id().equals(a.getId()))
-                        .findFirst().orElseThrow();
-                accountEntity.setName(account.name());
-                accountEntity.setUpdated(LocalDateTime.now());
-                if (account.deleted() != null && account.deleted()) {
-                    if (transactionService.existsByAccountId(account.id())) {
-//                        throw new RuntimeException("Account has transactions");
-                        accountEntity.setDeleted(true);
+        var accList = group.getAccounts().stream().map(account -> account.getId()).toList();
+        var balances = transactionService.getBalances(accList, null, null, null);
+        if (admin) {
+            dto.accounts().forEach(a -> {
+                if (a.id() != null && a.id() != 0) {
+                    var account = group.getAccounts().stream().filter(acc -> acc.getId().equals(a.id()))
+                            .findFirst().orElseThrow();
+                    if (a.deleted() && balances.stream()
+                            .noneMatch(b -> a.id().equals(b.accountId()) || a.id().equals(b.recipientId()))) {
+                        group.getAccounts().remove(account);
                     } else {
-                        entity.getAccounts().remove(accountEntity);
-                        accountRepository.delete(accountEntity);
+                        account.setName(a.name());
+                        account.setCurrency(a.currency());
+                        account.setStartBalance(a.startBalance());
+                        account.setDeleted(a.deleted());
                     }
+                } else if (!a.deleted()) {
+                    var account = new Account();
+                    account.setGroup(group);
+                    account.setName(a.name());
+                    account.setCurrency(a.currency());
+                    account.setStartBalance(a.startBalance());
+                    group.getAccounts().add(account);
                 }
-            }
-        }
-        // save permissions
-        for (var permission : dto.permissions()) {
-            var user = userRepository.findByEmail(permission.user().email()).orElseThrow();
-            var acl = entity.getAcls().stream().filter(a -> user.getId().equals(a.getUserId())).findFirst()
-                    .orElse(null);
-            if (acl == null) {
-                entity.getAcls()
-                        .add(new Acl(entity.getId(), entity, user.getId(), user, permission.admin(),
-                                permission.readonly(),
-                                null, LocalDateTime.now(), LocalDateTime.now()));
-            } else {
-                if (acl.getUserId().equals(userId)) {
-                    var fullName = permission.admin() ? entity.getName() : (entity.getName() + " (" + entity.getOwner().getName() + ")");
-                    acl.setName(dto.fullName().equals(fullName) ? null : dto.fullName());
-                }
-                acl.setAdmin(permission.admin());
-                acl.setReadonly(permission.readonly());
-                acl.setUpdated(LocalDateTime.now());
-            }
-        }
-        entity.getAcls().stream().filter(
-                a -> !dto.permissions().stream().anyMatch(p -> p.user().email().equals(a.getUser().getEmail())))
-                .forEach(a -> aclService.delete(a));
-        entity.setAcls(entity.getAcls().stream().filter(
-                a -> dto.permissions().stream().anyMatch(p -> p.user().email().equals(a.getUser().getEmail())))
-                .collect(Collectors.toList()));
+            });
 
-        groupRepository.save(entity);
-        return getGroup(dto.id(), userId);
+            group.getAcls().stream().toList().forEach(acl -> {
+                var p = dto.permissions().stream()
+                        .filter(p1 -> p1.user().email().equalsIgnoreCase(acl.getUser().getEmail()))
+                        .findFirst().orElse(null);
+                if (p == null) {
+                    aclRepository.delete(acl);
+                    group.getAcls().remove(acl);
+                } else {
+                    acl.setAdmin(p.admin());
+                    acl.setReadonly(p.readonly() && !p.admin());
+                    acl.setUpdated(LocalDateTime.now());
+                    dto.permissions().remove(p);
+                }
+            });
+            dto.permissions().forEach(p -> {
+                var acl = new Acl();
+                acl.setUser(userRepository.findByEmailIgnoreCase(p.user().email()).orElseThrow());
+                if (!acl.getUser().getId().equals(userId)) {
+                    acl.setId(new AclId(group.getId(), acl.getUser().getId()));
+                    acl.setGroup(group);
+                    acl.setAdmin(p.admin());
+                    acl.setReadonly(p.readonly() && !p.admin());
+                    group.getAcls().add(acl);
+                }
+            });
+        }
+        group.setUpdated(LocalDateTime.now());
+        return GroupDto.fromEntity(groupRepository.save(group), userId, balances);
     }
 
+    @Transactional
     public void deleteGroup(Long groupId, Long userId) {
-        var groupEntity = groupRepository.findById(groupId).orElseThrow();
-        groupEntity.setDeleted(true);
-        groupEntity.setUpdated(LocalDateTime.now());
-        groupRepository.save(groupEntity);
+        var group = groupRepository.findById(groupId).orElseThrow();
+        if (!group.getOwner().getId().equals(userId)) {
+            var acl = group.getAcls().stream().filter(a -> a.getUser().getId().equals(userId)).findFirst().orElse(null);
+            if (acl == null || !acl.isAdmin()) {
+                throw new RuntimeException("Not owner");
+            }
+        }
+        var accList = group.getAccounts().stream().map(account -> account.getId()).toList();
+        var balances = transactionService.getBalances(accList, null, null, null);
+        if (balances.isEmpty()) {
+            groupRepository.delete(group);
+            return;
+        }
+        var dto = GroupDto.fromEntity(group, userId, balances);
+        dto.accounts().forEach(a -> {
+            if (!a.balance().equals(BigDecimal.ZERO)) {
+                throw new RuntimeException("Account not empty");
+            }
+        });
+        group.setDeleted(true);
+        group.setUpdated(LocalDateTime.now());
+        groupRepository.save(group);
     }
 
+    @Transactional
     public List<String> findUsers(String query) {
         return userRepository.findFirst10ByEmailnameContainingIgnoreCase(query).stream().map(u -> u.getEmail())
                 .toList();

@@ -1,78 +1,130 @@
 package com.swarmer.finance.controllers;
 
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Map;
-
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.swarmer.finance.dto.UserToCreate;
-import com.swarmer.finance.dto.LoginCredentials;
+import com.swarmer.finance.dto.UserDto;
 import com.swarmer.finance.models.User;
 import com.swarmer.finance.repositories.UserRepository;
+import com.swarmer.finance.security.JwtTokenProvider;
+import com.swarmer.finance.security.UserPrincipal;
+
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/api/auth")
-class AuthController {
-	private final UserRepository userRepository;
-	private final AuthenticationManager authenticationManager;
-	private final PasswordEncoder passwordEncoder;
-	@Value("${jwt_secret:secret}")
-	private String secret;
+public class AuthController {
 
-	AuthController(UserRepository userRepository, AuthenticationManager authenticationManager,
-			PasswordEncoder passwordEncoder) {
-		this.userRepository = userRepository;
-		this.authenticationManager = authenticationManager;
-		this.passwordEncoder = passwordEncoder;
-	}
+    private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider tokenProvider;
 
-	@PostMapping("/register")
-	Map<String, Object> register(@RequestBody UserToCreate userToCreate) {
-		String encodedPass = passwordEncoder.encode(userToCreate.password());
-		String currency = userToCreate.currency() == null || userToCreate.currency().isBlank() ? "EUR"
-				: userToCreate.currency();
-		var user = new User(null, userToCreate.email(), encodedPass, true, userToCreate.name(), currency,
-				LocalDateTime.now(), LocalDateTime.now(), null);
-		user = userRepository.save(user);
-		user = userRepository.findById(user.getId()).orElse(null);
-		var token = generateToken(user);
-		return Collections.singletonMap("token", token);
-	}
+    public AuthController(
+            AuthenticationManager authenticationManager,
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            JwtTokenProvider tokenProvider) {
+        this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.tokenProvider = tokenProvider;
+    }
 
-	@PostMapping("/login")
-	Map<String, Object> login(@RequestBody LoginCredentials credentials) {
-		try {
-			var authInputToken = new UsernamePasswordAuthenticationToken(credentials.getEmail(),
-					credentials.getPassword());
-			var authentication = authenticationManager.authenticate(authInputToken);
-			var user = (User) authentication.getPrincipal();
-			var token = generateToken(user);
-			return Collections.singletonMap("token", token);
-		} catch (Exception e) {
-			return Collections.singletonMap("error", e.getMessage());
-		}
-	}
+    @PostMapping("/login")
+    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+        Authentication authentication = authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(
+                loginRequest.getEmail(),
+                loginRequest.getPassword()
+            )
+        );
 
-	private String generateToken(User user) {
-		var token = JWT
-				.create()
-				.withSubject(user.getEmail())
-				.withClaim("id", user.getId())
-				.withClaim("name", user.getName())
-				.withClaim("currency", user.getCurrency())
-				.withIssuedAt(new Date())
-				.sign(Algorithm.HMAC256(secret));
-		return token;
-	}
-}
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = tokenProvider.generateToken(authentication);
+
+        return ResponseEntity.ok(Collections.singletonMap("token", jwt));
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
+        if (userRepository.findByEmailIgnoreCase(registerRequest.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().body("Email is already taken!");
+        }
+
+        User user = new User();
+        user.setName(registerRequest.getName());
+        user.setEmail(registerRequest.getEmail());
+        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+
+        userRepository.save(user);
+
+        String jwt = tokenProvider.generateToken(UserDto.fromEntity(user));
+
+        return ResponseEntity.ok(Collections.singletonMap("token", jwt));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
+        // Get current user from security context
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
+
+        // Find user in database
+        User user = userRepository.findById(principal.getUserDto().id())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        // Verify old password
+        if (!passwordEncoder.matches(changePasswordRequest.getOldPassword(), user.getPassword())) {
+            return ResponseEntity.badRequest().body("Current password is incorrect");
+        }
+
+        // Update password
+        user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+        userRepository.save(user);
+
+        return ResponseEntity.ok("Password changed successfully");
+    }
+
+    public static class LoginRequest {
+        private String email;
+        private String password;
+
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+    }
+
+    public static class RegisterRequest {
+        private String name;
+        private String email;
+        private String password;
+
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+    }
+
+    public static class ChangePasswordRequest {
+        private String oldPassword;
+        private String newPassword;
+
+        public String getOldPassword() { return oldPassword; }
+        public void setOldPassword(String oldPassword) { this.oldPassword = oldPassword; }
+        public String getNewPassword() { return newPassword; }
+        public void setNewPassword(String newPassword) { this.newPassword = newPassword; }
+    }
+} 

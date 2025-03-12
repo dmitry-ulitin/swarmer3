@@ -1,34 +1,41 @@
 package com.swarmer.finance.models;
 
-import java.time.LocalDateTime;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
+@Entity
+@Table(name = "accounts")
 @Data
-@Entity(name = "accounts")
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Account {
-	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "accounts_seq")
-	@SequenceGenerator(name = "accounts_seq", sequenceName = "accounts_id_seq", allocationSize = 1)
-    Long id;
-    @ManyToOne AccountGroup group;
-    String name;
-    String currency;
-    Double startBalance;
-    Boolean deleted;
-    LocalDateTime created;
-    LocalDateTime updated;
-}
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "group_id", nullable = false)
+    private AccountGroup group;
+
+    @Column(nullable = true)
+    private String name;
+
+    @Column(nullable = false, length = 5)
+    private String currency;
+
+    @Column(name = "start_balance", nullable = false)
+    private BigDecimal startBalance = BigDecimal.ZERO;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime created = LocalDateTime.now();
+
+    @Column(nullable = false)
+    private LocalDateTime updated = LocalDateTime.now();
+} 

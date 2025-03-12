@@ -3,22 +3,24 @@ package com.swarmer.finance.repositories;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
 import com.swarmer.finance.models.Category;
 
-public interface CategoryRepository extends CrudRepository<Category, Long> {
+@Repository
+public interface CategoryRepository extends JpaRepository<Category, Long> {
     List<Category> findByOwnerIdIsNullOrOwnerIdIn(Collection<Long> ids);
 
     List<Category> findAllByOwnerIdAndParentIdAndNameIgnoreCase(Long ownerId, Long parentId, String name);
 
-    @Modifying(clearAutomatically = true)
-    @Query("delete from categories where ownerId = ?1")
-    void removeByOwnerId(Long ownerId);
+    void deleteAllByOwnerIdIsNotNull();
 
+    void deleteAllByOwnerId(Long ownerId);
+    
     @Modifying
-    @Query("update categories set parentId = ?2 where parentId = ?1")
-    int replaceParentId(Long categoryId, Long replaceId);
+    @Query("update Category set parent.id = ?2 where parent.id = ?1")
+    int replaceParentId(Long oldId, Long newId);
 }

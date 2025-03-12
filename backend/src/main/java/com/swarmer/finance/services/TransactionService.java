@@ -1,5 +1,6 @@
 package com.swarmer.finance.services;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,12 +9,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.LongStream;
 
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
-import com.swarmer.finance.dto.CategoryIdSum;
+import com.swarmer.finance.dto.CategoryDto;
 import com.swarmer.finance.dto.CategorySum;
 import com.swarmer.finance.dto.ImportDto;
 import com.swarmer.finance.dto.Summary;
@@ -23,9 +23,7 @@ import com.swarmer.finance.models.Account;
 import com.swarmer.finance.models.Category;
 import com.swarmer.finance.models.Transaction;
 import com.swarmer.finance.models.TransactionType;
-import com.swarmer.finance.repositories.AccountRepository;
 import com.swarmer.finance.repositories.TransactionRepository;
-import com.swarmer.finance.repositories.UserRepository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.JoinType;
@@ -33,182 +31,23 @@ import jakarta.persistence.criteria.JoinType;
 @Service
 public class TransactionService {
     private final TransactionRepository transactionRepository;
-    private final AccountRepository accountRepository;
-    private final UserRepository userRepository;
     private final AclService aclService;
     private final CategoryService categoryService;
     private final EntityManager entityManager;
 
-    public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepository,
-            UserRepository userRepository, AclService aclService,
+    public TransactionService(TransactionRepository transactionRepository, AclService aclService,
             CategoryService categoryService, EntityManager entityManager) {
         this.transactionRepository = transactionRepository;
-        this.accountRepository = accountRepository;
-        this.userRepository = userRepository;
         this.aclService = aclService;
         this.categoryService = categoryService;
         this.entityManager = entityManager;
     }
 
-    public List<TransactionDto> getTransactions(Long userId, Collection<Long> accountIds,
-            String search, Long categoryId, String currency, LocalDateTime from, LocalDateTime to, int offset, int limit) {
-        var ai = accountIds.isEmpty() ? aclService.findAccounts(userId).map(a -> a.getId()).toList()
-                : new ArrayList<>(accountIds);
-        if (currency != null && !currency.isBlank()) {
-            ai = accountRepository.findByIdIn(ai).stream().filter(a -> currency.equals(a.getCurrency()))
-                    .map(a -> a.getId()).toList();
-        }
-        var trx = queryTransactions(userId, ai, search, categoryId, from, to, offset, limit);
-        ai = LongStream.concat(trx.stream().filter(t -> t.getAccount() != null).mapToLong(t -> t.getAccount().getId()),
-                trx.stream().filter(t -> t.getRecipient() != null).mapToLong(t -> t.getRecipient().getId())).distinct()
-                .boxed().toList();
-        if (trx.isEmpty()) {
-            return List.of();
-        }
-        var calcBalances = (search == null || search.isBlank()) && categoryId == null;
-        List<TransactionSum> rawBalnces = calcBalances ? getBalances(ai, null, trx.get(trx.size() - 1).getOpdate(),
-                trx.get(trx.size() - 1).getId()) : List.of();
-        Map<Long, Double> accBalances = new HashMap<>();
-        var dto = new TransactionDto[trx.size()];
-        for (int index = trx.size() - 1; index >= 0; index--) {
-            var transaction = trx.get(index);
-            Double accountBalance = null;
-            Double recipientBalance = null;
-            if (transaction.getAccount() != null && calcBalances) {
-                accountBalance = accBalances.get(transaction.getAccount().getId());
-                if (accountBalance == null) {
-                    accountBalance = transaction.getAccount().getStartBalance();
-                    accountBalance -= rawBalnces.stream()
-                            .filter(b -> transaction.getAccount().getId().equals(b.getAccountId()))
-                            .mapToDouble(b -> b.getDebit()).sum();
-                    accountBalance += rawBalnces.stream()
-                            .filter(b -> transaction.getAccount().getId().equals(b.getRecipientId()))
-                            .mapToDouble(b -> b.getCredit()).sum();
-                }
-                accountBalance -= transaction.getDebit();
-                accBalances.put(transaction.getAccount().getId(), accountBalance);
-            }
-            if (transaction.getRecipient() != null && calcBalances) {
-                recipientBalance = accBalances.get(transaction.getRecipient().getId());
-                if (recipientBalance == null) {
-                    recipientBalance = transaction.getRecipient().getStartBalance();
-                    recipientBalance -= rawBalnces.stream()
-                            .filter(b -> transaction.getRecipient().getId().equals(b.getAccountId()))
-                            .mapToDouble(b -> b.getDebit()).sum();
-                    recipientBalance += rawBalnces.stream()
-                            .filter(b -> transaction.getRecipient().getId().equals(b.getRecipientId()))
-                            .mapToDouble(b -> b.getCredit()).sum();
-                }
-                recipientBalance += transaction.getCredit();
-                accBalances.put(transaction.getRecipient().getId(), recipientBalance);
-            }
-            dto[index] = TransactionDto.from(transaction, userId, accountBalance, recipientBalance);
-        }
-        return Arrays.asList(dto);
-    }
-
-    public TransactionDto getTransaction(Long id, Long userId) {
-        var transaction = transactionRepository.findById(id).orElseThrow();
-        Double accountBalance = null;
-        Double recipientBalance = null;
-        var ai = new ArrayList<Long>();
-        if (transaction.getAccount() != null) {
-            ai.add(transaction.getAccount().getId());
-        }
-        if (transaction.getRecipient() != null) {
-            ai.add(transaction.getRecipient().getId());
-        }
-        var balances = getBalances(ai, null, transaction.getOpdate(), transaction.getId());
-        if (transaction.getAccount() != null) {
-            accountBalance = transaction.getAccount().getStartBalance();
-            accountBalance -= balances.stream().filter(b -> transaction.getAccount().getId().equals(b.getAccountId()))
-                    .mapToDouble(b -> b.getDebit()).sum();
-            accountBalance += balances.stream().filter(b -> transaction.getAccount().getId().equals(b.getRecipientId()))
-                    .mapToDouble(b -> b.getCredit()).sum();
-            accountBalance -= transaction.getDebit();
-        }
-        if (transaction.getRecipient() != null) {
-            recipientBalance = transaction.getRecipient().getStartBalance();
-            recipientBalance -= balances.stream()
-                    .filter(b -> transaction.getRecipient().getId().equals(b.getAccountId()))
-                    .mapToDouble(b -> b.getDebit()).sum();
-            recipientBalance += balances.stream()
-                    .filter(b -> transaction.getRecipient().getId().equals(b.getRecipientId()))
-                    .mapToDouble(b -> b.getCredit()).sum();
-            recipientBalance += transaction.getCredit();
-        }
-        return TransactionDto.from(transaction, userId, accountBalance, recipientBalance);
-    }
-
-    public TransactionDto createTransaction(TransactionDto dto, Long userId) {
-        var entity = new Transaction();
-        entity.setOwner(userRepository.findById(userId).orElseThrow());
-        entity.setCreated(LocalDateTime.now());
-        if (dto.category() != null) {
-            var category = categoryService.getCategory(dto.category(), entity.getOwner().getId());
-            entity.setCategory(category);
-        }
-        dto2entity(dto, entity);
-        transactionRepository.save(entity);
-        if (entity.getAccount() != null) {
-            updateCorrections(entity.getAccount().getId(), entity.getDebit(), entity.getOpdate(), null, true);
-        }
-        if (entity.getRecipient() != null) {
-            updateCorrections(entity.getRecipient().getId(), -entity.getCredit(), entity.getOpdate(), null, true);
-        }
-        return getTransaction(entity.getId(), userId);
-    }
-
-    public TransactionDto updateTransaction(TransactionDto dto, Long userId) {
-        var entity = transactionRepository.findById(dto.id()).orElseThrow();
-        if (entity.getAccount() != null) {
-            updateCorrections(entity.getAccount().getId(), -entity.getDebit(), entity.getOpdate(), entity.getId(),
-                    false);
-        }
-        if (entity.getRecipient() != null) {
-            updateCorrections(entity.getRecipient().getId(), entity.getCredit(), entity.getOpdate(), entity.getId(),
-                    false);
-        }
-        entity.setOwner(userRepository.findById(userId).orElseThrow());
-        var category = dto.category() == null ? null : categoryService.getCategory(dto.category(), entity.getOwner().getId());
-        entity.setCategory(category);
-        dto2entity(dto, entity);
-        transactionRepository.save(entity);
-        if (entity.getAccount() != null) {
-            updateCorrections(entity.getAccount().getId(), entity.getDebit(), entity.getOpdate(), entity.getId(), true);
-        }
-        if (entity.getRecipient() != null) {
-            updateCorrections(entity.getRecipient().getId(), -entity.getCredit(), entity.getOpdate(), entity.getId(),
-                    true);
-        }
-        return getTransaction(entity.getId(), userId);
-    }
-
-    public void deleteTransaction(Long id, Long userId) {
-        var entity = transactionRepository.findById(id).orElseThrow();
-        if (entity.getAccount() != null) {
-            updateCorrections(entity.getAccount().getId(), -entity.getDebit(), entity.getOpdate(), entity.getId(),
-                    true);
-        }
-        if (entity.getRecipient() != null) {
-            updateCorrections(entity.getRecipient().getId(), entity.getCredit(), entity.getOpdate(), entity.getId(),
-                    true);
-        }
-        transactionRepository.deleteById(id);
-    }
-
-    public List<TransactionSum> getBalances(Collection<Long> ai) {
-        return getBalances(ai, null, null, null);
-    }
-
-    // select t.account.id, t.recipient.id, sum(t.debit), sum(t.credit) from
-    // transactions t where t.account.id in :a or t.recipient.id in :a group by
-    // t.account.id, t.recipient.id
-    public List<TransactionSum> getBalances(Collection<Long> ai, LocalDateTime from, LocalDateTime to, Long id) {
+    public List<TransactionSum> getBalances(Collection<Long> accList, LocalDateTime from, LocalDateTime to, Long id) {
         var builder = entityManager.getCriteriaBuilder();
         var criteriaQuery = builder.createQuery(TransactionSum.class);
         var root = criteriaQuery.from(Transaction.class);
-        var where = builder.or(root.get("account").get("id").in(ai), root.get("recipient").get("id").in(ai));
+        var where = builder.or(root.get("account").get("id").in(accList), root.get("recipient").get("id").in(accList));
         if (from != null) {
             var greaterThanOrEqualTo = builder.greaterThanOrEqualTo(root.<LocalDateTime>get("opdate"), from);
             where = builder.and(where, greaterThanOrEqualTo);
@@ -223,76 +62,247 @@ public class TransactionService {
             where = builder.and(where, lessThanOpdate);
         }
         criteriaQuery.multiselect(root.get("account").get("id"), root.get("recipient").get("id"),
-                builder.sumAsDouble(root.get("debit")).alias("debit"),
-                builder.sumAsDouble(root.get("credit")).alias("credit"),
+                builder.sum(root.get("debit")).alias("debit"),
+                builder.sum(root.get("credit")).alias("credit"),
                 builder.max(root.get("opdate")).alias("opdate"))
                 .where(where)
                 .groupBy(root.get("account").get("id"), root.get("recipient").get("id"));
         return entityManager.createQuery(criteriaQuery).getResultList();
     }
 
-    public Collection<Summary> getSummary(Long userId, Collection<Long> accountIds, LocalDateTime from,
-            LocalDateTime to) {
-        Map<Long, Account> userAccounts = aclService.findAccounts(userId)
-                .collect(Collectors.toMap(a -> a.getId(), a -> a));
-        Map<Long, Account> resultAccounts = (accountIds.isEmpty() ? userAccounts.values()
-                : accountRepository.findByIdIn(accountIds))
-                .stream().collect(Collectors.toMap(a -> a.getId(), a -> a));
-        var result = resultAccounts.values().stream().map(a -> a.getCurrency())
-                .distinct()
-                .collect(Collectors.toMap(c -> c, c -> new Summary(c, .0, .0, .0, .0)));
-        var balances = getBalances(resultAccounts.keySet(), from, to, null);
-        for (var b : balances) {
-            if (resultAccounts.containsKey(b.getAccountId())) {
-                var aCurrency = resultAccounts.get(b.getAccountId()).getCurrency();
-                if (userAccounts.containsKey(b.getRecipientId())) {
-                    if (!resultAccounts.containsKey(b.getRecipientId())) {
-                        var rCurrency = userAccounts.get(b.getRecipientId()).getCurrency();
-                        if (result.containsKey(rCurrency)) {
-                            var rSummary = result.get(rCurrency);
-                            rSummary.setTransfers_debit(rSummary.getTransfers_debit() + b.getCredit());
-                        } else {
-                            var rSummary = result.get(aCurrency);
-                            rSummary.setTransfers_debit(rSummary.getTransfers_debit() + b.getDebit());
-                        }
-                    }
-                } else {
-                    var aSummary = result.get(aCurrency);
-                    aSummary.setDebit(aSummary.getDebit() + b.getDebit());
+    public TransactionDto getTransaction(Long id, Long userId) {
+        var transaction = transactionRepository.findById(id).orElseThrow();
+        var accList = new ArrayList<Long>();
+        if (transaction.getAccount() != null) {
+            accList.add(transaction.getAccount().getId());
+        }
+        if (transaction.getRecipient() != null) {
+            accList.add(transaction.getRecipient().getId());
+        }
+        var balances = getBalances(accList, null, transaction.getOpdate(), transaction.getId());
+        BigDecimal accountBalance = transaction.getAccount() == null ? null
+                : transaction.getAccount().getStartBalance()
+                        .add(balances.stream().filter(b -> transaction.getAccount().getId().equals(b.accountId()))
+                                .map(b -> b.debit()).reduce(BigDecimal.ZERO, BigDecimal::add));
+        BigDecimal recipientBalance = transaction.getRecipient() == null ? null
+                : transaction.getRecipient().getStartBalance()
+                        .add(balances.stream().filter(b -> transaction.getRecipient().getId().equals(b.accountId()))
+                                .map(b -> b.credit()).reduce(BigDecimal.ZERO, BigDecimal::add));
+        return TransactionDto.fromEntity(transaction, userId, accountBalance, recipientBalance);
+    }
+
+    public List<TransactionDto> getTransactions(Long userId, Collection<Long> accountIdsFilter, String search,
+            Long categoryId, String currency, LocalDateTime from, LocalDateTime to, int offset, int limit) {
+        var userAccounts = aclService.getAccounts(userId);
+        var validAccountIds = userAccounts.stream()
+                .filter(a -> currency == null || currency.isBlank() || currency.equals(a.getCurrency()))
+                .map(Account::getId)
+                .filter(id -> accountIdsFilter == null || accountIdsFilter.isEmpty() || accountIdsFilter.contains(id))
+                .toList();
+        if (validAccountIds.isEmpty()) {
+            return List.of();
+        }
+        var trx = queryTransactions(userId, validAccountIds, search, categoryId, from, to, offset, limit);
+        if (trx.isEmpty()) {
+            return List.of();
+        }
+        var actualAccountIds = trx.stream().flatMap(t -> {
+            var list = new ArrayList<Long>();
+            if (t.getAccount() != null) {
+                list.add(t.getAccount().getId());
+            }
+            if (t.getRecipient() != null) {
+                list.add(t.getRecipient().getId());
+            }
+            return list.stream();
+        }).toList();
+        var last = trx.getLast();
+        var calcBalances = (search == null || search.isBlank()) && categoryId == null;
+        List<TransactionSum> rawBalnces = calcBalances
+                ? getBalances(actualAccountIds, null, last.getOpdate(), last.getId())
+                : List.of();
+        Map<Long, BigDecimal> accBalances = new HashMap<>();
+        var dto = new TransactionDto[trx.size()];
+        // iterate over transactions in reverse order
+        for (var i = trx.size() - 1; i >= 0; i--) {
+            var t = trx.get(i);
+            var account = t.getAccount();
+            var recipient = t.getRecipient();
+            BigDecimal accountBalance = null;
+            BigDecimal recipientBalance = null;
+            if (calcBalances) {
+                if (account != null) {
+                    accountBalance = accBalances.computeIfAbsent(account.getId(), id -> account.getStartBalance()
+                            .subtract(rawBalnces.stream().filter(b -> account.getId().equals(b.accountId()))
+                                    .map(b -> b.debit()).reduce(BigDecimal.ZERO, BigDecimal::add))
+                            .add(rawBalnces.stream().filter(b -> account.getId().equals(b.recipientId()))
+                                    .map(b -> b.credit()).reduce(BigDecimal.ZERO, BigDecimal::add)));
+                    accountBalance = accountBalance.subtract(t.getDebit());
+                    accBalances.put(account.getId(), accountBalance);
+                }
+                if (recipient != null) {
+                    recipientBalance = accBalances.computeIfAbsent(recipient.getId(), id -> recipient.getStartBalance()
+                            .subtract(rawBalnces.stream().filter(b -> recipient.getId().equals(b.accountId()))
+                                    .map(b -> b.debit()).reduce(BigDecimal.ZERO, BigDecimal::add))
+                            .add(rawBalnces.stream().filter(b -> recipient.getId().equals(b.recipientId()))
+                                    .map(b -> b.credit()).reduce(BigDecimal.ZERO, BigDecimal::add)));
+                    recipientBalance = recipientBalance.add(t.getCredit());
+                    accBalances.put(recipient.getId(), recipientBalance);
                 }
             }
-            if (resultAccounts.containsKey(b.getRecipientId())) {
-                var rCurrency = resultAccounts.get(b.getRecipientId()).getCurrency();
-                if (userAccounts.containsKey(b.getAccountId())) {
-                    if (!resultAccounts.containsKey(b.getAccountId())) {
-                        var aCurrency = userAccounts.get(b.getAccountId()).getCurrency();
-                        if (result.containsKey(aCurrency)) {
-                            var aSummary = result.get(aCurrency);
-                            aSummary.setTransfers_credit(aSummary.getTransfers_credit() + b.getDebit());
-                        } else {
-                            var aSummary = result.get(rCurrency);
-                            aSummary.setTransfers_credit(aSummary.getTransfers_credit() + b.getCredit());
-                        }
-                    }
+            dto[i] = TransactionDto.fromEntity(t, userId, accountBalance, recipientBalance);
+        }
+        return Arrays.asList(dto);
+    }
+
+    public TransactionDto createTransaction(TransactionDto dto, Long userId) {
+        var transaction = new Transaction();
+        return saveTransaction(transaction, dto, userId);
+    }
+
+    public TransactionDto updateTransaction(TransactionDto dto, Long userId) {
+        var transaction = transactionRepository.findById(dto.id()).orElseThrow();
+        return saveTransaction(transaction, dto, userId);
+    }
+
+    private TransactionDto saveTransaction(Transaction trx, TransactionDto dto, Long userId) {
+        if (trx.getId() != null) {
+            updateCorrections(userId, trx.getAccount(), trx.getDebit().negate(), trx.getOpdate(), trx.getId(), false);
+            updateCorrections(userId, trx.getRecipient(), trx.getCredit(), trx.getOpdate(), trx.getId(), false);
+        }
+        trx.setOwnerId(userId);
+        trx.setOpdate(dto.opdate());
+        trx.setAccount(dto.account() == null ? null : entityManager.find(Account.class, dto.account().id()));
+        trx.setDebit(dto.debit());
+        trx.setRecipient(dto.recipient() == null ? null : entityManager.find(Account.class, dto.recipient().id()));
+        trx.setCredit(dto.credit());
+        trx.setCategory(dto.category() == null ? null : categoryService.getCategory(dto.category(), userId));
+        trx.setCurrency(dto.currency());
+        trx.setParty(dto.party());
+        trx.setDetails(dto.details());
+        trx.setUpdated(LocalDateTime.now());
+        transactionRepository.save(trx);
+        updateCorrections(userId, trx.getAccount(), dto.debit(), dto.opdate(), trx.getId(), true);
+        updateCorrections(userId, trx.getRecipient(), dto.credit().negate(), dto.opdate(), trx.getId(), true);
+        return getTransaction(trx.getId(), userId);
+    }
+
+    public void deleteTransaction(Long id, Long userId) {
+        var trx = transactionRepository.findById(id).orElseThrow();
+        updateCorrections(userId, trx.getAccount(), trx.getDebit().negate(), trx.getOpdate(), trx.getId(), true);
+        updateCorrections(userId, trx.getRecipient(), trx.getCredit(), trx.getOpdate(), trx.getId(), true);
+        transactionRepository.delete(trx);
+    }
+
+    public void saveImport(Long userId, Long accountId, List<ImportDto> records) {
+        var account = entityManager.find(Account.class, accountId);
+        var minOpdate = records.stream().map(ImportDto::getOpdate).min(LocalDateTime::compareTo).orElse(null);
+        var corrections = queryTransactions(userId, List.of(accountId), null,
+                (long) (TransactionType.CORRECTION.getValue()), minOpdate, null, 0, 0);
+        for (var record : records) {
+            if (record.isSelected()) {
+                var transaction = new Transaction();
+                transaction.setOwnerId(userId);
+                transaction.setOpdate(record.getOpdate());
+                if (record.getType() == TransactionType.EXPENSE) {
+                    transaction.setAccount(account);
                 } else {
-                    var rSummary = result.get(rCurrency);
-                    rSummary.setCredit(rSummary.getCredit() + b.getCredit());
+                    transaction.setRecipient(account);
                 }
+                transaction.setDebit(record.getDebit());
+                transaction.setCredit(record.getCredit());
+                transaction.setCategory(categoryService.getCategory(record.getCategory(), userId));
+                transaction.setCurrency(record.getCurrency());
+                transaction.setParty(record.getParty());
+                transaction.setDetails(record.getDetails());
+                transactionRepository.save(transaction);
+                corrections.stream().filter(c -> c.getOpdate().isAfter(record.getOpdate()))
+                        .forEach(c -> updateCorrection(c, record.getType() == TransactionType.EXPENSE
+                                ? record.getDebit()
+                                : record.getCredit().negate()));
+            } else if (record.getId() != null) {
+                var transaction = transactionRepository.findById(record.getId()).orElseThrow();
+                if (transaction.getParty() == null || transaction.getParty().isBlank()) {
+                    transaction.setParty(record.getParty());
+                }
+                if (transaction.getDetails() == null || transaction.getDetails().isBlank()) {
+                    transaction.setDetails(record.getDetails());
+                }
+                transaction.setOwnerId(userId);
+                transaction.setUpdated(LocalDateTime.now());
+                transactionRepository.save(transaction);
             }
         }
+        corrections.stream().filter(c -> c.getCredit().equals(BigDecimal.ZERO) && c.getDebit().equals(BigDecimal.ZERO))
+                .forEach(c -> transactionRepository.delete(c));
+        ;
+    }
+
+    public Collection<Summary> getSummary(Long userId, Collection<Long> accountIdsFilter, LocalDateTime from,
+            LocalDateTime to) {
+        var userAccounts = aclService.getAccounts(userId);
+        var validAccounts = userAccounts.stream()
+                .filter(a -> accountIdsFilter == null || accountIdsFilter.isEmpty()
+                        || accountIdsFilter.contains(a.getId()))
+                .collect(Collectors.toMap(a -> a.getId(), a -> a));
+        if (validAccounts.isEmpty()) {
+            return List.of();
+        }
+        var result = validAccounts.values().stream().map(Account::getCurrency).distinct()
+                .collect(Collectors.toMap(c -> c,
+                        c -> new Summary(c, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)));
+        getBalances(validAccounts.keySet(), from, to, null).forEach(b -> {
+            if (validAccounts.containsKey(b.accountId())) {
+                var account = validAccounts.get(b.accountId());
+                var summary = result.get(account.getCurrency());
+                if (b.recipientId() == null) {
+                    // expense
+                    summary.setDebit(summary.getDebit().add(b.debit()));
+                } else {
+                    // transfer
+                    if (!validAccounts.containsKey(b.recipientId())) {
+                        summary.setTransfers_debit(summary.getTransfers_debit().add(b.debit()));
+                    }
+                }
+            }
+            if (validAccounts.containsKey(b.recipientId())) {
+                var recipient = validAccounts.get(b.recipientId());
+                var summary = result.get(recipient.getCurrency());
+                if (b.accountId() == null) {
+                    // income
+                    summary.setCredit(summary.getCredit().add(b.credit()));
+                } else {
+                    // transfer
+                    if (!validAccounts.containsKey(b.accountId())) {
+                        summary.setTransfers_credit(summary.getTransfers_credit().add(b.credit()));
+                    }
+                }
+            }
+        });
         return result.values();
     }
 
-    public Collection<CategorySum> getCategoriesSummary(Long userId, TransactionType type, Collection<Long> accountIds,
-            LocalDateTime from,
-            LocalDateTime to) {
-        var ai = accountIds.isEmpty() ? aclService.findAccounts(userId).map(a -> a.getId()).toList() : accountIds;
+    public Collection<CategorySum> getCategoriesSummary(Long userId, TransactionType type,
+            Collection<Long> accountIdsFilter,
+            LocalDateTime from, LocalDateTime to) {
+        if (type != TransactionType.EXPENSE && type != TransactionType.INCOME) {
+            return List.of();
+        }
+        var userAccounts = aclService.getAccounts(userId);
+        var validAccounts = userAccounts.stream().map(Account::getId)
+                .filter(a -> accountIdsFilter == null || accountIdsFilter.isEmpty()
+                        || accountIdsFilter.contains(a))
+                .toList();
+        if (validAccounts.isEmpty()) {
+            return List.of();
+        }
         var builder = entityManager.getCriteriaBuilder();
-        var criteriaQuery = builder.createQuery(CategoryIdSum.class);
+        var criteriaQuery = builder.createQuery(CategorySum.class);
         var root = criteriaQuery.from(Transaction.class);
+        var category = root.join("category", JoinType.LEFT);
         var where = type == TransactionType.EXPENSE
-                ? builder.and(root.get("account").get("id").in(ai), root.get("recipient").isNull())
-                : builder.and(root.get("account").isNull(), root.get("recipient").get("id").in(ai));
+                ? builder.and(root.get("account").get("id").in(validAccounts), root.get("recipient").isNull())
+                : builder.and(root.get("account").isNull(), root.get("recipient").get("id").in(validAccounts));
         if (from != null) {
             var greaterThanOrEqualTo = builder.greaterThanOrEqualTo(root.<LocalDateTime>get("opdate"), from);
             where = builder.and(where, greaterThanOrEqualTo);
@@ -302,164 +312,69 @@ public class TransactionService {
             where = builder.and(where, lessThanOpdate);
         }
         if (type == TransactionType.EXPENSE) {
-            criteriaQuery.multiselect(root.get("category").get("id"),
-                    root.get("account").get("currency"),
-                    builder.sumAsDouble(root.get("debit")).alias("amount"))
-                    .where(where)
-                    .groupBy(root.get("category"), root.get("account").get("currency"));
+            criteriaQuery.multiselect(category, root.get("account").get("currency"),
+                    builder.sum(root.get("debit")).alias("sum")).where(where)
+                    .groupBy(category, root.get("account").get("currency"));
         } else {
-            criteriaQuery.multiselect(root.get("category").get("id"),
-                    root.get("recipient").get("currency"),
-                    builder.sumAsDouble(root.get("credit")).alias("amount"))
-                    .where(where)
-                    .groupBy(root.get("category").get("id"), root.get("recipient").get("currency"));
+            criteriaQuery.multiselect(category, root.get("recipient").get("currency"),
+                    builder.sum(root.get("credit")).alias("sum")).where(where)
+                    .groupBy(category, root.get("recipient").get("currency"));
         }
-        var categoryIdSums = entityManager.createQuery(criteriaQuery).getResultList();
-        var categorySums = categoryIdSums.stream()
-                .map(r -> new CategorySum(r.getId() == null ? null : entityManager.find(Category.class, r.getId()),
-                        r.getCurrency(), r.getSum()))
-                .toList();
-        // group by to parent category
-        for (var cs : categorySums) {
-            var category = cs.getCategory();
-            if (category != null) {
-                while (category.getLevel() > 1) {
-                    category = entityManager.find(Category.class, category.getParentId());
+        var categorySums = entityManager.createQuery(criteriaQuery).getResultList();
+        var typecat = CategoryDto.fromEntity(entityManager.find(Category.class, type.getValue()));
+        categorySums.forEach(cs -> {
+            if (cs.getCategory() == null) {
+                cs.setCategory(typecat);
+            } else if (cs.getCategory().ownerId() != userId && cs.getCategory().level() > 0
+                    || cs.getCategory().level() > 1) {
+                Category cat = categoryService.getCategory(cs.getCategory(), userId);
+                while (cat.getParent().getParent() != null) {
+                    cat = cat.getParent();
                 }
-                var fullName = category.getFullName();
-                category = categorySums.stream().filter(c -> c.getCategory() != null && c.getCategory().getFullName().equals(fullName))
-                        .findFirst().map(c -> c.getCategory()).orElse(category);
-                cs.setCategory(category);
-            } else {
-                cs.setCategory(entityManager.find(Category.class, Long.valueOf(type.getValue())));
+                cs.setCategory(CategoryDto.fromEntity(cat));
             }
-        }
-        var groups = categorySums.stream()
-                .collect(Collectors.groupingBy(cs -> Pair.of(cs.getCurrency(), cs.getCategory())));
-        return groups.entrySet().stream().map(e -> e.getValue().stream()
-                .reduce(new CategorySum(e.getKey().getSecond(), e.getKey().getFirst(), .0), (a, g) -> {
-                    a.setSum(a.getSum() + g.getSum());
-                    return a;
-                })).sorted((a, b) -> a.getCategory().getFullName().compareToIgnoreCase(b.getCategory().getFullName()))
-                .toList();
+        });
+        categorySums = categorySums.stream()
+                .collect(Collectors.groupingBy(cs -> Pair.of(cs.getCurrency(), cs.getCategory()))).entrySet().stream()
+                .map(e -> e.getValue().stream().reduce(
+                        new CategorySum(e.getKey().getSecond(), e.getKey().getFirst(), BigDecimal.ZERO), (a, g) -> {
+                            a.setSum((a.getSum().add(g.getSum())));
+                            return a;
+                        }))
+                .sorted((a, b) -> a.getCategory().fullName().compareToIgnoreCase(b.getCategory().fullName())).toList();
+        return categorySums;
+
     }
 
-    public void saveImport(List<ImportDto> records, Long accountId, Long userId) {
-        var owner = userRepository.findById(userId).orElseThrow();
-        var account = accountRepository.findById(accountId).orElseThrow();
-        var minOpdate = records.stream().filter(ImportDto::isSelected).map(r -> r.getOpdate())
-                .min((a, b) -> a.compareTo(b)).orElse(LocalDateTime.now());
-        var corrections = getCorrections(accountId, minOpdate, null);
-        for (var dto : records) {
-            if (dto.getId() != null && !dto.isSelected()) {
-                var entity = transactionRepository.findById(dto.getId()).orElseThrow();
-                if (entity.getParty() == null || entity.getParty().isBlank()) {
-                    entity.setParty(dto.getParty());
-                }
-                if (entity.getDetails() == null || entity.getDetails().isBlank()) {
-                    entity.setDetails(dto.getDetails());
-                }
-                entity.setOwner(owner);
-                entity.setUpdated(LocalDateTime.now());
-                transactionRepository.save(entity);
-            } else if (dto.isSelected()) {
-                var entity = new Transaction();
-                entity.setOwner(owner);
-                entity.setOpdate(dto.getOpdate());
-                if (dto.getType() == TransactionType.EXPENSE) {
-                    entity.setAccount(account);
-                }
-                entity.setDebit(dto.getDebit());
-                if (dto.getType() == TransactionType.INCOME) {
-                    entity.setRecipient(account);
-                }
-                entity.setCredit(dto.getCredit());
-                if (dto.getCategory() != null) {
-                    var category = categoryService.getCategory(dto.getCategory(), userId);
-                    entity.setCategory(category);
-                }
-                entity.setCurrency(dto.getCurrency());
-                entity.setParty(dto.getParty());
-                entity.setDetails(dto.getDetails());
-                entity.setUpdated(LocalDateTime.now());
-                entity.setCreated(LocalDateTime.now());
-                transactionRepository.save(entity);
-                dto.setId(entity.getId());
-                corrections.stream().filter(c -> c.getOpdate().isAfter(dto.getOpdate()))
-                        .forEach(correction -> updateCorrection(correction, accountId,
-                                dto.getType() == TransactionType.EXPENSE ? dto.getDebit() : -dto.getCredit()));
-            }
+    private void updateCorrections(Long userId, Account account, BigDecimal amount, LocalDateTime opdate, Long id,
+            Boolean removeZeros) {
+        if (account == null) {
+            return;
         }
-        corrections.stream().filter(c -> c.getCredit() == 0 && c.getDebit() == 0)
-                .forEach(c -> transactionRepository.delete(c));
-    }
-
-    private void dto2entity(TransactionDto dto, Transaction entity) {
-        entity.setOpdate(dto.opdate());
-        if (dto.account() != null) {
-            entity.setAccount(accountRepository.findById(dto.account().id()).orElseThrow());
-        }
-        entity.setDebit(dto.debit());
-        if (dto.recipient() != null) {
-            entity.setRecipient(accountRepository.findById(dto.recipient().id()).orElseThrow());
-        }
-        entity.setCredit(dto.credit());
-        entity.setCurrency(dto.currency());
-        entity.setParty(dto.party());
-        entity.setDetails(dto.details());
-        entity.setUpdated(LocalDateTime.now());
-    }
-
-    private void updateCorrections(Long accountId, Double amount, LocalDateTime opdate, Long id, Boolean removeZeros) {
-        var corrections = getCorrections(accountId, opdate, id);
+        var corrections = queryTransactions(userId, List.of(account.getId()), null,
+                (long) (TransactionType.CORRECTION.getValue()), opdate, null, 0, 0);
         for (var correction : corrections) {
-            updateCorrection(correction, accountId, amount);
-            if (removeZeros && correction.getCredit() == 0 && correction.getDebit() == 0) {
+            updateCorrection(correction, amount);
+            if (removeZeros && correction.getCredit().equals(BigDecimal.ZERO)
+                    && correction.getDebit().equals(BigDecimal.ZERO)) {
                 transactionRepository.delete(correction);
             }
         }
     }
 
-    private void updateCorrection(Transaction correction, Long accountId, Double amount) {
-        if (correction.getAccount() != null && correction.getAccount().getId().equals(accountId)) {
-            correction.setCredit(correction.getCredit() - amount);
-            correction.setDebit(correction.getDebit() - amount);
-            if (correction.getCredit() < 0) {
-                correction.setCredit(-correction.getCredit());
-                correction.setDebit(-correction.getDebit());
-                correction.setRecipient(correction.getAccount());
-                correction.setAccount(null);
-            }
-        } else if (correction.getRecipient() != null && correction.getRecipient().getId().equals(accountId)) {
-            correction.setCredit(correction.getCredit() + amount);
-            correction.setDebit(correction.getDebit() + amount);
-            if (correction.getCredit() < 0) {
-                correction.setCredit(-correction.getCredit());
-                correction.setDebit(-correction.getDebit());
-                correction.setAccount(correction.getRecipient());
-                correction.setRecipient(null);
-            }
+    private void updateCorrection(Transaction correction, BigDecimal amount) {
+        if (correction.getAccount() == null) {
+            amount = amount.negate();
         }
-    }
-
-    private List<Transaction> getCorrections(Long accountId, LocalDateTime opdate, Long id) {
-        var builder = entityManager.getCriteriaBuilder();
-        var criteriaQuery = builder.createQuery(Transaction.class);
-        var root = criteriaQuery.from(Transaction.class);
-        var where = builder.or(builder.equal(root.get("account").get("id"), accountId),
-                builder.equal(root.get("recipient").get("id"), accountId));
-        where = builder.and(builder.equal(root.get("category").get("id"), 3L), where);
-        if (id != null) {
-            where = builder.and(where, builder.or(builder.greaterThan(root.<LocalDateTime>get("opdate"), opdate),
-                    builder.and(builder.equal(root.<LocalDateTime>get("opdate"), opdate),
-                            builder.greaterThan(root.get("id"), id))));
-        } else {
-            where = builder.and(where, builder.greaterThan(root.<LocalDateTime>get("opdate"), opdate));
+        correction.setCredit(correction.getCredit().subtract(amount));
+        correction.setDebit(correction.getCredit());
+        if (correction.getCredit().compareTo(BigDecimal.ZERO) < 0) {
+            correction.setCredit(correction.getCredit().negate());
+            correction.setDebit(correction.getCredit());
+            var account = correction.getAccount();
+            correction.setAccount(correction.getRecipient());
+            correction.setRecipient(account);
         }
-        criteriaQuery = criteriaQuery.where(where).orderBy(builder.asc(root.get("opdate")),
-                builder.asc(root.get("id")));
-        var typedQuery = entityManager.createQuery(criteriaQuery);
-        return typedQuery.getResultList();
     }
 
     public List<Transaction> queryTransactions(Long userId, Collection<Long> ai,
@@ -486,6 +401,8 @@ public class TransactionService {
                 where = builder.and(where, root.get("account").isNull());
             } else if (categoryId == TransactionType.TRANSFER.getValue()) {
                 where = builder.and(where, root.get("account").isNotNull(), root.get("recipient").isNotNull());
+            } else if (categoryId == TransactionType.CORRECTION.getValue()) {
+                where = builder.and(where, root.get("category").get("id").in(categoryId));
             } else {
                 var categories = categoryService.getCategoriesFilter(userId, categoryId);
                 where = builder.and(where, root.get("category").get("id").in(categories));
@@ -508,9 +425,5 @@ public class TransactionService {
         }
         var trx = typedQuery.getResultList();
         return trx;
-    }
-    
-    boolean existsByAccountId(Long accountId) {
-        return transactionRepository.existsByAccountIdOrRecipientId(accountId, accountId);
     }
 }

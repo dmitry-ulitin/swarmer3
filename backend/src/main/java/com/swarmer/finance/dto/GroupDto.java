@@ -1,70 +1,70 @@
 package com.swarmer.finance.dto;
 
-import java.util.List;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.swarmer.finance.models.AccountGroup;
 
 public record GroupDto(
-		Long id,
-		Long ownerId,
-		String ownerEmail,
-		String fullName,
-		Boolean owner,
-		Boolean coowner,
-		Boolean shared,
-		List<AccountDto> accounts,
-		List<Permission> permissions,
-		LocalDateTime opdate,
-		Boolean deleted) {
-	public static GroupDto from(AccountGroup group, Long userId, List<TransactionSum> balances) {
-		var owner = group.getOwner().getId().equals(userId)
-				&& group.getAcls().stream().noneMatch(acl -> acl.getAdmin());
-		var coowner = group.getAcls().stream().anyMatch(acl -> acl.getAdmin()
-				&& (group.getOwner().getId().equals(userId) || acl.getUser().getId().equals(userId)));
-		var shared = !group.getOwner().getId().equals(userId)
-				&& group.getAcls().stream().noneMatch(acl -> acl.getAdmin());
-		var fullName = group.getName();
-		if (shared) {
-			var acl = group.getAcls().stream().filter(a -> a.getUserId().equals(userId)).findFirst().orElse(null);
-			fullName = acl != null && acl.getName() != null ? acl.getName()
-					: (group.getName() + " (" + group.getOwner().getName() + ")");
-		}
-		var permissions = group.getAcls().stream().map(acl -> Permission.from(acl))
-				.collect(java.util.stream.Collectors.toList());
-		var accounts = group.getAccounts().stream()
-				.map(account -> {
-					var balance = balances.stream().filter(b -> account.getId().equals(b.getRecipientId()))
-							.mapToDouble(a -> a.getCredit()).sum();
-					balance -= balances.stream().filter(b -> account.getId().equals(b.getAccountId()))
-							.mapToDouble(a -> a.getDebit()).sum();
-					var opdate = balances.stream()
-							.filter(b -> account.getId().equals(b.getAccountId()) || account.getId().equals(b.getRecipientId()))
-							.map(TransactionSum::getOpdate).filter(o -> o != null).max(LocalDateTime::compareTo)
-							.orElse(null);
-					return AccountDto.from(account, userId, account.getStartBalance() + balance, opdate);
-				})
-				.sorted((a, b) -> a.id().compareTo(b.id()))
-				.collect(java.util.stream.Collectors.toList());
-		var opdate = group.getAccounts().stream()
-				.map(account -> balances.stream()
-						.filter(b -> account.getId().equals(b.getAccountId())
-								|| account.getId().equals(b.getRecipientId()))
-						.map(TransactionSum::getOpdate).filter(o -> o != null).max(LocalDateTime::compareTo)
-						.orElse(null))
-				.filter(o -> o != null)
-				.max(LocalDateTime::compareTo).orElse(null);
-		return new GroupDto(
-				group.getId(),
-				group.getOwner().getId(),
-				group.getOwner().getEmail(),
-				fullName,
-				owner,
-				coowner,
-				shared,
-				accounts,
-				permissions,
-				opdate,
-				group.getDeleted());
-	}
+        Long id,
+        Long ownerId,
+        String ownerEmail,
+        String fullName,
+        boolean owner,
+        boolean coowner,
+        boolean shared,
+        boolean deleted,
+        List<AccountDto> accounts,
+        List<AclDto> permissions,
+        LocalDateTime opdate) {
+    public static GroupDto fromEntity(AccountGroup entity, Long userId, List<TransactionSum> balances) {
+        var owner = entity.getOwner().getId().equals(userId)
+                && entity.getAcls().stream().noneMatch(acl -> acl.isAdmin());
+        var coowner = entity.getAcls().stream().anyMatch(acl -> acl.isAdmin()
+                && (entity.getOwner().getId().equals(userId) || acl.getUser().getId().equals(userId)));
+        var shared = !entity.getOwner().getId().equals(userId)
+                && entity.getAcls().stream().noneMatch(
+                        acl -> acl.getUser().getId().equals(userId) && acl.isAdmin());
+        var fullname = entity.getName();
+        if (shared) {
+            var acl = entity.getAcls().stream().filter(a -> a.getUser().getId().equals(userId)).findFirst()
+                    .orElse(null);
+            fullname = acl != null && acl.getName() != null ? acl.getName()
+                    : (entity.getName() + " (" + entity.getOwner().getName() + ")");
+        }
+        var acls = entity.getAcls().stream().map(acl -> AclDto.fromEntity(acl)).toList();
+        var accounts = entity.getAccounts().stream()
+                .map(a -> {
+                    var debit = balances.stream().filter(b -> a.getId().equals(b.accountId()))
+                            .map(b -> b.debit())
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    var credit = balances.stream().filter(b -> a.getId().equals(b.recipientId()))
+                            .map(b -> b.credit())
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    var balance = a.getStartBalance().add(credit).subtract(debit);
+                    var lastOpdate = balances.stream()
+                            .filter(b -> a.getId().equals(b.accountId())
+                                    || a.getId().equals(b.recipientId()))
+                            .map(b -> b.opdate()).max(LocalDateTime::compareTo)
+                            .orElse(null);
+                    return AccountDto.fromEntity(a, userId, balance, lastOpdate);
+                })
+                .sorted((a, b) -> a.id().compareTo(b.id()))
+                .toList();
+        LocalDateTime lastGroupOpdate = accounts.stream().map(a -> a.opdate()).filter(o -> o != null)
+                .max(LocalDateTime::compareTo).orElse(null);
+        return new GroupDto(
+                entity.getId(),
+                entity.getOwner().getId(),
+                entity.getOwner().getEmail(),
+                fullname,
+                owner,
+                coowner,
+                shared,
+                entity.isDeleted(),
+                accounts,
+                acls,
+                lastGroupOpdate);
+    }
 }
