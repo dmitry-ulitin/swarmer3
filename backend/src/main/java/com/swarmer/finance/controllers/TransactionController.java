@@ -19,6 +19,7 @@ import com.swarmer.finance.models.TransactionType;
 import com.swarmer.finance.security.UserPrincipal;
 import com.swarmer.finance.services.ImportService;
 import com.swarmer.finance.services.TransactionService;
+import com.swarmer.finance.services.WalletService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,11 +36,14 @@ public class TransactionController {
 
     private final TransactionService transactionService;
     private final ImportService importService;
+    private final WalletService walletService;
 
     @Autowired
-    public TransactionController(TransactionService transactionService, ImportService importService) {
+    public TransactionController(TransactionService transactionService, ImportService importService,
+            WalletService walletService) {
         this.transactionService = transactionService;
         this.importService = importService;
+        this.walletService = walletService;
     }
 
     @GetMapping
@@ -178,6 +182,13 @@ public class TransactionController {
             @AuthenticationPrincipal UserPrincipal principal) {
         Long userId = principal.getUserDto().id();
         transactionService.saveImport(userId, account, records);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("checkwallets")
+    public ResponseEntity<Void> checkWallets(@AuthenticationPrincipal UserPrincipal principal) {
+        Long userId = principal.getUserDto().id();
+        walletService.importWallets(userId);
         return ResponseEntity.ok().build();
     }
 }

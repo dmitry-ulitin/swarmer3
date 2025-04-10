@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AccountAddress {
     @Id
-    private Long account_id;
+    private Long accountId;
 
     @MapsId
     @OneToOne(fetch = FetchType.EAGER)

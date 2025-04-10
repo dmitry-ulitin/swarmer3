@@ -105,6 +105,10 @@ public class ImportService {
             case CAIXA -> importCaixa(is);
             default -> throw new IllegalArgumentException("Unknown bank type: " + bankId);
         };
+        return importRecords(records, accountId, userId);
+    }
+
+    public List<ImportDto> importRecords(List<ImportDto> records, Long accountId, Long userId) {
         if (records.isEmpty()) {
             return records;
         }
@@ -165,6 +169,8 @@ public class ImportService {
                 r.setSelected(false);
                 r.setCategory(CategoryDto.fromEntity(transaction.getCategory()));
                 transactions.remove(transaction);
+            } else {
+                r.setSelected(true);
             }
         });
         return records;
