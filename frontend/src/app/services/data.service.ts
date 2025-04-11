@@ -97,6 +97,7 @@ export class DataService {
   }
 
   async refresh() {
+    await firstValueFrom(this.#api.checkWallets([]));
     await Promise.all([this.getGroups(), this.getCategories(), this.getRules(), this.getTransactions(this.#state()), this.getSummary(), this.getCategoriesSummary()]);
   }
 

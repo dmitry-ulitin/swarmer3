@@ -1,5 +1,3 @@
-CREATE TABLE IF NOT EXISTS account_addresses (
-    account_id bigint PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
-    chain text NOT NULL,
-    address text NOT NULL
-);
+-- Add chain and address fields to the accounts table
+ALTER TABLE accounts ADD COLUMN chain text;
+ALTER TABLE accounts ADD COLUMN address text;

@@ -80,7 +80,7 @@ public class BackupService {
             for (var a : g.accounts()) {
                 var account = userAccounts.get(a.id());
                 if (account == null) {
-                    account = new Account(null, group, a.name(), a.currency(), a.startBalance(), a.deleted(),
+                    account = new Account(null, group, a.name(), a.currency(), a.startBalance(), a.chain(), a.address(), a.deleted(),
                             a.created(), a.updated());
                 } else {
                     userAccounts.remove(a.id());

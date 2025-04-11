@@ -132,4 +132,10 @@ export class ApiService {
     params = params.set('to', range?.to?.toString('YMD', '-') || '');
     return this.http.get<CategorySum[]>('/api/transactions/categories', { params: params });
   }
+
+  checkWallets(accounts: number[]): Observable<void> {
+    let params = new HttpParams();
+    params = params.set('accounts', accounts.join(","));
+    return this.http.patch<void>('/api/transactions/checkwallets', { params: params });
+  }
 }
