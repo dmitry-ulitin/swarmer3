@@ -143,6 +143,63 @@ public class TronService {
         }
     }
 
+    public List<ImportDto> getContractTransactions(String address) {
+        try {
+            var headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            if (!apiKey.isEmpty()) {
+                headers.set("TRON-PRO-API-KEY", apiKey);
+            }
+
+            var transactionsResponse = restTemplate.getForObject(
+                    apiUrl + "/v1/accounts/" + address + "/transactions/trc20",
+                    JsonNode.class);
+
+            List<ImportDto> result = new ArrayList<>();
+            if (transactionsResponse != null && transactionsResponse.has("data")) {
+                for (JsonNode transaction : transactionsResponse.get("data")) {
+                    if (transaction.has("value") && transaction.has("token_info")) {
+                        var tokenInfo = transaction.get("token_info");
+                        var amount = new BigDecimal(transaction.get("value").asText())
+                                .divide(USDT_DECIMALS, 6, RoundingMode.HALF_DOWN)
+                                .setScale(2, RoundingMode.HALF_DOWN);
+                        if (amount.compareTo(BigDecimal.ZERO) == 0) {
+                            continue;
+                        }
+
+                        var timestamp = transaction.get("block_timestamp").asLong();
+                        var opdate = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
+                                ZoneId.systemDefault());
+
+                        // Determine if this is an incoming or outgoing transaction
+                        var isIncoming = transaction.has("to") && 
+                            transaction.get("to").asText().equalsIgnoreCase(address);
+                        var party = isIncoming ? transaction.get("from").asText() : 
+                            transaction.get("to").asText();
+
+                        result.add(new ImportDto(
+                                null, // id
+                                opdate,
+                                isIncoming ? TransactionType.INCOME : TransactionType.EXPENSE,
+                                amount, // debit
+                                amount, // credit
+                                null, // rule
+                                null, // category
+                                tokenInfo.get("symbol").asText(), // currency
+                                party, // party
+                                tokenInfo.get("name").asText() + " Transaction", // details
+                                null, // catname
+                                false // selected
+                        ));
+                    }
+                }
+            }
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get contract transactions: " + e.getMessage(), e);
+        }
+    }
+
     private String encode58(String hexString) {
         byte[] input = Hex.decode(hexString);
         byte[] hash0 = DigestUtils.sha256(input);

@@ -186,9 +186,10 @@ public class TransactionController {
     }
 
     @PatchMapping("checkwallets")
-    public ResponseEntity<Void> checkWallets(@AuthenticationPrincipal UserPrincipal principal) {
+    public ResponseEntity<Void> checkWallets(@RequestParam(required = false) Set<Long> accounts,
+            @AuthenticationPrincipal UserPrincipal principal) {
         Long userId = principal.getUserDto().id();
-        walletService.importWallets(userId);
+        walletService.importWallets(userId, accounts);
         return ResponseEntity.ok().build();
     }
 }

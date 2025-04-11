@@ -1,5 +1,6 @@
 package com.swarmer.finance.services;
 
+import java.util.Collection;
 import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
@@ -32,7 +33,7 @@ public class WalletService {
     }
 
     @Transactional
-    public void importWallets(Long userId) {
+    public void importWallets(Long userId, Collection<Long> accountIdsFilter) {
         var userGroups = groupRepository.findByOwnerIdOrderById(userId);
         var sharedGroups = aclRepository.findByUserIdOrderByGroupId(userId).stream()
                 .map(acl -> acl.getGroup())
@@ -41,6 +42,7 @@ public class WalletService {
         var accList = Stream.concat(userGroups.stream(), sharedGroups.stream())
                 .flatMap(group -> group.getAccounts().stream())
                 .map(account -> account.getId())
+                .filter(id -> accountIdsFilter == null || accountIdsFilter.isEmpty() || accountIdsFilter.contains(id))
                 .toList();
         var addresses = addressRepository.findByAccountIdIn(accList);
         for (var address : addresses) {
@@ -54,6 +56,11 @@ public class WalletService {
             var balance = tronService.getWalletBalance(address.getAddress());
             if ("TRX".equalsIgnoreCase(address.getAccount().getCurrency())) {
                 var records = tronService.getTrxTransactions(balance.hexAddress());
+                importService.importRecords(records, address.getAccountId(), userId);
+                transactionService.saveImport(userId, address.getAccountId(), records);
+            } else {
+                var records = tronService.getContractTransactions(balance.hexAddress()).stream()
+                        .filter(r -> r.getCurrency().equals(address.getAccount().getCurrency())).toList();
                 importService.importRecords(records, address.getAccountId(), userId);
                 transactionService.saveImport(userId, address.getAccountId(), records);
             }
