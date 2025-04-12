@@ -12,7 +12,7 @@ import { DateRange } from '../models/date.range';
 import { TuiDialogService } from '@taiga-ui/core';
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 import { TrxEditorComponent } from '../trx.editor/trx.editor.component';
-import { AccEditorComponent } from '../acc.editor/acc.editor.component';
+import { GrpEditorComponent } from '../grp.editor/grp.editor.component';
 import { CatEditorComponent } from '../cat.editor/cat.editor.component';
 import { LoadDumpComponent } from '../load/load.dump.component';
 import { LoadStatComponent } from '../load/load.stat.component';
@@ -123,7 +123,7 @@ export class DataService {
   async createGroup() {
     const group: Group = { id: 0, fullName: '', owner: true, coowner: false, shared: false, accounts: [{ id: 0, name: '', fullName: '', currency: '', startBalance: 0, balance: 0 }], permissions: [] };
     const data = await firstValueFrom(this.#dlgService.open<Group | undefined>(
-      new PolymorpheusComponent(AccEditorComponent), { data: group, dismissible: false, closeable: false, size: 's' }
+      new PolymorpheusComponent(GrpEditorComponent), { data: group, dismissible: false, closeable: false, size: 's' }
     ));
     if (!!data) {
       this.#alerts.printSuccess(`Group '${data.fullName}' created`);
@@ -135,7 +135,7 @@ export class DataService {
     const group = this.#state().groups.find(g => g.id === id);
     if (!!group) {
       const data = await firstValueFrom(this.#dlgService.open<Group | undefined>(
-        new PolymorpheusComponent(AccEditorComponent), { data: group, dismissible: false, closeable: false, size: 's' }
+        new PolymorpheusComponent(GrpEditorComponent), { data: group, dismissible: false, closeable: false, size: 's' }
       ));
       if (!!data) {
         this.#alerts.printSuccess(`Group '${data.fullName}' updated`);
