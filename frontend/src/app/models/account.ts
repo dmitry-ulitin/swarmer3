@@ -5,6 +5,8 @@ export interface Account {
     name: string;
     fullName: string;
     currency: string;
+    chain: string;
+    address: string;
     startBalance: number;
     balance?: number;
     deleted?: boolean;

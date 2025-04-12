@@ -43,6 +43,8 @@ export class GrpEditorComponent {
     name: new FormControl(acc.name, { nonNullable: true }),
     fullName: new FormControl(acc.fullName, { nonNullable: true }),
     currency: new FormControl({ value: acc.currency || this.#auth.claims().currency || 'EUR', disabled: !!acc.id }, { nonNullable: true, validators: [Validators.required] }),
+    chain: new FormControl(acc.chain, { nonNullable: true }),
+    address: new FormControl(acc.address, { nonNullable: true }),
     startBalance: new FormControl({ value: acc.startBalance, disabled: !!acc.id }, { nonNullable: true, validators: [Validators.required] }),
     balance: new FormControl(acc.balance, { nonNullable: true, validators: [Validators.required] }),
     deleted: new FormControl(acc.deleted, { nonNullable: true }),
@@ -92,7 +94,7 @@ export class GrpEditorComponent {
   }
 
   onAddAccount(): void {
-    this.accounts.push(this.acc2form({ id: 0, name: '', fullName: '', currency: '', startBalance: 0, balance: 0 }));
+    this.accounts.push(this.acc2form({ id: 0, name: '', fullName: '', currency: '', chain: '', address: '', startBalance: 0, balance: 0 }));
     this.checkCanDelete();
   }
 
