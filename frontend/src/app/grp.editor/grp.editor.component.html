@@ -4,32 +4,28 @@
         <input tuiTextfieldLegacy autocomplete="off" />
     </tui-input>
     @if(isOwnerOrCoowner) {
-    <table class="accounts" formArrayName="accounts">
-        <tr>
-            <td colspan="3">Initial Balances</td>
-            <td><button tuiIconButton type="button" [iconStart]="'@tui.plus'" [size]="'s'" [appearance]="'flat'"
-                    (click)="onAddAccount()"></button></td>
-        </tr>
+    <div class="accounts" formArrayName="accounts">
+            <div class="accounts-title" colspan="3">Balances</div>
+            <button tuiIconButton type="button" [iconStart]="'@tui.plus'" [size]="'s'" [appearance]="'flat'"
+                (click)="onAddAccount()"></button>
         @for(account of accounts.controls; track $index) {
         @if (!account.value.deleted) {
-        <tr [formGroupName]="$index">
-            <td><tui-input formControlName="name">{{getAccount($index).getRawValue().currency}}</tui-input></td>
-            <td><tui-input-number formControlName="startBalance">0,00</tui-input-number></td>
-            <td>
-                <tui-combo-box formControlName="currency" class="currency" [strict]="false">
-                    <input tuiTextfieldLegacy />
-                    <tui-data-list-wrapper *tuiDataList [items]="currencies | tuiFilterByInput" [size]="'s'" />
-                </tui-combo-box>
-            </td>
-            <td>
-                <button tuiIconButton type="button" [iconStart]="'@tui.trash'" [size]="'s'" [appearance]="'flat'"
-                    [disabled]="!isOwnerOrCoowner || !canDelete || !(!account.value.balance || !account.value.opdate)"
-                    (click)="onRemoveAccount($index)"></button>
-            </td>
-        </tr>
+        <ng-container [formGroupName]="$index">
+            <tui-input formControlName="name" class="account-name">
+                {{getAccount($index).getRawValue().currency?.toUpperCase()}}
+            </tui-input>
+            <tui-input-number formControlName="startBalance" class="account-balance">0,00</tui-input-number>
+            <tui-combo-box formControlName="currency" class="account-currency" [strict]="false">
+                <input tuiTextfieldLegacy />
+                <tui-data-list-wrapper *tuiDataList [items]="currencies | tuiFilterByInput" [size]="'s'" />
+            </tui-combo-box>
+            <button tuiIconButton type="button" [iconStart]="'@tui.trash'" [size]="'s'" [appearance]="'flat'"
+                [disabled]="!isOwnerOrCoowner || !canDelete || !(!account.value.balance || !account.value.opdate)"
+                (click)="onRemoveAccount($index)" class="account-remove"></button>
+        </ng-container>
         }
         }
-    </table>
+    </div>
     <div>Permissions</div>
     <div class="query">
         <tui-input [formControl]="query" [tuiTextfieldCleaner]="true" class="fill" *tuiLet="users$ | async as users">
