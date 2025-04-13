@@ -45,7 +45,7 @@ export class GrpEditorComponent {
     currency: new FormControl({ value: acc.currency || this.#auth.claims().currency || 'EUR', disabled: !!acc.id }, { nonNullable: true, validators: [Validators.required] }),
     chain: new FormControl(acc.chain, { nonNullable: true }),
     address: new FormControl(acc.address, { nonNullable: true }),
-    startBalance: new FormControl({ value: acc.startBalance, disabled: !!acc.id }, { nonNullable: true, validators: [Validators.required] }),
+    startBalance: new FormControl({ value: !!acc.opdate ? (acc.balance || 0) : acc.startBalance, disabled: !!acc.opdate }, { nonNullable: true, validators: [Validators.required] }),
     balance: new FormControl(acc.balance, { nonNullable: true, validators: [Validators.required] }),
     deleted: new FormControl(acc.deleted, { nonNullable: true }),
     opdate: new FormControl(acc.opdate, { nonNullable: true })
