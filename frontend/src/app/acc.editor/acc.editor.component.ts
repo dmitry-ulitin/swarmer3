@@ -31,6 +31,7 @@ export class AccEditorComponent {
     currency: new FormControl(this.context.data.currency || 'EUR', { nonNullable: true, validators: [Validators.required] }),
     chain: new FormControl(this.context.data.chain || '', { nonNullable: true }),
     address: new FormControl(this.context.data.address || '', { nonNullable: true }),
+    scale: new FormControl(this.context.data.scale || 2, { nonNullable: true }),
     startBalance: new FormControl(
       { value: this.context.data.startBalance || 0, disabled: !!this.context.data.id },
       { nonNullable: true, validators: [Validators.required] }

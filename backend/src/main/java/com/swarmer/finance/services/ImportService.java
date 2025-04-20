@@ -158,11 +158,15 @@ public class ImportService {
                 r.setRule(rule);
             }
             var transaction = transactions.stream()
-                    .filter(t -> t.getOpdate().toLocalDate().equals(r.getOpdate().toLocalDate()) &&
-                            (t.getAccount() != null && t.getAccount().getId().equals(accountId)
-                                    && t.getDebit().equals(r.getDebit())
+                    .filter(t -> t.getOpdate().toLocalDate().equals(r.getOpdate().toLocalDate())
+                            && (t.getAccount() != null && t.getAccount().getId().equals(accountId)
+                                    && t.getDebit().setScale(t.getAccount().getScale(), RoundingMode.HALF_DOWN).equals(
+                                            r.getDebit().setScale(t.getAccount().getScale(), RoundingMode.HALF_DOWN))
                                     || t.getRecipient() != null && t.getRecipient().getId().equals(accountId)
-                                            && t.getCredit().equals(r.getCredit())))
+                                            && t.getCredit()
+                                                    .setScale(t.getRecipient().getScale(), RoundingMode.HALF_DOWN)
+                                                    .equals(r.getCredit().setScale(t.getRecipient().getScale(),
+                                                            RoundingMode.HALF_DOWN))))
                     .findFirst().orElse(null);
             if (transaction != null) {
                 r.setId(transaction.getId());
@@ -237,7 +241,8 @@ public class ImportService {
                                 DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
                         lines[i] = lines[i].substring(17);
                         var parts = lines[i].split("\\s");
-                        var amount = (BigDecimal) decimalFormat.parse(parts[parts.length - 2].replaceAll("\\u00a0|\\+|-", ""));
+                        var amount = (BigDecimal) decimalFormat
+                                .parse(parts[parts.length - 2].replaceAll("\\u00a0|\\+|-", ""));
                         var type = parts[parts.length - 2].startsWith("+") ? TransactionType.INCOME
                                 : TransactionType.EXPENSE;
                         lines[i] = lines[i].substring(parts[0].length() + 1, lines[i].length()

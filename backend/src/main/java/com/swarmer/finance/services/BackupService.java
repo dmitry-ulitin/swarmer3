@@ -80,13 +80,16 @@ public class BackupService {
             for (var a : g.accounts()) {
                 var account = userAccounts.get(a.id());
                 if (account == null) {
-                    account = new Account(null, group, a.name(), a.currency(), a.startBalance(), a.chain(), a.address(), a.deleted(),
+                    account = new Account(null, group, a.name(), a.currency(), a.startBalance(), a.chain(), a.address(), a.scale(), a.deleted(),
                             a.created(), a.updated());
                 } else {
                     userAccounts.remove(a.id());
                     account.setName(a.name());
                     account.setCurrency(a.currency());
                     account.setStartBalance(a.startBalance());
+                    account.setChain(a.chain());
+                    account.setAddress(a.address());
+                    account.setScale(a.scale());
                     account.setDeleted(a.deleted());
                     account.setUpdated(a.updated());
                     account.getGroup().getAccounts().remove(account);

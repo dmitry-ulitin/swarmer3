@@ -7,6 +7,7 @@ export interface Account {
     currency: string;
     chain: string;
     address: string;
+    scale: number;
     startBalance: number;
     balance?: number;
     deleted?: boolean;

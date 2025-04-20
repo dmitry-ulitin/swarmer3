@@ -121,7 +121,7 @@ export class DataService {
   }
 
   async createGroup() {
-    const group: Group = { id: 0, fullName: '', owner: true, coowner: false, shared: false, accounts: [{ id: 0, name: '', fullName: '', currency: '', chain: '', address: '', startBalance: 0, balance: 0 }], permissions: [] };
+    const group: Group = { id: 0, fullName: '', owner: true, coowner: false, shared: false, accounts: [{ id: 0, name: '', fullName: '', currency: '', chain: '', address: '', scale: 2, startBalance: 0, balance: 0 }], permissions: [] };
     const data = await firstValueFrom(this.#dlgService.open<Group | undefined>(
       new PolymorpheusComponent(GrpEditorComponent), { data: group, dismissible: false, closeable: false, size: 's' }
     ));
@@ -360,7 +360,7 @@ export class DataService {
       const state = this.#state();
       const count = await firstValueFrom(this.#api.checkWallets(state.accounts, fullScan));
       if (count > 0) {
-        await this.getTransactions(state);
+        await Promise.all([this.getTransactions(state), this.getSummary(), this.getCategoriesSummary(), this.getGroups()]);
       }
     } catch (err) {
       this.#alerts.printError(err);

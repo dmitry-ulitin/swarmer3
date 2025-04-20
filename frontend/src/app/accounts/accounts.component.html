@@ -19,7 +19,7 @@
             }
             @for(a of g.accounts; track a.id) {
                 @if(!a.deleted) {
-                    <div class="account">{{a.balance | currency:a.currency}}</div>
+                    <div class="account">{{a.balance | currency: a.currency : 'symbol' : '1.'+a.scale+'-'+a.scale}}</div>
                 }
             }
         </td>

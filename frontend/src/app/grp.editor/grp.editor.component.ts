@@ -46,8 +46,9 @@ export class GrpEditorComponent {
     currency: new FormControl({ value: acc.currency || this.#auth.claims().currency || 'EUR', disabled: !!acc.id }, { nonNullable: true, validators: [Validators.required] }),
     chain: new FormControl(acc.chain, { nonNullable: true }),
     address: new FormControl(acc.address, { nonNullable: true }),
+    scale: new FormControl(acc.scale || 2, { nonNullable: true }),
     startBalance: new FormControl({ value: acc.startBalance || 0, disabled: !!acc.opdate }, { nonNullable: true, validators: [Validators.required] }),
-    balance: new FormControl({ value: acc.balance || 0, disabled: true}, { nonNullable: true}),
+    balance: new FormControl({ value: acc.balance || 0, disabled: true }, { nonNullable: true }),
     deleted: new FormControl(acc.deleted, { nonNullable: true }),
     opdate: new FormControl(acc.opdate, { nonNullable: true })
   });
@@ -95,7 +96,7 @@ export class GrpEditorComponent {
   }
 
   onAddAccount(): void {
-    this.accounts.push(this.acc2form({ id: 0, name: '', fullName: '', currency: '', chain: '', address: '', startBalance: 0, balance: 0 }));
+    this.accounts.push(this.acc2form({ id: 0, name: '', fullName: '', currency: '', chain: '', address: '', scale: 2, startBalance: 0, balance: 0 }));
     this.checkCanDelete();
   }
 
@@ -109,7 +110,7 @@ export class GrpEditorComponent {
     const data = await this.#data.editAccount(account.getRawValue());
     if (!!data) {
       account.patchValue(data);
-    }    
+    }
   }
 
   checkCanDelete() {
@@ -159,8 +160,9 @@ export class GrpEditorComponent {
 
   async onSubmit() {
     try {
+      let scale: { [key: string]: number } = { 'trc20': 6, 'erc20': 18, 'bep20': 18, 'btc': 8, 'default': 2 };
       let group: Group = this.form.getRawValue();
-      group = await firstValueFrom(this.#api.saveGroup({ ...group, accounts: group.accounts.map(a => ({ ...a, currency: a.currency.toUpperCase() })) }));
+      group = await firstValueFrom(this.#api.saveGroup({ ...group, accounts: group.accounts.map(a => ({ ...a, currency: a.currency.toUpperCase(), scale: scale[a.chain] || 2 })) }));
       this.context.completeWith(group);
     } catch (error) {
       this.#alerts.printError(error);

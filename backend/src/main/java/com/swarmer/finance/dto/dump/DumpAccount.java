@@ -12,6 +12,7 @@ public record DumpAccount(
     BigDecimal startBalance,
     String chain,
     String address,
+    Integer scale,
     Boolean deleted,
     LocalDateTime created,
     LocalDateTime updated) {
@@ -23,6 +24,7 @@ public static DumpAccount fromEntity(Account account) {
                     account.getStartBalance(),
                     account.getChain(),
                     account.getAddress(),
+                    account.getScale(),
                     account.isDeleted(),
                     account.getCreated(),
                     account.getUpdated());

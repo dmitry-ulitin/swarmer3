@@ -103,9 +103,8 @@ public class TronService {
                                 var value = contract.get("parameter").get("value");
                                 if (value.has("amount")) {
                                     var amount = new BigDecimal(value.get("amount").asText())
-                                            .divide(TRX_DECIMALS, 6, RoundingMode.HALF_DOWN)
-                                            .setScale(2, RoundingMode.HALF_DOWN);
-                                    if (amount.compareTo(BigDecimal.ZERO) == 0) {
+                                            .divide(TRX_DECIMALS, 6, RoundingMode.HALF_DOWN);
+                                    if (amount.setScale(2, RoundingMode.HALF_DOWN).compareTo(BigDecimal.ZERO) == 0) {
                                         continue;
                                     }
                                     var timestamp = transaction.get("raw_data").get("timestamp").asLong();
@@ -177,9 +176,8 @@ public class TronService {
                         if (transaction.has("value") && transaction.has("token_info")) {
                             var tokenInfo = transaction.get("token_info");
                             var amount = new BigDecimal(transaction.get("value").asText())
-                                    .divide(USDT_DECIMALS, 6, RoundingMode.HALF_DOWN)
-                                    .setScale(2, RoundingMode.HALF_DOWN);
-                            if (amount.compareTo(BigDecimal.ZERO) == 0) {
+                                    .divide(USDT_DECIMALS, 6, RoundingMode.HALF_DOWN);
+                            if (amount.setScale(2, RoundingMode.HALF_DOWN).compareTo(BigDecimal.ZERO) == 0) {
                                 continue;
                             }
 

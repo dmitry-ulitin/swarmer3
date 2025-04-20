@@ -85,6 +85,9 @@ public class GroupService {
             account.setName(a.name());
             account.setCurrency(a.currency());
             account.setStartBalance(a.startBalance());
+            account.setChain(a.chain());
+            account.setAddress(a.address());
+            account.setScale(a.scale());
             return account;
         }).toList());
         group.setAcls(dto.permissions().stream().map(p -> {
@@ -132,6 +135,7 @@ public class GroupService {
                         account.setStartBalance(a.startBalance());
                         account.setChain(a.chain());
                         account.setAddress(a.address());
+                        account.setScale(a.scale());
                         account.setDeleted(a.deleted());
                     }
                 } else if (!a.deleted()) {
@@ -142,6 +146,7 @@ public class GroupService {
                     account.setStartBalance(a.startBalance());
                     account.setChain(a.chain());
                     account.setAddress(a.address());
+                    account.setScale(a.scale());
                     group.getAccounts().add(account);
                 }
             });

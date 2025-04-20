@@ -37,6 +37,9 @@ public class Account {
     private String address;
 
     @Column(nullable = false)
+    private Integer scale = 2;
+
+    @Column(nullable = false)
     private boolean deleted = false;
 
     @Column(nullable = false, updatable = false)

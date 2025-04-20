@@ -14,6 +14,7 @@ public record AccountDto(
         BigDecimal startBalance,
         String chain,
         String address,
+        Integer scale,
         BigDecimal balance,
         LocalDateTime opdate,
         boolean deleted) {
@@ -40,6 +41,7 @@ public record AccountDto(
                 entity.getStartBalance(),
                 entity.getChain(),
                 entity.getAddress(),
+                entity.getScale(),
                 balance,
                 opdate,
                 entity.isDeleted());
