@@ -1,10 +1,12 @@
 package com.swarmer.finance.services;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
+import com.swarmer.finance.dto.ImportDto;
 import com.swarmer.finance.models.Account;
 import com.swarmer.finance.repositories.AccountGroupRepository;
 import com.swarmer.finance.repositories.AclRepository;
@@ -30,7 +32,8 @@ public class WalletService {
     }
 
     @Transactional
-    public void importWallets(Long userId, Collection<Long> accountIdsFilter, boolean fullScan) {
+    public long importWallets(Long userId, Collection<Long> accountIdsFilter, boolean fullScan) {
+        long count = 0;
         var userGroups = groupRepository.findByOwnerIdOrderById(userId);
         var sharedGroups = aclRepository.findByUserIdOrderByGroupId(userId).stream()
                 .map(acl -> acl.getGroup())
@@ -41,29 +44,32 @@ public class WalletService {
                 .filter(account -> !account.isDeleted())
                 .filter(account -> account.getChain() != null && !account.getChain().isBlank())
                 .filter(account -> account.getAddress() != null && !account.getAddress().isBlank())
-                .filter(account -> (accountIdsFilter == null || accountIdsFilter.isEmpty() 
-                    || accountIdsFilter.contains(account.getId())) && account.getChain() != null)
+                .filter(account -> (accountIdsFilter == null || accountIdsFilter.isEmpty()
+                        || accountIdsFilter.contains(account.getId())) && account.getChain() != null)
                 .toList();
-        
+
         for (var account : accounts) {
-            importAccount(account, userId, fullScan);
+            count += importAccount(account, userId, fullScan);
         }
+        return count;
     }
 
-    @Transactional
-    public void importAccount(Account account, Long userId, boolean fullScan) {
+    private long importAccount(Account account, Long userId, boolean fullScan) {
+        List<ImportDto> records = null;
         if ("trc20".equals(account.getChain()) && account.getAddress() != null) {
             var balance = tronService.getWalletBalance(account.getAddress());
             if ("TRX".equalsIgnoreCase(account.getCurrency())) {
-                var records = tronService.getTrxTransactions(balance.hexAddress(), fullScan);
-                importService.importRecords(records, account.getId(), userId);
-                transactionService.saveImport(userId, account.getId(), records);
+                records = tronService.getTrxTransactions(balance.hexAddress(), fullScan);
             } else {
-                var records = tronService.getContractTransactions(balance.address(), fullScan).stream()
+                records = tronService.getContractTransactions(balance.address(), fullScan).stream()
                         .filter(r -> r.getCurrency().equals(account.getCurrency())).toList();
-                importService.importRecords(records, account.getId(), userId);
-                transactionService.saveImport(userId, account.getId(), records);
             }
         }
+        if (records == null || records.isEmpty()) {
+            return 0;
+        }
+        importService.importRecords(records, account.getId(), userId);
+        transactionService.saveImport(userId, account.getId(), records);
+        return records.stream().filter(ImportDto::isSelected).count();
     }
 }

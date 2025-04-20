@@ -185,12 +185,11 @@ public class TransactionController {
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("checkwallets")
-    public ResponseEntity<Void> checkWallets(@RequestParam(required = false) Set<Long> accounts,
+    @GetMapping("checkwallets")
+    public ResponseEntity<Long> checkWallets(@RequestParam(required = false) Set<Long> accounts,
             @RequestParam(required = false, defaultValue = "false") boolean fullScan,
             @AuthenticationPrincipal UserPrincipal principal) {
         Long userId = principal.getUserDto().id();
-        walletService.importWallets(userId, accounts, fullScan);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(walletService.importWallets(userId, accounts, fullScan));
     }
 }
