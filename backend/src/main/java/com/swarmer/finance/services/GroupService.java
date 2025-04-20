@@ -130,6 +130,8 @@ public class GroupService {
                         account.setName(a.name());
                         account.setCurrency(a.currency());
                         account.setStartBalance(a.startBalance());
+                        account.setChain(a.chain());
+                        account.setAddress(a.address());
                         account.setDeleted(a.deleted());
                     }
                 } else if (!a.deleted()) {
@@ -138,6 +140,8 @@ public class GroupService {
                     account.setName(a.name());
                     account.setCurrency(a.currency());
                     account.setStartBalance(a.startBalance());
+                    account.setChain(a.chain());
+                    account.setAddress(a.address());
                     group.getAccounts().add(account);
                 }
             });

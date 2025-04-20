@@ -82,7 +82,7 @@ public class TronService {
         }
     }
 
-    public List<ImportDto> getTrxTransactions(String address) {
+    public List<ImportDto> getTrxTransactions(String address, boolean fullScan) {
         try {
             var headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -90,52 +90,63 @@ public class TronService {
                 headers.set("TRON-PRO-API-KEY", apiKey);
             }
 
-            var transactionsResponse = restTemplate.getForObject(
-                    apiUrl + "/v1/accounts/" + address + "/transactions",
-                    JsonNode.class);
-
             List<ImportDto> result = new ArrayList<>();
-            if (transactionsResponse != null && transactionsResponse.has("data")) {
-                for (JsonNode transaction : transactionsResponse.get("data")) {
-                    if (transaction.has("raw_data") && transaction.get("raw_data").has("contract")) {
-                        var contract = transaction.get("raw_data").get("contract").get(0);
-                        if (contract.has("parameter") && contract.get("parameter").has("value")) {
-                            var value = contract.get("parameter").get("value");
-                            if (value.has("amount")) {
-                                var amount = new BigDecimal(value.get("amount").asText())
-                                        .divide(TRX_DECIMALS, 6, RoundingMode.HALF_DOWN)
-                                        .setScale(2, RoundingMode.HALF_DOWN);
-                                if (amount.compareTo(BigDecimal.ZERO) == 0) {
-                                    continue;
+            var nextUrl = apiUrl + "/v1/accounts/" + address + "/transactions/?limit=200&only_confirmed=true";
+            for (;;) {
+                var transactionsResponse = restTemplate.getForObject(nextUrl, JsonNode.class);
+                if (transactionsResponse != null && transactionsResponse.has("data")) {
+                    for (JsonNode transaction : transactionsResponse.get("data")) {
+                        if (transaction.has("raw_data") && transaction.get("raw_data").has("contract")) {
+                            var contract = transaction.get("raw_data").get("contract").get(0);
+                            if (contract.has("parameter") && contract.get("parameter").has("value")) {
+                                var value = contract.get("parameter").get("value");
+                                if (value.has("amount")) {
+                                    var amount = new BigDecimal(value.get("amount").asText())
+                                            .divide(TRX_DECIMALS, 6, RoundingMode.HALF_DOWN)
+                                            .setScale(2, RoundingMode.HALF_DOWN);
+                                    if (amount.compareTo(BigDecimal.ZERO) == 0) {
+                                        continue;
+                                    }
+                                    var timestamp = transaction.get("raw_data").get("timestamp").asLong();
+                                    var opdate = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
+                                            ZoneId.systemDefault());
+
+                                    // Determine if this is an incoming or outgoing transaction
+                                    var isIncoming = value.has("to_address") &&
+                                            value.get("to_address").asText().equalsIgnoreCase(address);
+                                    var party = isIncoming ? value.get("owner_address").asText()
+                                            : value.get("to_address").asText();
+
+                                    result.add(new ImportDto(
+                                            null, // id
+                                            opdate,
+                                            isIncoming ? TransactionType.INCOME : TransactionType.EXPENSE,
+                                            amount, // debit
+                                            amount, // credit
+                                            null, // rule
+                                            null, // category
+                                            "TRX", // currency
+                                            encode58(party), // party
+                                            "TRX Transaction", // details
+                                            null, // catname
+                                            false // selected
+                                    ));
                                 }
-                                var timestamp = transaction.get("raw_data").get("timestamp").asLong();
-                                var opdate = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
-                                        ZoneId.systemDefault());
-
-                                // Determine if this is an incoming or outgoing transaction
-                                var isIncoming = value.has("to_address") &&
-                                        value.get("to_address").asText().equalsIgnoreCase(address);
-                                var party = isIncoming ? value.get("owner_address").asText()
-                                        : value.get("to_address").asText();
-
-                                result.add(new ImportDto(
-                                        null, // id
-                                        opdate,
-                                        isIncoming ? TransactionType.INCOME : TransactionType.EXPENSE,
-                                        amount, // debit
-                                        amount, // credit
-                                        null, // rule
-                                        null, // category
-                                        "TRX", // currency
-                                        encode58(party), // party
-                                        "TRX Transaction", // details
-                                        null, // catname
-                                        false // selected
-                                ));
                             }
                         }
                     }
                 }
+                if (fullScan && transactionsResponse != null && transactionsResponse.has("meta")) {
+                    var meta = transactionsResponse.get("meta");
+                    if (meta.has("links") && meta.get("links") != null) {
+                        var links = meta.get("links");
+                        if (links.has("next") && links.get("next").asText() != null) {
+                            nextUrl = links.get("next").asText();
+                            continue;
+                        }
+                    }
+                }
+                break;
             }
             return result;
         } catch (Exception e) {
@@ -143,7 +154,10 @@ public class TronService {
         }
     }
 
-    public List<ImportDto> getContractTransactions(String address) {
+    public List<ImportDto> getContractTransactions(String address, boolean fullScan) {
+        if (address == null || address.isEmpty()) {
+            throw new IllegalArgumentException("Address cannot be null or empty");
+        }
         try {
             var headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -151,48 +165,60 @@ public class TronService {
                 headers.set("TRON-PRO-API-KEY", apiKey);
             }
 
-            var transactionsResponse = restTemplate.getForObject(
-                    apiUrl + "/v1/accounts/" + address + "/transactions/trc20",
-                    JsonNode.class);
-
             List<ImportDto> result = new ArrayList<>();
-            if (transactionsResponse != null && transactionsResponse.has("data")) {
-                for (JsonNode transaction : transactionsResponse.get("data")) {
-                    if (transaction.has("value") && transaction.has("token_info")) {
-                        var tokenInfo = transaction.get("token_info");
-                        var amount = new BigDecimal(transaction.get("value").asText())
-                                .divide(USDT_DECIMALS, 6, RoundingMode.HALF_DOWN)
-                                .setScale(2, RoundingMode.HALF_DOWN);
-                        if (amount.compareTo(BigDecimal.ZERO) == 0) {
-                            continue;
+            var nextUrl = apiUrl + "/v1/accounts/" + address + "/transactions/trc20/?limit=200&only_confirmed=true";
+            for (;;) {
+                var transactionsResponse = restTemplate.getForObject(
+                        nextUrl,
+                        JsonNode.class);
+                if (transactionsResponse != null && transactionsResponse.has("data")) {
+                    for (JsonNode transaction : transactionsResponse.get("data")) {
+                        if (transaction.has("value") && transaction.has("token_info")) {
+                            var tokenInfo = transaction.get("token_info");
+                            var amount = new BigDecimal(transaction.get("value").asText())
+                                    .divide(USDT_DECIMALS, 6, RoundingMode.HALF_DOWN)
+                                    .setScale(2, RoundingMode.HALF_DOWN);
+                            if (amount.compareTo(BigDecimal.ZERO) == 0) {
+                                continue;
+                            }
+
+                            var timestamp = transaction.get("block_timestamp").asLong();
+                            var opdate = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
+                                    ZoneId.systemDefault());
+
+                            // Determine if this is an incoming or outgoing transaction
+                            var isIncoming = transaction.has("to") &&
+                                    transaction.get("to").asText().equalsIgnoreCase(address);
+                            var party = isIncoming ? transaction.get("from").asText() : transaction.get("to").asText();
+
+                            result.add(new ImportDto(
+                                    null, // id
+                                    opdate,
+                                    isIncoming ? TransactionType.INCOME : TransactionType.EXPENSE,
+                                    amount, // debit
+                                    amount, // credit
+                                    null, // rule
+                                    null, // category
+                                    tokenInfo.get("symbol").asText(), // currency
+                                    party, // party
+                                    tokenInfo.get("name").asText() + " Transaction", // details
+                                    null, // catname
+                                    false // selected
+                            ));
                         }
-
-                        var timestamp = transaction.get("block_timestamp").asLong();
-                        var opdate = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
-                                ZoneId.systemDefault());
-
-                        // Determine if this is an incoming or outgoing transaction
-                        var isIncoming = transaction.has("to") && 
-                            transaction.get("to").asText().equalsIgnoreCase(address);
-                        var party = isIncoming ? transaction.get("from").asText() : 
-                            transaction.get("to").asText();
-
-                        result.add(new ImportDto(
-                                null, // id
-                                opdate,
-                                isIncoming ? TransactionType.INCOME : TransactionType.EXPENSE,
-                                amount, // debit
-                                amount, // credit
-                                null, // rule
-                                null, // category
-                                tokenInfo.get("symbol").asText(), // currency
-                                party, // party
-                                tokenInfo.get("name").asText() + " Transaction", // details
-                                null, // catname
-                                false // selected
-                        ));
                     }
                 }
+                if (fullScan && transactionsResponse != null && transactionsResponse.has("meta")) {
+                    var meta = transactionsResponse.get("meta");
+                    if (meta.has("links") && meta.get("links") != null) {
+                        var links = meta.get("links");
+                        if (links.has("next") && links.get("next").asText() != null) {
+                            nextUrl = links.get("next").asText();
+                            continue;
+                        }
+                    }
+                }
+                break;
             }
             return result;
         } catch (Exception e) {
