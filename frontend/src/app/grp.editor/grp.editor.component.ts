@@ -14,6 +14,7 @@ import { Account } from '../models/account';
 import { TuiDataListWrapper, TuiFilterByInputPipe } from '@taiga-ui/kit';
 import { AuthService } from '../services/auth.service';
 import { CommonModule } from '@angular/common';
+import { AccEditorComponent } from "../acc.editor/acc.editor.component";
 
 @Component({
   selector: 'app-grp-editor',
@@ -45,8 +46,8 @@ export class GrpEditorComponent {
     currency: new FormControl({ value: acc.currency || this.#auth.claims().currency || 'EUR', disabled: !!acc.id }, { nonNullable: true, validators: [Validators.required] }),
     chain: new FormControl(acc.chain, { nonNullable: true }),
     address: new FormControl(acc.address, { nonNullable: true }),
-    startBalance: new FormControl({ value: !!acc.opdate ? (acc.balance || 0) : acc.startBalance, disabled: !!acc.opdate }, { nonNullable: true, validators: [Validators.required] }),
-    balance: new FormControl(acc.balance, { nonNullable: true, validators: [Validators.required] }),
+    startBalance: new FormControl({ value: acc.startBalance || 0, disabled: !!acc.opdate }, { nonNullable: true, validators: [Validators.required] }),
+    balance: new FormControl({ value: acc.balance || 0, disabled: true}, { nonNullable: true}),
     deleted: new FormControl(acc.deleted, { nonNullable: true }),
     opdate: new FormControl(acc.opdate, { nonNullable: true })
   });
@@ -101,6 +102,14 @@ export class GrpEditorComponent {
   onRemoveAccount(index: number): void {
     this.accounts.controls[index].get('deleted')?.setValue(true);
     this.checkCanDelete();
+  }
+
+  async onEditAccount(index: number) {
+    const account = this.getAccount(index);
+    const data = await this.#data.editAccount(account.getRawValue());
+    if (!!data) {
+      account.patchValue(data);
+    }    
   }
 
   checkCanDelete() {

@@ -1,0 +1,16 @@
+form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 0.5rem;
+}
+
+
+.row {
+    display: flex;
+    gap: .5rem;
+}
+
+.fill {
+    flex: 1;
+}

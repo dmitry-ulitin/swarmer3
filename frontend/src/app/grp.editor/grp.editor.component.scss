@@ -16,12 +16,12 @@
 
 .accounts {
     display: grid;
-    grid-template-columns: 6fr 6fr 5fr auto;
+    grid-template-columns: 1fr 1fr 1fr auto auto;
     gap: 0.5rem;
 }
 
 .accounts-title {
-    grid-column: 1 / 4;
+    grid-column: 1 / 5;
 }
 
 .account-currency {

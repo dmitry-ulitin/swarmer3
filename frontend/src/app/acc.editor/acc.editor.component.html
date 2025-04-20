@@ -1,25 +1,27 @@
 <form [formGroup]=form [tuiTextfieldSize]="'s'">
-    <label tuiLabel>Name
-        <tui-input tuiAutoFocus formControlName="name">
-            Account name
-            <input tuiTextfieldLegacy />
-        </tui-input>
-    </label>
-
     <div class="row">
-        <label tuiLabel class="currency-field">Currency
+        <label tuiLabel class="fill">Name
+            <tui-input tuiAutoFocus formControlName="name">
+                {{form.getRawValue().currency.toUpperCase()}}
+                <input tuiTextfieldLegacy />
+            </tui-input>
+        </label>
+        <label tuiLabel class="fill">Currency
             <tui-combo-box formControlName="currency" [strict]="false">
                 <input tuiTextfieldLegacy />
                 <tui-data-list-wrapper *tuiDataList [items]="currencies | tuiFilterByInput" [size]="'s'">
                 </tui-data-list-wrapper>
             </tui-combo-box>
         </label>
-
-        <label tuiLabel class="balance-field">Initial Balance
+    </div>
+    <div class="row">
+        <label tuiLabel class="fill">Initial Balance
             <tui-input-number formControlName="startBalance">0,00</tui-input-number>
         </label>
+        <label tuiLabel class="fill">Current Balance
+            <tui-input-number formControlName="balance">0,00</tui-input-number>
+        </label>
     </div>
-
     <div class="row">
         <label tuiLabel>Chain (optional)
             <tui-input formControlName="chain">
@@ -27,20 +29,17 @@
                 <input tuiTextfieldLegacy />
             </tui-input>
         </label>
-    </div>
-
-    <div class="row">
-        <label tuiLabel>Address (optional)
+        <label tuiLabel class="fill">Address (optional)
             <tui-input formControlName="address">
                 Wallet address
                 <input tuiTextfieldLegacy />
             </tui-input>
         </label>
     </div>
-
+    <div class="row"></div>
     <div class="row">
         <div class="fill"></div>
-        <button tuiButton type="submit" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()"
+        <button tuiButton type="button" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()"
             [disabled]=!form.valid>Save</button>
         <button tuiButton type="button" [appearance]="'secondary'" [size]="'s'" (click)="onCancel()">Cancel</button>
     </div>

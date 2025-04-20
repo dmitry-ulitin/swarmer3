@@ -20,6 +20,7 @@ import { StatementComponent } from '../statement/statement.component';
 import { Rule } from '../models/rule';
 import { RuleEditorComponent } from '../rule.editor/rule.editor.component';
 import { CategorySum } from '../models/category.sum';
+import { AccEditorComponent } from "../acc.editor/acc.editor.component";
 
 const GET_TRANSACTIONS_LIMIT = 100;
 
@@ -97,8 +98,7 @@ export class DataService {
   }
 
   async refresh() {
-    await firstValueFrom(this.#api.checkWallets([]));
-    await Promise.all([this.getGroups(), this.getCategories(), this.getRules(), this.getTransactions(this.#state()), this.getSummary(), this.getCategoriesSummary()]);
+    await Promise.all([this.getGroups(), this.getCategories(), this.getRules(), this.getTransactions(this.#state()), this.getSummary(), this.getCategoriesSummary(), this.checkWallets(false)]);
   }
 
   async getGroups() {
@@ -127,20 +127,24 @@ export class DataService {
     ));
     if (!!data) {
       this.#alerts.printSuccess(`Group '${data.fullName}' created`);
-      await this.getGroups();
+      await Promise.all([this.getGroups(), this.checkWallets(true)]);
     }
   }
 
   async editGroup(id: number) {
-    const group = this.#state().groups.find(g => g.id === id);
-    if (!!group) {
-      const data = await firstValueFrom(this.#dlgService.open<Group | undefined>(
-        new PolymorpheusComponent(GrpEditorComponent), { data: group, dismissible: false, closeable: false, size: 's' }
-      ));
-      if (!!data) {
-        this.#alerts.printSuccess(`Group '${data.fullName}' updated`);
-        await this.refresh();
+    try {
+      const group = this.#state().groups.find(g => g.id === id);
+      if (!!group) {
+        const data = await firstValueFrom(this.#dlgService.open<Group | undefined>(
+          new PolymorpheusComponent(GrpEditorComponent), { data: group, dismissible: false, closeable: false, size: 's' }
+        ));
+        if (!!data) {
+          this.#alerts.printSuccess(`Group '${data.fullName}' updated`);
+          await Promise.all([this.getGroups(), this.checkWallets(true)]);
+        }
       }
+    } catch (err) {
+      this.#alerts.printError(err);
     }
   }
 
@@ -160,6 +164,12 @@ export class DataService {
     } catch (err) {
       this.#alerts.printError(err);
     }
+  }
+
+  async editAccount(account: Account) {
+    return await firstValueFrom(this.#dlgService.open<Account | undefined>(
+      new PolymorpheusComponent(AccEditorComponent), { data: account, dismissible: false, closeable: false, size: 's' }
+    ));
   }
 
   async selectAccounts(ids: number[]) {
@@ -343,6 +353,18 @@ export class DataService {
   async setRange(range: DateRange) {
     this.#state.update(state => ({ ...state, range }));
     await Promise.all([this.getTransactions(this.#state()), this.getSummary(), this.getCategoriesSummary()]);
+  }
+
+  async checkWallets(fullScan: boolean) {
+    try {
+      const state = this.#state();
+      const count = await firstValueFrom(this.#api.checkWallets(state.accounts, fullScan));
+      if (count > 0) {
+        await this.getTransactions(state);
+      }
+    } catch (err) {
+      this.#alerts.printError(err);
+    }
   }
 
   async getTransactions(state: DataState) {
@@ -546,6 +568,7 @@ export class DataService {
       }
     }
     // patch group balances
+    // TODO: patch groups opdate
     const groups = state.groups.slice();
     patchGroupBalance(groups, transaction.account, remove ? transaction.debit : -transaction.debit);
     patchGroupBalance(groups, transaction.recipient, remove ? -transaction.credit : transaction.credit);
