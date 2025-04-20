@@ -89,9 +89,10 @@ public class TronService {
             if (!apiKey.isEmpty()) {
                 headers.set("TRON-PRO-API-KEY", apiKey);
             }
+            var limit = fullScan ? 200 : 20;
 
             List<ImportDto> result = new ArrayList<>();
-            var nextUrl = apiUrl + "/v1/accounts/" + address + "/transactions/?limit=200&only_confirmed=true";
+            var nextUrl = apiUrl + "/v1/accounts/" + address + "/transactions/?limit=" + limit + "&only_confirmed=true";
             for (;;) {
                 var transactionsResponse = restTemplate.getForObject(nextUrl, JsonNode.class);
                 if (transactionsResponse != null && transactionsResponse.has("data")) {
