@@ -18,15 +18,17 @@ public class WalletService {
     private final AccountGroupRepository groupRepository;
     private final AclRepository aclRepository;
     private final TronService tronService;
+    private final BitcoinService bitcoinService;
     private final ImportService importService;
     private final TransactionService transactionService;
 
     public WalletService(AccountGroupRepository groupRepository, AclRepository aclRepository,
-            TronService tronService, ImportService importService,
+            TronService tronService, BitcoinService bitcoinService, ImportService importService,
             TransactionService transactionService) {
         this.groupRepository = groupRepository;
         this.aclRepository = aclRepository;
         this.tronService = tronService;
+        this.bitcoinService = bitcoinService;
         this.importService = importService;
         this.transactionService = transactionService;
     }
@@ -63,6 +65,11 @@ public class WalletService {
             } else {
                 records = tronService.getContractTransactions(balance.address(), fullScan).stream()
                         .filter(r -> r.getCurrency().equals(account.getCurrency())).toList();
+            }
+        } else if ("btc".equals(account.getChain()) && account.getAddress() != null) {
+            var balance = bitcoinService.getWalletBalance(account.getAddress());
+            if ("BTC".equalsIgnoreCase(account.getCurrency())) {
+                records = bitcoinService.getTransactions(balance.address(), fullScan);
             }
         }
         if (records == null || records.isEmpty()) {
