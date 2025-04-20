@@ -221,16 +221,21 @@ public class TransactionService {
                                 ? record.getDebit()
                                 : record.getCredit().negate()));
             } else if (record.getId() != null) {
+                var update = false;
                 var transaction = transactionRepository.findById(record.getId()).orElseThrow();
                 if (transaction.getParty() == null || transaction.getParty().isBlank()) {
                     transaction.setParty(record.getParty());
+                    update = true;
                 }
                 if (transaction.getDetails() == null || transaction.getDetails().isBlank()) {
                     transaction.setDetails(record.getDetails());
+                    update = true;
                 }
-                transaction.setOwnerId(userId);
-                transaction.setUpdated(LocalDateTime.now());
-                transactionRepository.save(transaction);
+                if (update) {
+                    transaction.setOwnerId(userId);
+                    transaction.setUpdated(LocalDateTime.now());
+                    transactionRepository.save(transaction);
+                }
             }
         }
         corrections.stream().filter(c -> c.getCredit().equals(BigDecimal.ZERO) && c.getDebit().equals(BigDecimal.ZERO))
