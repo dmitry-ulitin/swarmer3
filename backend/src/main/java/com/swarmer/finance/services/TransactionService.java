@@ -223,11 +223,13 @@ public class TransactionService {
             } else if (record.getId() != null) {
                 var update = false;
                 var transaction = transactionRepository.findById(record.getId()).orElseThrow();
-                if (transaction.getParty() == null || transaction.getParty().isBlank()) {
+                if ((transaction.getParty() == null || transaction.getParty().isBlank()) && record.getParty() != null
+                        && !record.getParty().isBlank()) {
                     transaction.setParty(record.getParty());
                     update = true;
                 }
-                if (transaction.getDetails() == null || transaction.getDetails().isBlank()) {
+                if ((transaction.getDetails() == null || transaction.getDetails().isBlank()) && record.getDetails() != null
+                        && !record.getDetails().isBlank()) {
                     transaction.setDetails(record.getDetails());
                     update = true;
                 }

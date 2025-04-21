@@ -15,7 +15,7 @@
         </td>
         <td class="text-end">
             @for(t of total(g); track t.currency) {
-                <div class="group">{{t.value | currency:t.currency}}</div>
+                <div class="group">{{t.value | currency:t.currency : 'symbol' : '1.'+t.scale+'-'+t.scale}}</div>
             }
             @for(a of g.accounts; track a.id) {
                 @if(!a.deleted) {
@@ -30,7 +30,7 @@
         <td>&nbsp;</td>
         <td class="text-end">
             @for(t of data.total(); track t.currency) {
-                <div class="group">{{t.value | currency:t.currency}}</div>
+                <div class="group">{{t.value | currency:t.currency : 'symbol' : '1.'+t.scale+'-'+t.scale}}</div>
             }
         </td>
     </tr>

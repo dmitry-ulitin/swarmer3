@@ -598,9 +598,9 @@ export class DataService {
 
 function transaction2View(t: Transaction, selected: { [key: number]: boolean }): TransactionView {
   const useRecipient = t.recipient && (typeof t.account?.balance !== 'number' || typeof t.recipient?.balance === 'number' && selected[t.recipient?.id] && (!t.account || !selected[t.account?.id]));
-  const amount = (t.account && !useRecipient) ? { value: t.debit, currency: t.account.currency } : { value: t.credit, currency: t.recipient.currency };
+  const amount = (t.account && !useRecipient) ? { value: t.debit, currency: t.account.currency, scale: t.account.scale } : { value: t.credit, currency: t.recipient.currency, scale: t.recipient.scale };
   const acc = useRecipient && t.recipient ? t.recipient : (t.account || t.recipient);
-  return { ...t, amount, balance: { aid: acc.id, fullName: acc.fullName, currency: acc.currency, balance: acc.balance } };
+  return { ...t, amount, balance: { aid: acc.id, fullName: acc.fullName, currency: acc.currency, balance: acc.balance, scale: acc.scale } };
 }
 
 function patchGroupBalance(groups: Group[], account: Account | null, amount: number) {
