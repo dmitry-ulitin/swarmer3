@@ -36,7 +36,7 @@ public class WalletService {
     }
 
     @Transactional
-    public long importWallets(Long userId, Collection<Long> accountIdsFilter, boolean fullScan) {
+    public long importWallets(Long userId, Collection<Long> accountIdsFilter) {
         long count = 0;
         var userGroups = groupRepository.findByOwnerIdOrderById(userId);
         var sharedGroups = aclRepository.findByUserIdOrderByGroupId(userId).stream()
@@ -63,7 +63,7 @@ public class WalletService {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             var balance = account.getStartBalance().add(credit).subtract(debit).setScale(account.getScale(),
                     RoundingMode.HALF_DOWN);
-            var records = importAccount(account, balance, userId, fullScan);
+            var records = importAccount(account, balance, userId);
             if (records == null || records.isEmpty()) {
                 continue;
             }
@@ -74,21 +74,22 @@ public class WalletService {
         return count;
     }
 
-    private List<ImportDto> importAccount(Account account, BigDecimal balance, Long userId, boolean fullScan) {
+    private List<ImportDto> importAccount(Account account, BigDecimal balance, Long userId) {
         List<ImportDto> records = null;
+        var last = transactionService.findByMaxOpdate(account.getId());
         if ("trc20".equals(account.getChain()) && account.getAddress() != null) {
             var wallet = tronService.getWalletBalance(account.getAddress());
             if (!wallet.trxBalance().equals(balance) && "TRX".equalsIgnoreCase(account.getCurrency())) {
-                records = tronService.getTrxTransactions(wallet.hexAddress(), fullScan);
+                records = tronService.getTrxTransactions(wallet.hexAddress(), last);
             } else if (!wallet.usdtBalance().equals(balance) && "USDT".equalsIgnoreCase(account.getCurrency())) {
-                records = tronService.getContractTransactions(wallet.address(), fullScan).stream()
+                records = tronService.getContractTransactions(wallet.address(), last).stream()
                         .filter(r -> r.getCurrency().equals(account.getCurrency())).toList();
             }
         } else if ("btc".equals(account.getChain()) && "BTC".equalsIgnoreCase(account.getCurrency())
                 && account.getAddress() != null) {
             var wallet = bitcoinService.getWalletBalance(account.getAddress());
             if (!wallet.btcBalance().equals(balance)) {
-                records = bitcoinService.getTransactions(wallet.address(), fullScan);
+                records = bitcoinService.getTransactions(wallet.address(), last);
             }
         }
         return records;

@@ -98,7 +98,7 @@ export class DataService {
   }
 
   async refresh() {
-    await Promise.all([this.getGroups(), this.getCategories(), this.getRules(), this.getTransactions(this.#state()), this.getSummary(), this.getCategoriesSummary(), this.checkWallets(this.#state().accounts, false)]);
+    await Promise.all([this.getGroups(), this.getCategories(), this.getRules(), this.getTransactions(this.#state()), this.getSummary(), this.getCategoriesSummary(), this.checkWallets(this.#state().accounts)]);
   }
 
   async getGroups() {
@@ -127,7 +127,7 @@ export class DataService {
     ));
     if (!!data) {
       this.#alerts.printSuccess(`Group '${data.fullName}' created`);
-      await Promise.all([this.getGroups(), this.checkWallets(data.accounts.map(a => a.id), true)]);
+      await Promise.all([this.getGroups(), this.checkWallets(data.accounts.map(a => a.id))]);
     }
   }
 
@@ -140,7 +140,7 @@ export class DataService {
         ));
         if (!!data) {
           this.#alerts.printSuccess(`Group '${data.fullName}' updated`);
-          await Promise.all([this.getGroups(), this.checkWallets(data.accounts.map(a => a.id), true)]);
+          await Promise.all([this.getGroups(), this.checkWallets(data.accounts.map(a => a.id))]);
         }
       }
     } catch (err) {
@@ -355,10 +355,10 @@ export class DataService {
     await Promise.all([this.getTransactions(this.#state()), this.getSummary(), this.getCategoriesSummary()]);
   }
 
-  async checkWallets(accounts: number[], fullScan: boolean) {
+  async checkWallets(accounts: number[]) {
     try {
       const state = this.#state();
-      const count = await firstValueFrom(this.#api.checkWallets(accounts, fullScan));
+      const count = await firstValueFrom(this.#api.checkWallets(accounts));
       if (count > 0) {
         await Promise.all([this.getTransactions(state), this.getSummary(), this.getCategoriesSummary(), this.getGroups()]);
       }

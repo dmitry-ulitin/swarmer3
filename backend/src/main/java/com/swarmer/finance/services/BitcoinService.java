@@ -3,6 +3,7 @@ package com.swarmer.finance.services;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.swarmer.finance.dto.BitcoinWalletBalanceDto;
 import com.swarmer.finance.dto.ImportDto;
+import com.swarmer.finance.models.Transaction;
 import com.swarmer.finance.models.TransactionType;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -15,12 +16,16 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class BitcoinService {
     private static final BigDecimal BTC_DECIMALS = new BigDecimal("100000000"); // 8 decimals (satoshi)
     private static final String BITCOIN_NETWORK = "btc"; // Bitcoin main network
     private static final String API_VERSION = "v1";
+    private static final int LIMIT = 2000;
 
     private final RestTemplate restTemplate;
     private final String apiUrl;
@@ -69,30 +74,41 @@ public class BitcoinService {
      * Get Bitcoin transactions for a wallet address
      * 
      * @param address  Bitcoin wallet address
-     * @param fullScan If true, will attempt to fetch all available transactions
+     * @param lastTransaction last transaction for pagination
      * @return List of ImportDto with transaction information
      */
-    public List<ImportDto> getTransactions(String address, boolean fullScan) {
+    public List<ImportDto> getTransactions(String address, Optional<Transaction> lastTransaction) {
         if (address == null || address.isEmpty()) {
             throw new IllegalArgumentException("Address cannot be null or empty");
         }
 
         try {
             List<ImportDto> result = new ArrayList<>();
-            int limit = fullScan ? 2000 : 20; // BlockCypher defaults to 20, max is 200
-            long blockHeight = -1;
+            long beforeBlock = -1;
+            long afterBlock = -1;
             boolean hasMore = true;
+
+            if (lastTransaction != null && lastTransaction.isPresent()) {
+                Pattern pattern = Pattern.compile("block_height: (\\d+)");
+                Matcher matcher = pattern.matcher(lastTransaction.get().getDetails());
+                if (matcher.find()) {
+                    afterBlock = Long.parseLong(matcher.group(1));
+                }
+            }
 
             while (hasMore) {
                 // Build the URL with pagination parameters
                 String url = apiUrl + "/" + API_VERSION + "/" + BITCOIN_NETWORK + "/main/addrs/" + address;
-                url += "?limit=" + limit;
+                url += "?limit=" + LIMIT;
                 if (!apiKey.isEmpty()) {
                     url += "&token=" + apiKey;
                 }
 
-                if (blockHeight >= 0) {
-                    url += "&before=" + blockHeight;
+                if (afterBlock >= 0) {
+                    url += "&after=" + afterBlock;
+                }
+                if (beforeBlock >= 0) {
+                    url += "&before=" + beforeBlock;
                 }
 
                 // Send the request
@@ -104,14 +120,14 @@ public class BitcoinService {
                     // Process each transaction
                     for (JsonNode tx : transactions) {
                         // Get the transaction hash for pagination and details
-                        blockHeight = tx.get("block_height").asLong();
+                        beforeBlock = tx.get("block_height").asLong();
                         // Process inputs and outputs to determine transaction direction and amount
                         BigDecimal satoshi = new BigDecimal(tx.get("value").asText());
                         BigDecimal amount = satoshi.divide(BTC_DECIMALS, 8, RoundingMode.HALF_DOWN);
                         Boolean spent = tx.get("spent").asBoolean();
                         LocalDateTime confirmed =LocalDateTime.parse(tx.get("confirmed").asText(), DateTimeFormatter.ISO_DATE_TIME);
                         String txHash = tx.get("tx_hash").asText();
-                        var details = "tx_hash: " + txHash + ", block_height: " + blockHeight;
+                        var details = "tx_hash: " + txHash + ", block_height: " + beforeBlock;
 
 
                         result.add(new ImportDto(
@@ -129,7 +145,7 @@ public class BitcoinService {
                                 false // selected
                         ));
                     }
-                    hasMore = fullScan && response.has("hasMore") && response.get("hasMore").asBoolean();
+                    hasMore = response.has("hasMore") && response.get("hasMore").asBoolean();
                 }
             }
 

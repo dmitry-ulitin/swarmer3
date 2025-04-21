@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.data.util.Pair;
@@ -399,6 +400,17 @@ public class TransactionService {
             correction.setAccount(correction.getRecipient());
             correction.setRecipient(account);
         }
+    }
+
+    public Optional<Transaction> findByMaxOpdate(Long accountId) {
+        var builder = entityManager.getCriteriaBuilder();
+        var criteriaQuery = builder.createQuery(Transaction.class);
+        var root = criteriaQuery.from(Transaction.class);
+        var where = builder.or(builder.equal(root.get("account").get("id"), accountId),
+                builder.equal(root.get("recipient").get("id"), accountId));
+        criteriaQuery.select(root).where(where).orderBy(builder.desc(root.get("opdate")));
+        var trx = entityManager.createQuery(criteriaQuery).setMaxResults(1).getResultList();
+        return trx.isEmpty() ? Optional.empty() : Optional.of(trx.get(0));
     }
 
     public List<Transaction> queryTransactions(Long userId, Collection<Long> ai,

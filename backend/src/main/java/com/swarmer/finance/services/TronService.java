@@ -3,6 +3,7 @@ package com.swarmer.finance.services;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.swarmer.finance.dto.TronWalletBalanceDto;
 import com.swarmer.finance.dto.ImportDto;
+import com.swarmer.finance.models.Transaction;
 import com.swarmer.finance.models.TransactionType;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -21,12 +22,14 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TronService {
     private static final String USDT_CONTRACT_ADDRESS = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
     private static final BigDecimal TRX_DECIMALS = new BigDecimal("1000000"); // 6 decimals
     private static final BigDecimal USDT_DECIMALS = new BigDecimal("1000000"); // 6 decimals
+    private static final int LIMIT = 200;
 
     private final RestTemplate restTemplate;
     private final String apiUrl;
@@ -82,17 +85,21 @@ public class TronService {
         }
     }
 
-    public List<ImportDto> getTrxTransactions(String address, boolean fullScan) {
+    public List<ImportDto> getTrxTransactions(String address, Optional<Transaction> lastTransaction) {
         try {
             var headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             if (!apiKey.isEmpty()) {
                 headers.set("TRON-PRO-API-KEY", apiKey);
             }
-            var limit = fullScan ? 200 : 20;
 
             List<ImportDto> result = new ArrayList<>();
-            var nextUrl = apiUrl + "/v1/accounts/" + address + "/transactions/?limit=" + limit + "&only_confirmed=true";
+            var nextUrl = apiUrl + "/v1/accounts/" + address + "/transactions/?limit=" + LIMIT + "&only_confirmed=true";
+            if (lastTransaction != null && lastTransaction.isPresent()) {
+                var lastTimestamp = lastTransaction.get().getOpdate().atZone(ZoneId.systemDefault()).toInstant()
+                        .toEpochMilli();
+                nextUrl += "&min_timestamp=" + lastTimestamp;
+            }
             for (;;) {
                 var transactionsResponse = restTemplate.getForObject(nextUrl, JsonNode.class);
                 if (transactionsResponse != null && transactionsResponse.has("data")) {
@@ -120,7 +127,7 @@ public class TronService {
                                 } else if (value.has("frozen_balance")) {
                                     amount = new BigDecimal(value.get("frozen_balance").asText())
                                             .divide(TRX_DECIMALS, 6, RoundingMode.HALF_DOWN);
-                                            details = "Frozen Balance";
+                                    details = "Frozen Balance";
                                 }
                                 if (amount.compareTo(BigDecimal.ZERO) == 0) {
                                     continue;
@@ -164,7 +171,7 @@ public class TronService {
                         }
                     }
                 }
-                if (fullScan && transactionsResponse != null && transactionsResponse.has("meta")) {
+                if (transactionsResponse != null && transactionsResponse.has("meta")) {
                     var meta = transactionsResponse.get("meta");
                     if (meta.has("links") && meta.get("links") != null) {
                         var links = meta.get("links");
@@ -182,7 +189,7 @@ public class TronService {
         }
     }
 
-    public List<ImportDto> getContractTransactions(String address, boolean fullScan) {
+    public List<ImportDto> getContractTransactions(String address, Optional<Transaction> lastTransaction) {
         if (address == null || address.isEmpty()) {
             throw new IllegalArgumentException("Address cannot be null or empty");
         }
@@ -194,7 +201,13 @@ public class TronService {
             }
 
             List<ImportDto> result = new ArrayList<>();
-            var nextUrl = apiUrl + "/v1/accounts/" + address + "/transactions/trc20/?limit=200&only_confirmed=true";
+            var nextUrl = apiUrl + "/v1/accounts/" + address + "/transactions/trc20/?limit=" + LIMIT
+                    + "&only_confirmed=true";
+            if (lastTransaction != null && lastTransaction.isPresent()) {
+                var lastTimestamp = lastTransaction.get().getOpdate().atZone(ZoneId.systemDefault()).toInstant()
+                        .toEpochMilli();
+                nextUrl += "&min_timestamp=" + lastTimestamp;
+            }
             for (;;) {
                 var transactionsResponse = restTemplate.getForObject(
                         nextUrl,
@@ -221,7 +234,8 @@ public class TronService {
                             var isIncoming = transaction.has("to") &&
                                     transaction.get("to").asText().equalsIgnoreCase(address);
                             var party = isIncoming ? transaction.get("from").asText() : transaction.get("to").asText();
-                            var details = transaction.get("type").asText() + " " + transaction.get("transaction_id").asText();
+                            var details = transaction.get("type").asText() + " "
+                                    + transaction.get("transaction_id").asText();
 
                             result.add(new ImportDto(
                                     null, // id
@@ -240,7 +254,7 @@ public class TronService {
                         }
                     }
                 }
-                if (fullScan && transactionsResponse != null && transactionsResponse.has("meta")) {
+                if (transactionsResponse != null && transactionsResponse.has("meta")) {
                     var meta = transactionsResponse.get("meta");
                     if (meta.has("links") && meta.get("links") != null) {
                         var links = meta.get("links");
