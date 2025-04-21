@@ -43,30 +43,38 @@ public class WalletService {
                 .map(acl -> acl.getGroup())
                 .filter(group -> !group.getOwner().getId().equals(userId))
                 .toList();
-        var accounts = Stream.concat(userGroups.stream(), sharedGroups.stream())
+        var wallets = Stream.concat(userGroups.stream(), sharedGroups.stream())
                 .flatMap(group -> group.getAccounts().stream())
                 .filter(account -> !account.isDeleted())
                 .filter(account -> account.getChain() != null && !account.getChain().isBlank())
-                .filter(account -> account.getAddress() != null && !account.getAddress().isBlank())
+                .filter(account -> account.getAddress() != null && !account.getAddress().isBlank()).toList();
+        var filtered = wallets.stream()
                 .filter(account -> (accountIdsFilter == null || accountIdsFilter.isEmpty()
                         || accountIdsFilter.contains(account.getId())) && account.getChain() != null)
                 .toList();
-        var balances = transactionService.getBalances(accounts.stream().map(Account::getId).toList(), null, null, null);
+        var balances = transactionService.getBalances(filtered.stream().map(Account::getId).toList(), null, null, null);
 
-        for (var account : accounts) {
+        for (var account : filtered) {
             var debit = balances.stream().filter(b -> account.getId().equals(b.accountId()))
                     .map(b -> b.debit())
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             var credit = balances.stream().filter(b -> account.getId().equals(b.recipientId()))
                     .map(b -> b.credit())
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            var balance = account.getStartBalance().add(credit).subtract(debit).setScale(account.getScale(), RoundingMode.HALF_DOWN);
-            count += importAccount(account, balance, userId, fullScan);
+            var balance = account.getStartBalance().add(credit).subtract(debit).setScale(account.getScale(),
+                    RoundingMode.HALF_DOWN);
+            var records = importAccount(account, balance, userId, fullScan);
+            if (records == null || records.isEmpty()) {
+                continue;
+            }
+            importService.importWaletRecords(records, account, wallets.stream().map(Account::getId).toList(), userId);
+            transactionService.saveImport(userId, account.getId(), records);
+            count += records.stream().filter(ImportDto::isSelected).count();
         }
         return count;
     }
 
-    private long importAccount(Account account, BigDecimal balance, Long userId, boolean fullScan) {
+    private List<ImportDto> importAccount(Account account, BigDecimal balance, Long userId, boolean fullScan) {
         List<ImportDto> records = null;
         if ("trc20".equals(account.getChain()) && account.getAddress() != null) {
             var wallet = tronService.getWalletBalance(account.getAddress());
@@ -76,17 +84,13 @@ public class WalletService {
                 records = tronService.getContractTransactions(wallet.address(), fullScan).stream()
                         .filter(r -> r.getCurrency().equals(account.getCurrency())).toList();
             }
-        } else if ("btc".equals(account.getChain()) && "BTC".equalsIgnoreCase(account.getCurrency()) && account.getAddress() != null) {
+        } else if ("btc".equals(account.getChain()) && "BTC".equalsIgnoreCase(account.getCurrency())
+                && account.getAddress() != null) {
             var wallet = bitcoinService.getWalletBalance(account.getAddress());
             if (!wallet.btcBalance().equals(balance)) {
                 records = bitcoinService.getTransactions(wallet.address(), fullScan);
             }
         }
-        if (records == null || records.isEmpty()) {
-            return 0;
-        }
-        importService.importRecords(records, account.getId(), userId);
-        transactionService.saveImport(userId, account.getId(), records);
-        return records.stream().filter(ImportDto::isSelected).count();
+        return records;
     }
 }

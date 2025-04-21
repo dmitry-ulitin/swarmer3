@@ -221,6 +221,7 @@ public class TronService {
                             var isIncoming = transaction.has("to") &&
                                     transaction.get("to").asText().equalsIgnoreCase(address);
                             var party = isIncoming ? transaction.get("from").asText() : transaction.get("to").asText();
+                            var details = transaction.get("type").asText() + " " + transaction.get("transaction_id").asText();
 
                             result.add(new ImportDto(
                                     null, // id
@@ -232,7 +233,7 @@ public class TronService {
                                     null, // category
                                     symbol, // currency
                                     party, // party
-                                    tokenInfo.get("name").asText() + " Transaction", // details
+                                    details, // details
                                     null, // catname
                                     false // selected
                             ));

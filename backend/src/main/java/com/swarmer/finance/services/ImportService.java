@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import com.swarmer.finance.dto.CategoryDto;
 import com.swarmer.finance.dto.ImportDto;
 import com.swarmer.finance.dto.RuleDto;
+import com.swarmer.finance.models.Account;
 import com.swarmer.finance.models.BankType;
 import com.swarmer.finance.models.ConditionType;
 import com.swarmer.finance.models.Rule;
@@ -172,6 +173,49 @@ public class ImportService {
                 r.setId(transaction.getId());
                 r.setSelected(false);
                 r.setCategory(CategoryDto.fromEntity(transaction.getCategory()));
+                transactions.remove(transaction);
+            } else {
+                r.setSelected(true);
+            }
+        });
+        return records;
+    }
+
+    public List<ImportDto> importWaletRecords(List<ImportDto> records, Account account, List<Long> wallets, Long userId) {
+        if (records == null || records.isEmpty()) {
+            return records;
+        }
+        LocalDateTime minOpdate = records.stream().map(r -> r.getOpdate()).min((a, b) -> a.compareTo(b)).orElse(null);
+        var transactions = transactionService.queryTransactions(userId, wallets, null, null, minOpdate, null,
+                0, 0);
+        records.forEach(r -> {
+            var transaction = transactions.stream()
+                    .filter(t -> t.getOpdate().equals(r.getOpdate())
+                            && (t.getAccount() != null && t.getAccount().getId().equals(account.getId())
+                                    && t.getDebit().setScale(t.getAccount().getScale(), RoundingMode.HALF_DOWN).equals(
+                                            r.getDebit().setScale(t.getAccount().getScale(), RoundingMode.HALF_DOWN))
+                                    || t.getRecipient() != null && t.getRecipient().getId().equals(account.getId())
+                                            && t.getCredit()
+                                                    .setScale(t.getRecipient().getScale(), RoundingMode.HALF_DOWN)
+                                                    .equals(r.getCredit().setScale(t.getRecipient().getScale(),
+                                                            RoundingMode.HALF_DOWN))))
+                    .findFirst().orElse(null);
+            if (transaction == null && r.getParty() != null) {
+                transaction = transactions.stream()
+                        .filter(t -> t.getOpdate().equals(r.getOpdate())
+                                && (t.getAccount() == null && r.getParty().equals(t.getRecipient().getAddress())
+                                        && t.getDebit().setScale(t.getRecipient().getScale(), RoundingMode.HALF_DOWN)
+                                                .equals(r.getDebit().setScale(t.getRecipient().getScale(),
+                                                        RoundingMode.HALF_DOWN))
+                                        || t.getRecipient() == null && r.getParty().equals(t.getAccount().getAddress())
+                                        && t.getCredit().setScale(t.getAccount().getScale(), RoundingMode.HALF_DOWN)
+                                                .equals(r.getCredit().setScale(t.getAccount().getScale(),
+                                                        RoundingMode.HALF_DOWN))))
+                        .findFirst().orElse(null);
+            }
+            if (transaction != null) {
+                r.setId(transaction.getId());
+                r.setSelected(false);
                 transactions.remove(transaction);
             } else {
                 r.setSelected(true);

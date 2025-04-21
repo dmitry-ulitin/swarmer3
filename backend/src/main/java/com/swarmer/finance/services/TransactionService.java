@@ -195,6 +195,9 @@ public class TransactionService {
     }
 
     public void saveImport(Long userId, Long accountId, List<ImportDto> records) {
+        if (records == null || records.isEmpty()) {
+            return;
+        }
         var account = entityManager.find(Account.class, accountId);
         var minOpdate = records.stream().map(ImportDto::getOpdate).min(LocalDateTime::compareTo).orElse(null);
         var corrections = queryTransactions(userId, List.of(accountId), null,
@@ -223,12 +226,26 @@ public class TransactionService {
             } else if (record.getId() != null) {
                 var update = false;
                 var transaction = transactionRepository.findById(record.getId()).orElseThrow();
-                if ((transaction.getParty() == null || transaction.getParty().isBlank()) && record.getParty() != null
+                if (record.getType() == TransactionType.INCOME && transaction.getRecipient() == null
+                        && transaction.getParty() != null && transaction.getParty().equals(account.getAddress())) {
+                    transaction.setParty(null);
+                    transaction.setCategory(null);
+                    transaction.setRecipient(account);
+                    update = true;
+                } else if (record.getType() == TransactionType.EXPENSE && transaction.getAccount() == null
+                        && transaction.getParty() != null && transaction.getParty().equals(account.getAddress())) {
+                    transaction.setParty(null);
+                    transaction.setCategory(null);
+                    transaction.setAccount(account);
+                    update = true;
+                } else if ((transaction.getParty() == null || transaction.getParty().isBlank())
+                        && record.getParty() != null
                         && !record.getParty().isBlank()) {
                     transaction.setParty(record.getParty());
                     update = true;
                 }
-                if ((transaction.getDetails() == null || transaction.getDetails().isBlank()) && record.getDetails() != null
+                if ((transaction.getDetails() == null || transaction.getDetails().isBlank())
+                        && record.getDetails() != null
                         && !record.getDetails().isBlank()) {
                     transaction.setDetails(record.getDetails());
                     update = true;
