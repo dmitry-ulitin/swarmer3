@@ -3,9 +3,9 @@ import { TuiTextfieldControllerModule, TuiTextareaModule, TuiComboBoxModule, Tui
 import { ChangeDetectionStrategy, Component, Inject, computed, inject } from '@angular/core';
 import { POLYMORPHEUS_CONTEXT } from '@taiga-ui/polymorpheus';
 import { Transaction, TransactionType } from '../models/transaction';
-import { TuiDialogContext, TuiButton, TuiLabel } from '@taiga-ui/core';
+import { TuiDialogContext, TuiButton, TuiLabel, TuiNumberFormat, TuiTextfield } from '@taiga-ui/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TuiDataListWrapper, TuiFilterByInputPipe } from '@taiga-ui/kit';
+import { TuiDataListWrapper, TuiFilterByInputPipe, TuiInputNumber } from '@taiga-ui/kit';
 import { DataService } from '../services/data.service';
 import { TuiDay, TuiAutoFocus, TuiFilterPipe } from '@taiga-ui/cdk';
 import { Category } from '../models/category';
@@ -16,7 +16,7 @@ import { AlertService } from '../services/alert.service';
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TuiButton, ReactiveFormsModule, TuiInputModule, TuiInputNumberModule,
+  imports: [TuiButton, ReactiveFormsModule, TuiInputModule, TuiInputNumber,TuiNumberFormat,TuiTextfield,
     TuiTextfieldControllerModule, TuiComboBoxModule, TuiSelectModule, TuiDataListWrapper,
     TuiTextareaModule, TuiInputDateModule, TuiFilterPipe, TuiFilterByInputPipe, TuiAutoFocus],
   templateUrl: './trx.editor.component.html',
