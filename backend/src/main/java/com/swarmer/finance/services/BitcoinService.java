@@ -79,7 +79,7 @@ public class BitcoinService {
 
         try {
             List<ImportDto> result = new ArrayList<>();
-            int limit = fullScan ? 20 : 2000; // BlockCypher defaults to 20, max is 200
+            int limit = fullScan ? 2000 : 20; // BlockCypher defaults to 20, max is 200
             long blockHeight = -1;
             boolean hasMore = true;
 
@@ -129,7 +129,7 @@ public class BitcoinService {
                                 false // selected
                         ));
                     }
-                    hasMore = fullScan && response.has("has_more") && response.get("has_more").asBoolean();
+                    hasMore = fullScan && response.has("hasMore") && response.get("hasMore").asBoolean();
                 }
             }
 
