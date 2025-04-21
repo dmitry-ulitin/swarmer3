@@ -10,7 +10,7 @@ import { ApiService } from '../services/api.service';
 import { AlertService } from '../services/alert.service';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { debounceTime, firstValueFrom, map, of, switchMap, tap } from 'rxjs';
-import { Account } from '../models/account';
+import { Account, scale } from '../models/account';
 import { TuiDataListWrapper, TuiFilterByInputPipe } from '@taiga-ui/kit';
 import { AuthService } from '../services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -160,7 +160,6 @@ export class GrpEditorComponent {
 
   async onSubmit() {
     try {
-      let scale: { [key: string]: number } = { 'trc20': 6, 'erc20': 18, 'bep20': 18, 'btc': 8, 'default': 2 };
       let group: Group = this.form.getRawValue();
       group = await firstValueFrom(this.#api.saveGroup({ ...group, accounts: group.accounts.map(a => ({ ...a, currency: a.currency.toUpperCase(), scale: scale[a.chain] || 2 })) }));
       this.context.completeWith(group);

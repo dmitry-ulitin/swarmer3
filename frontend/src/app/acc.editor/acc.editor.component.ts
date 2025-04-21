@@ -6,7 +6,7 @@ import { DataService } from '../services/data.service';
 import { TuiAutoFocus, TuiFilterPipe } from '@taiga-ui/cdk';
 import { AlertService } from '../services/alert.service';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Account } from '../models/account';
+import { Account, scale } from '../models/account';
 import { CommonModule } from '@angular/common';
 import { TuiFilterByInputPipe } from "@taiga-ui/kit";
 
@@ -47,7 +47,7 @@ export class AccEditorComponent {
   }
 
   onSubmit() {
-    const account = this.form.getRawValue();
-    this.context.completeWith(account);
+    const value = this.form.getRawValue();
+    this.context.completeWith({...value, scale: scale[value.chain] || 2});
   }
 }
