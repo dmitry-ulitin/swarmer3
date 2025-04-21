@@ -1,5 +1,7 @@
 package com.swarmer.finance.services;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
@@ -49,27 +51,35 @@ public class WalletService {
                 .filter(account -> (accountIdsFilter == null || accountIdsFilter.isEmpty()
                         || accountIdsFilter.contains(account.getId())) && account.getChain() != null)
                 .toList();
+        var balances = transactionService.getBalances(accounts.stream().map(Account::getId).toList(), null, null, null);
 
         for (var account : accounts) {
-            count += importAccount(account, userId, fullScan);
+            var debit = balances.stream().filter(b -> account.getId().equals(b.accountId()))
+                    .map(b -> b.debit())
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            var credit = balances.stream().filter(b -> account.getId().equals(b.recipientId()))
+                    .map(b -> b.credit())
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            var balance = account.getStartBalance().add(credit).subtract(debit).setScale(account.getScale(), RoundingMode.HALF_DOWN);
+            count += importAccount(account, balance, userId, fullScan);
         }
         return count;
     }
 
-    private long importAccount(Account account, Long userId, boolean fullScan) {
+    private long importAccount(Account account, BigDecimal balance, Long userId, boolean fullScan) {
         List<ImportDto> records = null;
         if ("trc20".equals(account.getChain()) && account.getAddress() != null) {
-            var balance = tronService.getWalletBalance(account.getAddress());
-            if ("TRX".equalsIgnoreCase(account.getCurrency())) {
-                records = tronService.getTrxTransactions(balance.hexAddress(), fullScan);
-            } else {
-                records = tronService.getContractTransactions(balance.address(), fullScan).stream()
+            var wallet = tronService.getWalletBalance(account.getAddress());
+            if (!wallet.trxBalance().equals(balance) && "TRX".equalsIgnoreCase(account.getCurrency())) {
+                records = tronService.getTrxTransactions(wallet.hexAddress(), fullScan);
+            } else if (!wallet.usdtBalance().equals(balance) && "USDT".equalsIgnoreCase(account.getCurrency())) {
+                records = tronService.getContractTransactions(wallet.address(), fullScan).stream()
                         .filter(r -> r.getCurrency().equals(account.getCurrency())).toList();
             }
-        } else if ("btc".equals(account.getChain()) && account.getAddress() != null) {
-            var balance = bitcoinService.getWalletBalance(account.getAddress());
-            if ("BTC".equalsIgnoreCase(account.getCurrency())) {
-                records = bitcoinService.getTransactions(balance.address(), fullScan);
+        } else if ("btc".equals(account.getChain()) && "BTC".equalsIgnoreCase(account.getCurrency()) && account.getAddress() != null) {
+            var wallet = bitcoinService.getWalletBalance(account.getAddress());
+            if (!wallet.btcBalance().equals(balance)) {
+                records = bitcoinService.getTransactions(wallet.address(), fullScan);
             }
         }
         if (records == null || records.isEmpty()) {
