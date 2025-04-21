@@ -111,6 +111,7 @@ public class BitcoinService {
                         Boolean spent = tx.get("spent").asBoolean();
                         LocalDateTime confirmed =LocalDateTime.parse(tx.get("confirmed").asText(), DateTimeFormatter.ISO_DATE_TIME);
                         String txHash = tx.get("tx_hash").asText();
+                        var details = "tx_hash: " + txHash + ", block_height: " + blockHeight;
 
 
                         result.add(new ImportDto(
@@ -123,7 +124,7 @@ public class BitcoinService {
                                 null, // category
                                 "BTC", // currency
                                 null, // party
-                                "Bitcoin Transaction: " + txHash, // details
+                                details, // details
                                 null, // catname
                                 false // selected
                         ));

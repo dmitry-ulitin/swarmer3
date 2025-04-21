@@ -100,37 +100,65 @@ public class TronService {
                         if (transaction.has("raw_data") && transaction.get("raw_data").has("contract")) {
                             var contract = transaction.get("raw_data").get("contract").get(0);
                             if (contract.has("parameter") && contract.get("parameter").has("value")) {
+                                var timestamp = transaction.get("raw_data").get("timestamp").asLong();
+                                var opdate = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
+                                        ZoneId.systemDefault());
                                 var value = contract.get("parameter").get("value");
+                                var amount = BigDecimal.ZERO;
+                                Boolean isIncoming = false;
+                                String party = null;
+                                String details = null;
                                 if (value.has("amount")) {
-                                    var amount = new BigDecimal(value.get("amount").asText())
+                                    amount = new BigDecimal(value.get("amount").asText())
                                             .divide(TRX_DECIMALS, 6, RoundingMode.HALF_DOWN);
-                                    if (amount.setScale(2, RoundingMode.HALF_DOWN).compareTo(BigDecimal.ZERO) == 0) {
-                                        continue;
-                                    }
-                                    var timestamp = transaction.get("raw_data").get("timestamp").asLong();
-                                    var opdate = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
-                                            ZoneId.systemDefault());
-
                                     // Determine if this is an incoming or outgoing transaction
-                                    var isIncoming = value.has("to_address") &&
+                                    isIncoming = value.has("to_address") &&
                                             value.get("to_address").asText().equalsIgnoreCase(address);
-                                    var party = isIncoming ? value.get("owner_address").asText()
-                                            : value.get("to_address").asText();
+                                    party = encode58(isIncoming ? value.get("owner_address").asText()
+                                            : value.get("to_address").asText());
+                                    details = "TRX Transaction";
+                                } else if (value.has("frozen_balance")) {
+                                    amount = new BigDecimal(value.get("frozen_balance").asText())
+                                            .divide(TRX_DECIMALS, 6, RoundingMode.HALF_DOWN);
+                                            details = "Frozen Balance";
+                                }
+                                if (amount.compareTo(BigDecimal.ZERO) == 0) {
+                                    continue;
+                                }
 
-                                    result.add(new ImportDto(
-                                            null, // id
-                                            opdate,
-                                            isIncoming ? TransactionType.INCOME : TransactionType.EXPENSE,
-                                            amount, // debit
-                                            amount, // credit
-                                            null, // rule
-                                            null, // category
-                                            "TRX", // currency
-                                            encode58(party), // party
-                                            "TRX Transaction", // details
-                                            null, // catname
-                                            false // selected
-                                    ));
+                                result.add(new ImportDto(
+                                        null, // id
+                                        opdate,
+                                        isIncoming ? TransactionType.INCOME : TransactionType.EXPENSE,
+                                        amount, // debit
+                                        amount, // credit
+                                        null, // rule
+                                        null, // category
+                                        "TRX", // currency
+                                        party, // party
+                                        details, // details
+                                        null, // catname
+                                        false // selected
+                                ));
+                                if (!isIncoming && party != null) {
+                                    if (transaction.has("ret") && transaction.get("ret").get(0).has("fee")) {
+                                        var fee = new BigDecimal(transaction.get("ret").get(0).get("fee").asText())
+                                                .divide(TRX_DECIMALS, 6, RoundingMode.HALF_DOWN);
+                                        result.add(new ImportDto(
+                                                null, // id
+                                                opdate,
+                                                TransactionType.EXPENSE,
+                                                fee, // debit
+                                                fee, // credit
+                                                null, // rule
+                                                null, // category
+                                                "TRX", // currency
+                                                encode58(address), // party
+                                                "Fee", // details
+                                                null, // catname
+                                                false // selected
+                                        ));
+                                    }
                                 }
                             }
                         }
@@ -175,9 +203,13 @@ public class TronService {
                     for (JsonNode transaction : transactionsResponse.get("data")) {
                         if (transaction.has("value") && transaction.has("token_info")) {
                             var tokenInfo = transaction.get("token_info");
+                            var symbol = tokenInfo.get("symbol").asText();
+                            if (!"USDT".equalsIgnoreCase(symbol)) {
+                                continue;
+                            }
                             var amount = new BigDecimal(transaction.get("value").asText())
                                     .divide(USDT_DECIMALS, 6, RoundingMode.HALF_DOWN);
-                            if (amount.setScale(2, RoundingMode.HALF_DOWN).compareTo(BigDecimal.ZERO) == 0) {
+                            if (amount.compareTo(BigDecimal.ZERO) == 0) {
                                 continue;
                             }
 
@@ -198,7 +230,7 @@ public class TronService {
                                     amount, // credit
                                     null, // rule
                                     null, // category
-                                    tokenInfo.get("symbol").asText(), // currency
+                                    symbol, // currency
                                     party, // party
                                     tokenInfo.get("name").asText() + " Transaction", // details
                                     null, // catname
