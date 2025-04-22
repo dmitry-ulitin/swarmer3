@@ -4,12 +4,14 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
 import com.swarmer.finance.dto.ImportDto;
 import com.swarmer.finance.models.Account;
+import com.swarmer.finance.models.Transaction;
 import com.swarmer.finance.repositories.AccountGroupRepository;
 import com.swarmer.finance.repositories.AclRepository;
 
@@ -36,7 +38,7 @@ public class WalletService {
     }
 
     @Transactional
-    public long importWallets(Long userId, Collection<Long> accountIdsFilter) {
+    public long importWallets(Long userId, Collection<Long> accountIdsFilter, Boolean fullScan) {
         long count = 0;
         var userGroups = groupRepository.findByOwnerIdOrderById(userId);
         var sharedGroups = aclRepository.findByUserIdOrderByGroupId(userId).stream()
@@ -63,7 +65,7 @@ public class WalletService {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             var balance = account.getStartBalance().add(credit).subtract(debit).setScale(account.getScale(),
                     RoundingMode.HALF_DOWN);
-            var records = importAccount(account, balance, userId);
+            var records = importAccount(account, balance, userId, fullScan);
             if (records == null || records.isEmpty()) {
                 continue;
             }
@@ -74,9 +76,9 @@ public class WalletService {
         return count;
     }
 
-    private List<ImportDto> importAccount(Account account, BigDecimal balance, Long userId) {
+    private List<ImportDto> importAccount(Account account, BigDecimal balance, Long userId, Boolean fullScan) {
         List<ImportDto> records = null;
-        var last = transactionService.findByMaxOpdate(account.getId());
+        Optional<Transaction> last = fullScan ? Optional.empty() : transactionService.findByMaxOpdate(account.getId());
         if ("trc20".equals(account.getChain()) && account.getAddress() != null) {
             var wallet = tronService.getWalletBalance(account.getAddress());
             if (!wallet.trxBalance().equals(balance) && "TRX".equalsIgnoreCase(account.getCurrency())) {

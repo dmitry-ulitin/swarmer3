@@ -137,9 +137,10 @@ export class ApiService {
     return this.http.get<CategorySum[]>('/api/transactions/categories', { params: params });
   }
 
-  checkWallets(accounts: number[]): Observable<number> {
+  checkWallets(accounts: number[], fullScan: boolean): Observable<number> {
     let params = new HttpParams();
     params = params.set('accounts', accounts.join(","));
+    params = params.set('fullScan', fullScan.toString());
     return this.http.get<number>('/api/transactions/checkwallets', { params: params });
   }
 }

@@ -187,8 +187,9 @@ public class TransactionController {
 
     @GetMapping("checkwallets")
     public ResponseEntity<Long> checkWallets(@RequestParam(required = false) Set<Long> accounts,
+            @RequestParam(required = false, defaultValue = "false") boolean fullScan,
             @AuthenticationPrincipal UserPrincipal principal) {
         Long userId = principal.getUserDto().id();
-        return ResponseEntity.ok(walletService.importWallets(userId, accounts));
+        return ResponseEntity.ok(walletService.importWallets(userId, accounts, fullScan));
     }
 }
