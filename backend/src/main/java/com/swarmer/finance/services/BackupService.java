@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.swarmer.finance.dto.AccountDto;
 import com.swarmer.finance.dto.CategoryDto;
 import com.swarmer.finance.dto.dump.Dump;
 import com.swarmer.finance.models.Account;
@@ -79,17 +80,19 @@ public class BackupService {
             groupRepository.save(group);
             for (var a : g.accounts()) {
                 var account = userAccounts.get(a.id());
+                var startBalance = AccountDto.unsetScale(a.startBalance(), a.scale());
                 if (account == null) {
-                    account = new Account(null, group, a.name(), a.currency(), a.startBalance(), a.chain(), a.address(), a.scale(), a.deleted(),
+                    account = new Account(null, group, a.name(), a.currency(), startBalance, a.chain(), a.address(),
+                            a.scale(), a.deleted(),
                             a.created(), a.updated());
                 } else {
                     userAccounts.remove(a.id());
                     account.setName(a.name());
                     account.setCurrency(a.currency());
-                    account.setStartBalance(a.startBalance());
+                    account.setStartBalance(startBalance);
                     account.setChain(a.chain());
                     account.setAddress(a.address());
-                    account.setScale(a.scale());
+                    account.setScale(a.scale() == null ? 2 : a.scale());
                     account.setDeleted(a.deleted());
                     account.setUpdated(a.updated());
                     account.getGroup().getAccounts().remove(account);
@@ -185,7 +188,11 @@ public class BackupService {
                     catMap.put(t.categoryId(), category);
                 }
             }
-            var transaction = new Transaction(null, userId, t.opdate(), account, t.debit(), recipient, t.credit(),
+            var dscale = account != null ? account.getScale() : (recipient != null ? recipient.getScale() : 2);
+            var cscale = recipient != null ? recipient.getScale() : dscale;
+            var debit = AccountDto.unsetScale(t.debit(), dscale);
+            var credit = AccountDto.unsetScale(t.debit(), cscale);
+            var transaction = new Transaction(null, userId, t.opdate(), account, debit, recipient, credit,
                     category, t.currency(), t.party(), t.details(), t.created(), t.updated());
             transactionRepository.save(transaction);
         }

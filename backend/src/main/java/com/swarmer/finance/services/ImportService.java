@@ -30,6 +30,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
+import com.swarmer.finance.dto.AccountDto;
 import com.swarmer.finance.dto.CategoryDto;
 import com.swarmer.finance.dto.ImportDto;
 import com.swarmer.finance.dto.RuleDto;
@@ -116,6 +117,7 @@ public class ImportService {
         var minOpdate = records.stream().map(r -> r.getOpdate()).min((a, b) -> a.compareTo(b)).orElse(null);
         var transactions = transactionService.queryTransactions(userId, List.of(accountId), null, null, minOpdate, null,
                 0, 0);
+        var scale = transactions.size() > 0 ? (transactions.get(0).getAccount() == null ? transactions.get(0).getRecipient().getScale() : transactions.get(0).getAccount().getScale()) : 2;
         var rules = getRules(userId);
         var rmap = rules.stream()
                 .collect(Collectors.groupingBy(rule -> Pair.of(rule.conditionType(), rule.category().type())));
@@ -158,16 +160,12 @@ public class ImportService {
                 r.setCategory(rule.category());
                 r.setRule(rule);
             }
+            var debit = AccountDto.unsetScale(r.getDebit(), scale);
+            var credit = AccountDto.unsetScale(r.getCredit(), scale);
             var transaction = transactions.stream()
                     .filter(t -> t.getOpdate().toLocalDate().equals(r.getOpdate().toLocalDate())
-                            && (t.getAccount() != null && t.getAccount().getId().equals(accountId)
-                                    && t.getDebit().setScale(t.getAccount().getScale(), RoundingMode.HALF_DOWN).equals(
-                                            r.getDebit().setScale(t.getAccount().getScale(), RoundingMode.HALF_DOWN))
-                                    || t.getRecipient() != null && t.getRecipient().getId().equals(accountId)
-                                            && t.getCredit()
-                                                    .setScale(t.getRecipient().getScale(), RoundingMode.HALF_DOWN)
-                                                    .equals(r.getCredit().setScale(t.getRecipient().getScale(),
-                                                            RoundingMode.HALF_DOWN))))
+                            && (t.getAccount() != null && t.getAccount().getId().equals(accountId) && t.getDebit().equals(debit)
+                             || t.getRecipient() != null && t.getRecipient().getId().equals(accountId) && t.getCredit().equals(credit)))
                     .findFirst().orElse(null);
             if (transaction != null) {
                 r.setId(transaction.getId());
@@ -189,16 +187,12 @@ public class ImportService {
         var transactions = transactionService.queryTransactions(userId, wallets, null, null, minOpdate, null,
                 0, 0);
         records.forEach(r -> {
+            var debit = AccountDto.unsetScale(r.getDebit(), account.getScale());
+            var credit = AccountDto.unsetScale(r.getCredit(), account.getScale());
             var transaction = transactions.stream()
                     .filter(t -> t.getOpdate().equals(r.getOpdate())
-                            && (t.getAccount() != null && t.getAccount().getId().equals(account.getId())
-                                    && t.getDebit().setScale(t.getAccount().getScale(), RoundingMode.HALF_DOWN).equals(
-                                            r.getDebit().setScale(t.getAccount().getScale(), RoundingMode.HALF_DOWN))
-                                    || t.getRecipient() != null && t.getRecipient().getId().equals(account.getId())
-                                            && t.getCredit()
-                                                    .setScale(t.getRecipient().getScale(), RoundingMode.HALF_DOWN)
-                                                    .equals(r.getCredit().setScale(t.getRecipient().getScale(),
-                                                            RoundingMode.HALF_DOWN))))
+                            && (t.getAccount() != null && t.getAccount().getId().equals(account.getId()) && t.getDebit().equals(debit)
+                             || t.getRecipient() != null && t.getRecipient().getId().equals(account.getId()) && t.getCredit().equals(credit)))
                     .findFirst().orElse(null);
             if (transaction == null && r.getParty() != null) {
                 transaction = transactions.stream()
