@@ -45,7 +45,7 @@ export type TransactionImport = Transaction & {
 }
 
 export type TransactionView = Transaction & {
-    amount: { value: number; currency: string };
-    balance: { aid: number; fullName: string; balance?: number; currency: string; };
+    amount: { value: number; currency: string; scale: number };
+    balance: { aid: number; fullName: string; balance?: number; currency: string; scale: number };
 };
 

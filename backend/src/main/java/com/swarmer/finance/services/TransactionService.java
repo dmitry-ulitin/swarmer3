@@ -8,11 +8,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
+import com.swarmer.finance.dto.AccountDto;
 import com.swarmer.finance.dto.CategoryDto;
 import com.swarmer.finance.dto.CategorySum;
 import com.swarmer.finance.dto.ImportDto;
@@ -166,24 +168,30 @@ public class TransactionService {
     }
 
     private TransactionDto saveTransaction(Transaction trx, TransactionDto dto, Long userId) {
+        var debit = AccountDto.unsetScale(dto.debit(),
+                dto.account() == null ? (dto.recipient() == null ? 2 : dto.recipient().scale())
+                        : dto.account().scale());
+        var credit = AccountDto.unsetScale(dto.credit(),
+                dto.recipient() == null ? (dto.account() == null ? 2 : dto.account().scale())
+                        : dto.recipient().scale());
         if (trx.getId() != null) {
-            updateCorrections(userId, trx.getAccount(), trx.getDebit().negate(), trx.getOpdate(), trx.getId(), false);
-            updateCorrections(userId, trx.getRecipient(), trx.getCredit(), trx.getOpdate(), trx.getId(), false);
+            updateCorrections(userId, trx.getAccount(), debit.negate(), trx.getOpdate(), trx.getId(), false);
+            updateCorrections(userId, trx.getRecipient(), credit, trx.getOpdate(), trx.getId(), false);
         }
         trx.setOwnerId(userId);
         trx.setOpdate(dto.opdate());
         trx.setAccount(dto.account() == null ? null : entityManager.find(Account.class, dto.account().id()));
-        trx.setDebit(dto.debit());
+        trx.setDebit(debit);
         trx.setRecipient(dto.recipient() == null ? null : entityManager.find(Account.class, dto.recipient().id()));
-        trx.setCredit(dto.credit());
+        trx.setCredit(credit);
         trx.setCategory(dto.category() == null ? null : categoryService.getCategory(dto.category(), userId));
         trx.setCurrency(dto.currency());
         trx.setParty(dto.party());
         trx.setDetails(dto.details());
         trx.setUpdated(LocalDateTime.now());
         transactionRepository.save(trx);
-        updateCorrections(userId, trx.getAccount(), dto.debit(), dto.opdate(), trx.getId(), true);
-        updateCorrections(userId, trx.getRecipient(), dto.credit().negate(), dto.opdate(), trx.getId(), true);
+        updateCorrections(userId, trx.getAccount(), debit, dto.opdate(), trx.getId(), true);
+        updateCorrections(userId, trx.getRecipient(), credit.negate(), dto.opdate(), trx.getId(), true);
         return getTransaction(trx.getId(), userId);
     }
 
@@ -195,6 +203,9 @@ public class TransactionService {
     }
 
     public void saveImport(Long userId, Long accountId, List<ImportDto> records) {
+        if (records == null || records.isEmpty()) {
+            return;
+        }
         var account = entityManager.find(Account.class, accountId);
         var minOpdate = records.stream().map(ImportDto::getOpdate).min(LocalDateTime::compareTo).orElse(null);
         var corrections = queryTransactions(userId, List.of(accountId), null,
@@ -209,28 +220,50 @@ public class TransactionService {
                 } else {
                     transaction.setRecipient(account);
                 }
-                transaction.setDebit(record.getDebit());
-                transaction.setCredit(record.getCredit());
+                var debit = AccountDto.unsetScale(record.getDebit(), account.getScale());
+                var credit = AccountDto.unsetScale(record.getCredit(), account.getScale());
+                transaction.setDebit(debit);
+                transaction.setCredit(credit);
                 transaction.setCategory(categoryService.getCategory(record.getCategory(), userId));
                 transaction.setCurrency(record.getCurrency());
                 transaction.setParty(record.getParty());
                 transaction.setDetails(record.getDetails());
                 transactionRepository.save(transaction);
                 corrections.stream().filter(c -> c.getOpdate().isAfter(record.getOpdate()))
-                        .forEach(c -> updateCorrection(c, record.getType() == TransactionType.EXPENSE
-                                ? record.getDebit()
-                                : record.getCredit().negate()));
+                        .forEach(c -> updateCorrection(c,
+                                record.getType() == TransactionType.EXPENSE ? debit : credit.negate()));
             } else if (record.getId() != null) {
+                var update = false;
                 var transaction = transactionRepository.findById(record.getId()).orElseThrow();
-                if (transaction.getParty() == null || transaction.getParty().isBlank()) {
+                if (record.getType() == TransactionType.INCOME && transaction.getRecipient() == null
+                        && transaction.getParty() != null && transaction.getParty().equals(account.getAddress())) {
+                    transaction.setParty(null);
+                    transaction.setCategory(null);
+                    transaction.setRecipient(account);
+                    update = true;
+                } else if (record.getType() == TransactionType.EXPENSE && transaction.getAccount() == null
+                        && transaction.getParty() != null && transaction.getParty().equals(account.getAddress())) {
+                    transaction.setParty(null);
+                    transaction.setCategory(null);
+                    transaction.setAccount(account);
+                    update = true;
+                } else if ((transaction.getParty() == null || transaction.getParty().isBlank())
+                        && record.getParty() != null
+                        && !record.getParty().isBlank()) {
                     transaction.setParty(record.getParty());
+                    update = true;
                 }
-                if (transaction.getDetails() == null || transaction.getDetails().isBlank()) {
+                if ((transaction.getDetails() == null || transaction.getDetails().isBlank())
+                        && record.getDetails() != null
+                        && !record.getDetails().isBlank()) {
                     transaction.setDetails(record.getDetails());
+                    update = true;
                 }
-                transaction.setOwnerId(userId);
-                transaction.setUpdated(LocalDateTime.now());
-                transactionRepository.save(transaction);
+                if (update) {
+                    transaction.setOwnerId(userId);
+                    transaction.setUpdated(LocalDateTime.now());
+                    transactionRepository.save(transaction);
+                }
             }
         }
         corrections.stream().filter(c -> c.getCredit().equals(BigDecimal.ZERO) && c.getDebit().equals(BigDecimal.ZERO))
@@ -254,27 +287,29 @@ public class TransactionService {
         getBalances(validAccounts.keySet(), from, to, null).forEach(b -> {
             if (validAccounts.containsKey(b.accountId())) {
                 var account = validAccounts.get(b.accountId());
+                var debit = AccountDto.setScale(b.debit(), account.getScale());
                 var summary = result.get(account.getCurrency());
                 if (b.recipientId() == null) {
                     // expense
-                    summary.setDebit(summary.getDebit().add(b.debit()));
+                    summary.setDebit(summary.getDebit().add(debit));
                 } else {
                     // transfer
                     if (!validAccounts.containsKey(b.recipientId())) {
-                        summary.setTransfers_debit(summary.getTransfers_debit().add(b.debit()));
+                        summary.setTransfers_debit(summary.getTransfers_debit().add(debit));
                     }
                 }
             }
             if (validAccounts.containsKey(b.recipientId())) {
                 var recipient = validAccounts.get(b.recipientId());
+                var credit = AccountDto.setScale(b.credit(), recipient.getScale());
                 var summary = result.get(recipient.getCurrency());
                 if (b.accountId() == null) {
                     // income
-                    summary.setCredit(summary.getCredit().add(b.credit()));
+                    summary.setCredit(summary.getCredit().add(credit));
                 } else {
                     // transfer
                     if (!validAccounts.containsKey(b.accountId())) {
-                        summary.setTransfers_credit(summary.getTransfers_credit().add(b.credit()));
+                        summary.setTransfers_credit(summary.getTransfers_credit().add(credit));
                     }
                 }
             }
@@ -321,6 +356,8 @@ public class TransactionService {
                     .groupBy(category, root.get("recipient").get("currency"));
         }
         var categorySums = entityManager.createQuery(criteriaQuery).getResultList();
+        Map<String, Integer> scaleMap = userAccounts.stream()
+                .collect(Collectors.toMap(a -> a.getCurrency(), a -> a.getScale(), (a, b) -> a));
         var typecat = CategoryDto.fromEntity(entityManager.find(Category.class, type.getValue()));
         categorySums.forEach(cs -> {
             if (cs.getCategory() == null) {
@@ -333,6 +370,7 @@ public class TransactionService {
                 }
                 cs.setCategory(CategoryDto.fromEntity(cat));
             }
+            cs.setSum(AccountDto.setScale(cs.getSum(), scaleMap.get(cs.getCurrency())));
         });
         categorySums = categorySums.stream()
                 .collect(Collectors.groupingBy(cs -> Pair.of(cs.getCurrency(), cs.getCategory()))).entrySet().stream()
@@ -375,6 +413,17 @@ public class TransactionService {
             correction.setAccount(correction.getRecipient());
             correction.setRecipient(account);
         }
+    }
+
+    public Optional<Transaction> findByMaxOpdate(Long accountId) {
+        var builder = entityManager.getCriteriaBuilder();
+        var criteriaQuery = builder.createQuery(Transaction.class);
+        var root = criteriaQuery.from(Transaction.class);
+        var where = builder.or(builder.equal(root.get("account").get("id"), accountId),
+                builder.equal(root.get("recipient").get("id"), accountId));
+        criteriaQuery.select(root).where(where).orderBy(builder.desc(root.get("opdate")));
+        var trx = entityManager.createQuery(criteriaQuery).setMaxResults(1).getResultList();
+        return trx.isEmpty() ? Optional.empty() : Optional.of(trx.get(0));
     }
 
     public List<Transaction> queryTransactions(Long userId, Collection<Long> ai,

@@ -3,6 +3,7 @@ package com.swarmer.finance.dto.dump;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.swarmer.finance.dto.AccountDto;
 import com.swarmer.finance.models.Account;
 
 public record DumpAccount(
@@ -10,6 +11,9 @@ public record DumpAccount(
     String name,
     String currency,
     BigDecimal startBalance,
+    String chain,
+    String address,
+    Integer scale,
     Boolean deleted,
     LocalDateTime created,
     LocalDateTime updated) {
@@ -18,7 +22,10 @@ public static DumpAccount fromEntity(Account account) {
                     account.getId(),
                     account.getName(),
                     account.getCurrency(),
-                    account.getStartBalance(),
+                    AccountDto.setScale(account.getStartBalance(), account.getScale()),
+                    account.getChain(),
+                    account.getAddress(),
+                    account.getScale(),
                     account.isDeleted(),
                     account.getCreated(),
                     account.getUpdated());

@@ -31,8 +31,12 @@ public record TransactionDto(
                                 : (category == null
                                                 ? (account == null ? TransactionType.INCOME : TransactionType.EXPENSE)
                                                 : category.type());
+                var dscale = account != null ? account.scale() : (recipient != null ? recipient.scale() : 2);
+                var cscale = recipient != null ? recipient.scale() : dscale;
+                var debit = AccountDto.setScale(entity.getDebit(), dscale);
+                var credit = AccountDto.setScale(entity.getCredit(), cscale);
                 return new TransactionDto(entity.getId(), entity.getOwnerId(), entity.getOpdate(), type, account,
-                                entity.getDebit(), recipient, entity.getCredit(), category, entity.getCurrency(),
+                                debit, recipient, credit, category, entity.getCurrency(),
                                 entity.getParty(),
                                 entity.getDetails());
         }

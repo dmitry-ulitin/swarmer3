@@ -21,7 +21,7 @@ export interface Permission {
     admin: boolean;
 }
 
-const add = (balance: Map<string, number>, amount: Group[] | Account[] | Group | Account) => {
+const add = (balance: Map<string, {value: number, currency: string, scale: number}>, amount: Group[] | Account[] | Group | Account) => {
     if (amount instanceof Array) {
         for (const a of amount) {
             add(balance, a);
@@ -30,12 +30,12 @@ const add = (balance: Map<string, number>, amount: Group[] | Account[] | Group |
         return balance;
     } else if ('accounts' in amount) {
         add(balance, amount.accounts);
-    } else if ('currency' in amount && amount.currency) {
-        let a = balance.get(amount.currency) || 0;
+    } else if ('scale' in amount && 'currency' in amount && amount.currency) {
+        let a = balance.get(amount.currency)?.value || 0;
         a += amount.balance || 0;
-        balance.set(amount.currency, a);
+        balance.set(amount.currency, {value: a, currency: amount.currency, scale: amount.scale || 2});
     }
     return balance;
 };
 
-export const total = (amount: Group[] | Account[] | Group | Account) => [...add(new Map<string, number>(), amount).entries()].map(e => ({ value: e[1], currency: e[0] }));
+export const total = (amount: Group[] | Account[] | Group | Account) => [...add(new Map<string, {value: number, currency: string, scale: number}>(), amount).values()];

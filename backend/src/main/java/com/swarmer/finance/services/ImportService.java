@@ -30,9 +30,11 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
+import com.swarmer.finance.dto.AccountDto;
 import com.swarmer.finance.dto.CategoryDto;
 import com.swarmer.finance.dto.ImportDto;
 import com.swarmer.finance.dto.RuleDto;
+import com.swarmer.finance.models.Account;
 import com.swarmer.finance.models.BankType;
 import com.swarmer.finance.models.ConditionType;
 import com.swarmer.finance.models.Rule;
@@ -105,12 +107,17 @@ public class ImportService {
             case CAIXA -> importCaixa(is);
             default -> throw new IllegalArgumentException("Unknown bank type: " + bankId);
         };
+        return importRecords(records, accountId, userId);
+    }
+
+    public List<ImportDto> importRecords(List<ImportDto> records, Long accountId, Long userId) {
         if (records.isEmpty()) {
             return records;
         }
         var minOpdate = records.stream().map(r -> r.getOpdate()).min((a, b) -> a.compareTo(b)).orElse(null);
         var transactions = transactionService.queryTransactions(userId, List.of(accountId), null, null, minOpdate, null,
                 0, 0);
+        var scale = transactions.size() > 0 ? (transactions.get(0).getAccount() == null ? transactions.get(0).getRecipient().getScale() : transactions.get(0).getAccount().getScale()) : 2;
         var rules = getRules(userId);
         var rmap = rules.stream()
                 .collect(Collectors.groupingBy(rule -> Pair.of(rule.conditionType(), rule.category().type())));
@@ -153,18 +160,55 @@ public class ImportService {
                 r.setCategory(rule.category());
                 r.setRule(rule);
             }
+            var debit = AccountDto.unsetScale(r.getDebit(), scale);
+            var credit = AccountDto.unsetScale(r.getCredit(), scale);
             var transaction = transactions.stream()
-                    .filter(t -> t.getOpdate().toLocalDate().equals(r.getOpdate().toLocalDate()) &&
-                            (t.getAccount() != null && t.getAccount().getId().equals(accountId)
-                                    && t.getDebit().equals(r.getDebit())
-                                    || t.getRecipient() != null && t.getRecipient().getId().equals(accountId)
-                                            && t.getCredit().equals(r.getCredit())))
+                    .filter(t -> t.getOpdate().toLocalDate().equals(r.getOpdate().toLocalDate())
+                            && (t.getAccount() != null && t.getAccount().getId().equals(accountId) && t.getDebit().equals(debit)
+                             || t.getRecipient() != null && t.getRecipient().getId().equals(accountId) && t.getCredit().equals(credit)))
                     .findFirst().orElse(null);
             if (transaction != null) {
                 r.setId(transaction.getId());
                 r.setSelected(false);
                 r.setCategory(CategoryDto.fromEntity(transaction.getCategory()));
                 transactions.remove(transaction);
+            } else {
+                r.setSelected(true);
+            }
+        });
+        return records;
+    }
+
+    public List<ImportDto> importWaletRecords(List<ImportDto> records, Account account, List<Long> wallets, Long userId) {
+        if (records == null || records.isEmpty()) {
+            return records;
+        }
+        LocalDateTime minOpdate = records.stream().map(r -> r.getOpdate()).min((a, b) -> a.compareTo(b)).orElse(null);
+        var transactions = transactionService.queryTransactions(userId, wallets, null, null, minOpdate, null,
+                0, 0);
+        records.forEach(r -> {
+            var debit = AccountDto.unsetScale(r.getDebit(), account.getScale());
+            var credit = AccountDto.unsetScale(r.getCredit(), account.getScale());
+            var transaction = transactions.stream()
+                    .filter(t -> t.getOpdate().equals(r.getOpdate())
+                            && (t.getAccount() != null && t.getAccount().getId().equals(account.getId()) && t.getDebit().equals(debit)
+                             || t.getRecipient() != null && t.getRecipient().getId().equals(account.getId()) && t.getCredit().equals(credit)))
+                    .findFirst().orElse(null);
+            if (transaction == null && r.getParty() != null) {
+                transaction = transactions.stream()
+                        .filter(t -> t.getOpdate().equals(r.getOpdate())
+                                && (t.getAccount() == null && r.getParty().equals(t.getRecipient().getAddress())
+                                        && t.getDebit().equals(debit)
+                                        || t.getRecipient() == null && r.getParty().equals(t.getAccount().getAddress())
+                                        && t.getCredit().equals(credit)))
+                        .findFirst().orElse(null);
+            }
+            if (transaction != null) {
+                r.setId(transaction.getId());
+                r.setSelected(false);
+                transactions.remove(transaction);
+            } else {
+                r.setSelected(true);
             }
         });
         return records;
@@ -231,7 +275,8 @@ public class ImportService {
                                 DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
                         lines[i] = lines[i].substring(17);
                         var parts = lines[i].split("\\s");
-                        var amount = (BigDecimal) decimalFormat.parse(parts[parts.length - 2].replaceAll("\\u00a0|\\+|-", ""));
+                        var amount = (BigDecimal) decimalFormat
+                                .parse(parts[parts.length - 2].replaceAll("\\u00a0|\\+|-", ""));
                         var type = parts[parts.length - 2].startsWith("+") ? TransactionType.INCOME
                                 : TransactionType.EXPENSE;
                         lines[i] = lines[i].substring(parts[0].length() + 1, lines[i].length()

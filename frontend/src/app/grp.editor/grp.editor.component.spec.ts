@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AccEditorComponent } from './acc.editor.component';
+import { GrpEditorComponent } from './grp.editor.component';
 
-describe('AccEditorComponent', () => {
-  let component: AccEditorComponent;
-  let fixture: ComponentFixture<AccEditorComponent>;
+describe('GrpEditorComponent', () => {
+  let component: GrpEditorComponent;
+  let fixture: ComponentFixture<GrpEditorComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AccEditorComponent]
+      imports: [GrpEditorComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(AccEditorComponent);
+    fixture = TestBed.createComponent(GrpEditorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

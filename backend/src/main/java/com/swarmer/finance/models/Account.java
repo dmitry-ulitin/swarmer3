@@ -29,6 +29,15 @@ public class Account {
 
     @Column(name = "start_balance", nullable = false)
     private BigDecimal startBalance = BigDecimal.ZERO;
+    
+    @Column
+    private String chain;
+    
+    @Column
+    private String address;
+
+    @Column(nullable = false)
+    private Integer scale = 2;
 
     @Column(nullable = false)
     private boolean deleted = false;

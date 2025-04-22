@@ -29,6 +29,10 @@ export class ApiService {
     return this.http.get<Group[]>(`/api/groups?opdate=${encodeURIComponent(opdate)}`);
   }
 
+  getGroup(id: number): Observable<Group> {
+    return this.http.get<Group>(`/api/groups/${id}`);
+  }
+
   saveGroup(group: Group): Observable<Group> {
     return !!group.id ? this.http.put<Group>(`/api/groups/${group.id}`, group) : this.http.post<Group>('/api/groups', group);
   }
@@ -131,5 +135,12 @@ export class ApiService {
     params = params.set('from', range?.from?.toString('YMD', '-') || '');
     params = params.set('to', range?.to?.toString('YMD', '-') || '');
     return this.http.get<CategorySum[]>('/api/transactions/categories', { params: params });
+  }
+
+  checkWallets(accounts: number[], fullScan: boolean): Observable<number> {
+    let params = new HttpParams();
+    params = params.set('accounts', accounts.join(","));
+    params = params.set('fullScan', fullScan.toString());
+    return this.http.get<number>('/api/transactions/checkwallets', { params: params });
   }
 }

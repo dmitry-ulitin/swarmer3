@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.swarmer.finance.dto.AccountDto;
 import com.swarmer.finance.dto.GroupDto;
 import com.swarmer.finance.exceptions.ResourceNotFoundException;
 import com.swarmer.finance.models.Account;
@@ -84,7 +85,10 @@ public class GroupService {
             account.setGroup(group);
             account.setName(a.name());
             account.setCurrency(a.currency());
-            account.setStartBalance(a.startBalance());
+            account.setStartBalance(AccountDto.unsetScale(a.startBalance(), a.scale()));
+            account.setChain(a.chain());
+            account.setAddress(a.address());
+            account.setScale(a.scale());
             return account;
         }).toList());
         group.setAcls(dto.permissions().stream().map(p -> {
@@ -129,7 +133,10 @@ public class GroupService {
                     } else {
                         account.setName(a.name());
                         account.setCurrency(a.currency());
-                        account.setStartBalance(a.startBalance());
+                        account.setStartBalance(AccountDto.unsetScale(a.startBalance(), a.scale()));
+                        account.setChain(a.chain());
+                        account.setAddress(a.address());
+                        account.setScale(a.scale());
                         account.setDeleted(a.deleted());
                     }
                 } else if (!a.deleted()) {
@@ -137,7 +144,10 @@ public class GroupService {
                     account.setGroup(group);
                     account.setName(a.name());
                     account.setCurrency(a.currency());
-                    account.setStartBalance(a.startBalance());
+                    account.setStartBalance(AccountDto.unsetScale(a.startBalance(), a.scale()));
+                    account.setChain(a.chain());
+                    account.setAddress(a.address());
+                    account.setScale(a.scale());
                     group.getAccounts().add(account);
                 }
             });
