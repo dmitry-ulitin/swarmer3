@@ -198,13 +198,9 @@ public class ImportService {
                 transaction = transactions.stream()
                         .filter(t -> t.getOpdate().equals(r.getOpdate())
                                 && (t.getAccount() == null && r.getParty().equals(t.getRecipient().getAddress())
-                                        && t.getDebit().setScale(t.getRecipient().getScale(), RoundingMode.HALF_DOWN)
-                                                .equals(r.getDebit().setScale(t.getRecipient().getScale(),
-                                                        RoundingMode.HALF_DOWN))
+                                        && t.getDebit().equals(debit)
                                         || t.getRecipient() == null && r.getParty().equals(t.getAccount().getAddress())
-                                        && t.getCredit().setScale(t.getAccount().getScale(), RoundingMode.HALF_DOWN)
-                                                .equals(r.getCredit().setScale(t.getAccount().getScale(),
-                                                        RoundingMode.HALF_DOWN))))
+                                        && t.getCredit().equals(credit)))
                         .findFirst().orElse(null);
             }
             if (transaction != null) {
