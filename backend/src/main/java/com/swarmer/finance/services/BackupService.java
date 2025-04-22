@@ -80,10 +80,11 @@ public class BackupService {
             groupRepository.save(group);
             for (var a : g.accounts()) {
                 var account = userAccounts.get(a.id());
-                var startBalance = AccountDto.unsetScale(a.startBalance(), a.scale());
+                var scale = a.scale() == null ? 2 : a.scale();
+                var startBalance = AccountDto.unsetScale(a.startBalance(), scale);
                 if (account == null) {
                     account = new Account(null, group, a.name(), a.currency(), startBalance, a.chain(), a.address(),
-                            a.scale(), a.deleted(),
+                            a.scale() == null ? 2 : a.scale(), a.deleted(),
                             a.created(), a.updated());
                 } else {
                     userAccounts.remove(a.id());
