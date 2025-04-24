@@ -84,12 +84,18 @@ public class TransactionService {
         var balances = getBalances(accList, null, transaction.getOpdate(), transaction.getId());
         BigDecimal accountBalance = transaction.getAccount() == null ? null
                 : transaction.getAccount().getStartBalance()
-                        .add(balances.stream().filter(b -> transaction.getAccount().getId().equals(b.accountId()))
-                                .map(b -> b.debit()).reduce(BigDecimal.ZERO, BigDecimal::add));
+                        .subtract(balances.stream().filter(b -> transaction.getAccount().getId().equals(b.accountId()))
+                                .map(b -> b.debit()).reduce(BigDecimal.ZERO, BigDecimal::add))
+                        .add(balances.stream().filter(b -> transaction.getAccount().getId().equals(b.recipientId()))
+                                .map(b -> b.debit()).reduce(BigDecimal.ZERO, BigDecimal::add))
+                        .subtract(transaction.getDebit());
         BigDecimal recipientBalance = transaction.getRecipient() == null ? null
                 : transaction.getRecipient().getStartBalance()
-                        .add(balances.stream().filter(b -> transaction.getRecipient().getId().equals(b.accountId()))
-                                .map(b -> b.credit()).reduce(BigDecimal.ZERO, BigDecimal::add));
+                        .subtract(balances.stream().filter(b -> transaction.getRecipient().getId().equals(b.accountId()))
+                                .map(b -> b.credit()).reduce(BigDecimal.ZERO, BigDecimal::add))
+                        .add(balances.stream().filter(b -> transaction.getRecipient().getId().equals(b.recipientId()))
+                                .map(b -> b.credit()).reduce(BigDecimal.ZERO, BigDecimal::add))
+                        .add(transaction.getCredit());
         return TransactionDto.fromEntity(transaction, userId, accountBalance, recipientBalance);
     }
 
