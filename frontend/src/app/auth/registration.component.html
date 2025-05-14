@@ -1,27 +1,32 @@
 <form [formGroup]="form" (ngSubmit)="onRegister()" class="form" [tuiTextfieldSize]="'s'" autocomplete="off">
-    <label tuiLabel>{{ 'Email' }}
-        <tui-input formControlName="email" required>
-            Enter your email
-            <input autocomplete="email" tuiTextfieldLegacy type="email" />
-        </tui-input>
+    <label tuiLabel>Email
+        <tui-textfield>
+            <input tuiTextfield placeholder="Enter your email" autocomplete="email" type="email"
+                formControlName="email" />
+        </tui-textfield>
     </label>
     <div class="row">
-        <label tuiLabel>{{ 'Name' }}
-            <tui-input formControlName="name">{{defaultName}}</tui-input>
+        <label tuiLabel>Name
+            <tui-textfield>
+                <input tuiTextfield placeholder="{{defaultName}}" formControlName="name" />
+            </tui-textfield>
         </label>
-        <label tuiLabel>{{ 'Currency' }}
-            <tui-combo-box formControlName="currency" [strict]="false">
-                <input tuiTextfieldLegacy />
-                <tui-data-list-wrapper *tuiDataList [items]="currencies | tuiFilterByInput" [size]="'s'">
-                </tui-data-list-wrapper>
-            </tui-combo-box>
+        <label tuiLabel>Currency
+            <tui-textfield class="currency" iconEnd="@tui.search">
+                <input tuiTextfield formControlName="currency" />
+                <tui-data-list-wrapper *tuiTextfieldDropdown [items]="currencies | tuiFilterByInput" />
+            </tui-textfield>
         </label>
     </div>
-    <label tuiLabel>{{ 'Password' }}
-        <tui-input-password formControlName="password" required>Enter your password</tui-input-password>
+    <label tuiLabel>Password
+        <tui-textfield>
+            <input tuiTextfield type="password" formControlName="password" [tuiTextfieldCleaner]="false" />
+            <tui-icon tuiPassword />
+        </tui-textfield>
     </label>
     <div class="buttons">
-        <span>Already have an account? <a [routerLink]="['/login']" routerLinkActive="router-link-active">Sign in</a></span>
+        <span>Already have an account? <a [routerLink]="['/login']" routerLinkActive="router-link-active">Sign
+                in</a></span>
         <button type="submit" tuiButton [size]="'s'" [disabled]="form.invalid">Register</button>
     </div>
 </form>

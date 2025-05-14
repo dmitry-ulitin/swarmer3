@@ -92,7 +92,7 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
         userRepository.save(user);
 
-        return ResponseEntity.ok("Password changed successfully");
+        return ResponseEntity.ok().build();
     }
 
     public static class LoginRequest {

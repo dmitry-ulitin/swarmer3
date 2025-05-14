@@ -5,7 +5,7 @@ import { Group } from '../models/group';
 import { Category } from '../models/category';
 import { DateRange } from '../models/date.range';
 import { Transaction, TransactionImport, TransactionType } from '../models/transaction';
-import { Credentials, Registration } from './auth.service';
+import { ChangePassword, Credentials, Registration } from './auth.service';
 import { Rule } from '../models/rule';
 import { Summary } from '../models/summary';
 import { CategorySum } from '../models/category.sum';
@@ -24,6 +24,10 @@ export class ApiService {
   register(registration: Registration): Observable<any> {
     return this.http.post<any>('/api/auth/register', registration);
   }
+
+  changePassword(changePassword: ChangePassword): Observable<any> {
+    return this.http.post<any>('/api/auth/change-password', changePassword);
+  }  
 
   getGroups(opdate: string): Observable<Group[]> {
     return this.http.get<Group[]>(`/api/groups?opdate=${encodeURIComponent(opdate)}`);

@@ -9,12 +9,13 @@ import { CategoriesComponent } from '../categories/categories.component';
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 import { RulesComponent } from '../rules/rules.component';
 import { TuiChevron, TuiDataListDropdownManager } from '@taiga-ui/kit';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-header',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TuiButton, TuiDropdown, TuiDataList, TuiIcon, TuiChevron, TuiDataListDropdownManager],
+  imports: [CommonModule, TuiButton, RouterLink, TuiDropdown, TuiDataList, TuiIcon, TuiChevron, TuiDataListDropdownManager],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })

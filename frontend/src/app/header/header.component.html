@@ -63,7 +63,8 @@
 </div>
 <ng-template #dropdown>
     <tui-data-list [size]="'s'">
-        <button tuiOption (click)="onLogout()">Logout</button>
+        <a tuiOption [routerLink]="['/change-password']" routerLinkActive="router-link-active">Change Password</a>
+        <a tuiOption (click)="onLogout()">Logout</a>
     </tui-data-list>
 </ng-template>
 }

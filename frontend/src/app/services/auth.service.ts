@@ -3,6 +3,7 @@ import { ApiService } from './api.service';
 import { firstValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 import { DataService } from './data.service';
+import { AlertService } from './alert.service';
 
 export interface Credentials {
   email?: string;
@@ -14,6 +15,11 @@ export interface Registration extends Credentials {
   currency?: string;
 }
 
+export interface ChangePassword {
+  oldPassword: string;
+  newPassword: string;
+}
+
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +28,7 @@ export class AuthService {
   #router = inject(Router);
   #api = inject(ApiService);
   #data = inject(DataService);
+  #alerts = inject(AlertService);
 
   #tokenKey = 'app.token';
   #state = signal<string | null>(localStorage.getItem(this.#tokenKey));
@@ -57,6 +64,12 @@ export class AuthService {
     this.#state.set(response.token);
     this.#router.navigate(['']);
     this.#data.init();
+  }
+
+  async changePassword(changePassword: ChangePassword) {
+    await firstValueFrom(this.#api.changePassword(changePassword));
+    this.#alerts.printSuccess('Password changed successfully');
+    this.#router.navigate(['']);
   }
 
   logout() {
