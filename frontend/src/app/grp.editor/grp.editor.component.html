@@ -26,7 +26,7 @@
             <button tuiIconButton type="button" [iconStart]="'@tui.settings'" [size]="'s'" [appearance]="'flat'"
                 (click)="onEditAccount($index)"></button>
             <button tuiIconButton type="button" [iconStart]="'@tui.trash'" [size]="'s'" [appearance]="'flat'"
-                [disabled]="!isOwnerOrCoowner || !canDelete || !(!account.value.balance || !account.value.opdate)"
+                [disabled]="!isOwnerOrCoowner || !canDelete || (!!account.getRawValue().balance && !!account.value.opdate)"
                 (click)="onRemoveAccount($index)"></button>
         </ng-container>
         }

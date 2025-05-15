@@ -43,7 +43,7 @@ export class GrpEditorComponent {
     id: new FormControl(acc.id, { nonNullable: true }),
     name: new FormControl(acc.name, { nonNullable: true }),
     fullName: new FormControl(acc.fullName, { nonNullable: true }),
-    currency: new FormControl({ value: acc.currency || this.#auth.claims().currency || 'EUR', disabled: !!acc.id }, { nonNullable: true, validators: [Validators.required] }),
+    currency: new FormControl({ value: acc.currency || this.#auth.claims().currency || 'EUR', disabled: !!acc.opdate }, { nonNullable: true, validators: [Validators.required] }),
     chain: new FormControl(acc.chain, { nonNullable: true }),
     address: new FormControl(acc.address, { nonNullable: true }),
     scale: new FormControl(acc.scale || 2, { nonNullable: true }),
@@ -161,7 +161,8 @@ export class GrpEditorComponent {
   async onSubmit() {
     try {
       let group: Group = this.form.getRawValue();
-      group = await firstValueFrom(this.#api.saveGroup({ ...group, accounts: group.accounts.map(a => ({ ...a, currency: a.currency.toUpperCase(), scale: scale[a.chain] || 2 })) }));
+      group.accounts = group.accounts.map(a => ({ ...a, currency: a.currency.toUpperCase(), scale: scale[a.chain] || 2 }));
+      group = await firstValueFrom(this.#api.saveGroup(group));
       this.context.completeWith(group);
     } catch (error) {
       this.#alerts.printError(error);

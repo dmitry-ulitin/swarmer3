@@ -37,12 +37,20 @@ export class ApiService {
     return this.http.get<Group>(`/api/groups/${id}`);
   }
 
-  saveGroup(group: Group): Observable<Group> {
-    return !!group.id ? this.http.put<Group>(`/api/groups/${group.id}`, group) : this.http.post<Group>('/api/groups', group);
+  addGroup(group: Group): Observable<Group> {
+    return this.http.post<Group>('/api/groups', group);
   }
 
-  deleteGroup(id: number): Observable<void> {
-    return this.http.delete<void>(`/api/groups/${id}`);
+  updateGroup(group: Group, force: boolean): Observable<Group> {
+    return this.http.put<Group>(`/api/groups/${group.id}?force=${force}`, group);
+  }
+
+  saveGroup(group: Group): Observable<Group> {
+    return !!group.id ? this.updateGroup(group, false) : this.addGroup(group);
+  }
+
+  deleteGroup(id: number, force: boolean): Observable<void> {
+    return this.http.delete<void>(`/api/groups/${id}?force=${force}`);
   }
 
   getCategories(): Observable<Category[]> {
