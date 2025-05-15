@@ -183,7 +183,7 @@ public class GroupService {
     }
 
     @Transactional
-    public void deleteGroup(Long groupId, Long userId) {
+    public void deleteGroup(Long groupId, Long userId, boolean force) {
         var group = groupRepository.findById(groupId).orElseThrow();
         if (!group.getOwner().getId().equals(userId)) {
             var acl = group.getAcls().stream().filter(a -> a.getUser().getId().equals(userId)).findFirst().orElse(null);
@@ -198,11 +198,18 @@ public class GroupService {
             return;
         }
         var dto = GroupDto.fromEntity(group, userId, balances);
-        dto.accounts().forEach(a -> {
-            if (!a.balance().equals(BigDecimal.ZERO)) {
-                throw new RuntimeException("Account not empty");
-            }
-        });
+        var isEmpty = dto.accounts().stream()
+                .allMatch(a -> a.balance().equals(BigDecimal.ZERO) && !a.deleted());
+        if (!force && !isEmpty) {
+            throw new RuntimeException("This group has accounts with non-zero balance");
+        }
+        if (force && !isEmpty) {
+            // Force delete all transactions for this group
+            transactionService.deleteTransactionsByAccounts(accList);
+            // Delete group
+            groupRepository.delete(group);
+            return;
+        }
         group.setDeleted(true);
         group.setUpdated(LocalDateTime.now());
         groupRepository.save(group);

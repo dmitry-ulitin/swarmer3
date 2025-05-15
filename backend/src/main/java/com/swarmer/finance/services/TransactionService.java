@@ -208,6 +208,44 @@ public class TransactionService {
         transactionRepository.delete(trx);
     }
 
+    public void deleteTransactionsByAccounts(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+        var transactions = transactionRepository.findByAccountIdInOrRecipientIdIn(ids, ids);
+        for (var trx : transactions) {
+            // update transfers
+            if (trx.getAccount() != null && trx.getRecipient() != null) {
+                if (ids.contains(trx.getAccount().getId())) {
+                    trx.setAccount(null);
+                    trx.setDebit(trx.getCredit());
+                }
+                if (ids.contains(trx.getRecipient().getId())) {
+                    trx.setRecipient(null);
+                    trx.setCredit(trx.getDebit());
+                }
+                if (trx.getAccount() == null && trx.getRecipient() == null) {
+                    // if both accounts are deleted, remove the transaction
+                    transactionRepository.delete(trx);
+                } else {
+                    // save the transaction with updated accounts
+                    trx.setUpdated(LocalDateTime.now());
+                    transactionRepository.save(trx);
+                }
+            }
+        }
+        transactionRepository.deleteAll(transactions.stream()
+                .filter(t -> t.getAccount() == null || t.getRecipient() == null)
+                .collect(Collectors.toList()));
+    }
+
+    /**
+     * Saves a list of import records, updating existing transactions if necessary.
+     *
+     * @param userId   the ID of the user performing the import
+     * @param accountId the ID of the account associated with the import
+     * @param records  the list of import records to save
+     */
     public void saveImport(Long userId, Long accountId, List<ImportDto> records) {
         if (records == null || records.isEmpty()) {
             return;

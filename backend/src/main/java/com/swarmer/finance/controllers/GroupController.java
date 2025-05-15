@@ -56,9 +56,9 @@ public class GroupController {
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteGroup(@PathVariable Long id, @AuthenticationPrincipal UserPrincipal principal) {
+    public ResponseEntity<Void> deleteGroup(@PathVariable Long id, @RequestParam(required = false) boolean force, @AuthenticationPrincipal UserPrincipal principal) {
         Long userId = principal.getUserDto().id();
-        groupService.deleteGroup(id, userId);
+        groupService.deleteGroup(id, userId, force);
         return ResponseEntity.noContent().build();
     }
 
