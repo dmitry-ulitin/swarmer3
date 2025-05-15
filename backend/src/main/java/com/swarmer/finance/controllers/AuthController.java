@@ -18,6 +18,7 @@ import com.swarmer.finance.repositories.UserRepository;
 import com.swarmer.finance.security.JwtTokenProvider;
 import com.swarmer.finance.security.UserPrincipal;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 
 @RestController
@@ -91,8 +92,9 @@ public class AuthController {
         // Update password
         user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
         userRepository.save(user);
+        user.setUpdated(LocalDateTime.now());
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Password changed successfully");
     }
 
     public static class LoginRequest {
