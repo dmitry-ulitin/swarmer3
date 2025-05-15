@@ -25,8 +25,8 @@ export class ApiService {
     return this.http.post<any>('/api/auth/register', registration);
   }
 
-  changePassword(changePassword: ChangePassword): Observable<any> {
-    return this.http.post<any>('/api/auth/change-password', changePassword);
+  changePassword(changePassword: ChangePassword): Observable<string> {
+    return this.http.post('/api/auth/change-password', changePassword, { responseType: 'text' });
   }  
 
   getGroups(opdate: string): Observable<Group[]> {
