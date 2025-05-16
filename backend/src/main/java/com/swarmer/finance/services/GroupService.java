@@ -106,7 +106,7 @@ public class GroupService {
     }
 
     @Transactional
-    public GroupDto updateGroup(GroupDto dto, Long userId) {
+    public GroupDto updateGroup(GroupDto dto, boolean force, Long userId) {
         var group = groupRepository.findById(dto.id()).orElseThrow();
         var admin = true;
         if (!group.getOwner().getId().equals(userId)) {
@@ -131,6 +131,25 @@ public class GroupService {
                             .noneMatch(b -> a.id().equals(b.accountId()) || a.id().equals(b.recipientId()))) {
                         group.getAccounts().remove(account);
                     } else {
+                        if (a.deleted()) {
+                            // Check if account has non-zero balance
+                            var debit = balances.stream().filter(b -> a.id().equals(b.accountId()))
+                                    .map(b -> b.debit())
+                                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                            var credit = balances.stream().filter(b -> a.id().equals(b.recipientId()))
+                                    .map(b -> b.credit())
+                                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                            var balance = a.startBalance().add(credit).subtract(debit);
+                            if (!balance.equals(BigDecimal.ZERO)) {
+                                if (force) {
+                                    // Force delete all transactions for this account
+                                    transactionService.deleteTransactionsByAccounts(List.of(a.id()));
+                                    group.getAccounts().remove(account);
+                                } else {
+                                    throw new RuntimeException("Account '" + a.fullName() + "' has non-zero balance");
+                                }
+                            }
+                        }
                         account.setName(a.name());
                         account.setCurrency(a.currency());
                         account.setStartBalance(AccountDto.unsetScale(a.startBalance(), a.scale()));

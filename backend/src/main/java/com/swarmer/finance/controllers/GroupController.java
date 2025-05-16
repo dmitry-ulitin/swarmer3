@@ -45,18 +45,18 @@ public class GroupController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GroupDto> updateGroup(@PathVariable Long id, @AuthenticationPrincipal UserPrincipal principal,
-            @RequestBody GroupDto groupDto) {
+    public ResponseEntity<GroupDto> updateGroup(@PathVariable Long id, @RequestParam(required = false, defaultValue = "false") boolean force,
+            @AuthenticationPrincipal UserPrincipal principal, @RequestBody GroupDto groupDto) {
         if (!id.equals(groupDto.id())) {
             throw new IllegalArgumentException("Group id doesn't match");
         }
         Long userId = principal.getUserDto().id();
-        return ResponseEntity.ok(groupService.updateGroup(groupDto, userId));
+        return ResponseEntity.ok(groupService.updateGroup(groupDto, force, userId));
     }
 
-
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteGroup(@PathVariable Long id, @RequestParam(required = false) boolean force, @AuthenticationPrincipal UserPrincipal principal) {
+    public ResponseEntity<Void> deleteGroup(@PathVariable Long id, @RequestParam(required = false, defaultValue = "false") boolean force,
+            @AuthenticationPrincipal UserPrincipal principal) {
         Long userId = principal.getUserDto().id();
         groupService.deleteGroup(id, userId, force);
         return ResponseEntity.noContent().build();
