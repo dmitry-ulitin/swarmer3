@@ -190,8 +190,14 @@ public class TransactionService {
         trx.setDebit(debit);
         trx.setRecipient(dto.recipient() == null ? null : entityManager.find(Account.class, dto.recipient().id()));
         trx.setCredit(credit);
-        trx.setCategory(dto.category() == null ? null : categoryService.getCategory(dto.category(), userId));
-        trx.setCurrency(dto.currency());
+        trx.setCategory(dto.type() == TransactionType.TRANSFER ? null : categoryService.getCategory(dto.category(), userId));
+        if (dto.type() == TransactionType.TRANSFER) {
+            trx.setCurrency(null);
+        } else if (dto.currency() == null || dto.currency().isBlank()) {
+            trx.setCurrency(trx.getAccount() != null ? trx.getAccount().getCurrency()
+                    : (trx.getRecipient() != null ? trx.getRecipient().getCurrency() : null));
+
+        }
         trx.setParty(dto.party());
         trx.setDetails(dto.details());
         trx.setUpdated(LocalDateTime.now());
@@ -221,10 +227,16 @@ public class TransactionService {
             if (trx.getAccount() != null && trx.getRecipient() != null) {
                 if (ids.contains(trx.getAccount().getId())) {
                     trx.setCurrency(trx.getAccount().getCurrency());
+                    if (trx.getParty() == null) {
+                        trx.setParty(trx.getAccount().getAddress() != null ? trx.getAccount().getAddress() : AccountDto.getFullName(trx.getAccount()));
+                    }
                     trx.setAccount(null);
                 }
                 if (ids.contains(trx.getRecipient().getId())) {
                     trx.setCurrency(trx.getRecipient().getCurrency());
+                    if (trx.getParty() == null) {
+                        trx.setParty(trx.getRecipient().getAddress() != null ? trx.getRecipient().getAddress() : AccountDto.getFullName(trx.getRecipient()));
+                    }
                     trx.setRecipient(null);
                 }
                 if (trx.getAccount() == null && trx.getRecipient() == null) {
@@ -283,12 +295,14 @@ public class TransactionService {
                         && transaction.getParty() != null && transaction.getParty().equals(account.getAddress())) {
                     transaction.setParty(null);
                     transaction.setCategory(null);
+                    transaction.setCurrency(null);
                     transaction.setRecipient(account);
                     update = true;
                 } else if (record.getType() == TransactionType.EXPENSE && transaction.getAccount() == null
                         && transaction.getParty() != null && transaction.getParty().equals(account.getAddress())) {
                     transaction.setParty(null);
                     transaction.setCategory(null);
+                    transaction.setCurrency(null);
                     transaction.setAccount(account);
                     update = true;
                 } else if ((transaction.getParty() == null || transaction.getParty().isBlank())
