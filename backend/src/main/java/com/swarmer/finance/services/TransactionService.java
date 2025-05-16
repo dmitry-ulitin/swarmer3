@@ -213,16 +213,19 @@ public class TransactionService {
             return;
         }
         var transactions = transactionRepository.findByAccountIdInOrRecipientIdIn(ids, ids);
+        transactionRepository.deleteAll(transactions.stream()
+                .filter(t -> t.getAccount() == null || t.getRecipient() == null)
+                .collect(Collectors.toList()));
         for (var trx : transactions) {
             // update transfers
             if (trx.getAccount() != null && trx.getRecipient() != null) {
                 if (ids.contains(trx.getAccount().getId())) {
+                    trx.setCurrency(trx.getAccount().getCurrency());
                     trx.setAccount(null);
-                    trx.setDebit(trx.getCredit());
                 }
                 if (ids.contains(trx.getRecipient().getId())) {
+                    trx.setCurrency(trx.getRecipient().getCurrency());
                     trx.setRecipient(null);
-                    trx.setCredit(trx.getDebit());
                 }
                 if (trx.getAccount() == null && trx.getRecipient() == null) {
                     // if both accounts are deleted, remove the transaction
@@ -234,9 +237,6 @@ public class TransactionService {
                 }
             }
         }
-        transactionRepository.deleteAll(transactions.stream()
-                .filter(t -> t.getAccount() == null || t.getRecipient() == null)
-                .collect(Collectors.toList()));
     }
 
     /**
