@@ -218,7 +218,7 @@ public class GroupService {
         }
         var dto = GroupDto.fromEntity(group, userId, balances);
         var isEmpty = dto.accounts().stream()
-                .allMatch(a -> a.balance().equals(BigDecimal.ZERO) && !a.deleted());
+                .allMatch(a -> a.balance().compareTo(BigDecimal.ZERO) == 0);
         if (!force && !isEmpty) {
             throw new RuntimeException("This group has accounts with non-zero balance");
         }
