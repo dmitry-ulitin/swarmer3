@@ -110,6 +110,18 @@ export class DataService {
     }
   }
 
+
+  async getGroup(id: number) {
+    try {
+      const group = await firstValueFrom(this.#api.getGroup(id), { defaultValue: null });
+      if (group) {
+        this.#state.update(state => ({ ...state, groups: state.groups.map(g => g.id === id ? group : g) }));
+      }
+    } catch (err) {
+      this.#alerts.printError(err);
+    }
+  }
+
   toggleGropup(id: number) {
     if ((this.#state().groups.find(g => g.id === id)?.accounts.length || 0) > 1) {
       let expanded = this.#state().expanded.filter(e => e !== id);
@@ -133,7 +145,7 @@ export class DataService {
 
   async editGroup(id: number) {
     try {
-      const group = this.#state().groups.find(g => g.id === id);
+      const group = await firstValueFrom(this.#api.getGroup(id), { defaultValue: null });
       if (!!group) {
         const data = await firstValueFrom(this.#dlgService.open<Group | undefined>(
           new PolymorpheusComponent(GrpEditorComponent), { data: group, dismissible: false, closeable: false, size: 's' }
@@ -152,13 +164,20 @@ export class DataService {
     try {
       const group = this.#state().groups.find(g => g.id === id);
       if (!!group) {
-        const answer = await firstValueFrom(this.#dlgService.open<boolean>(TUI_CONFIRM, { size: 's', data: { content: 'Are you sure you want to delete this group?', yes: 'Yes', no: 'No' } }), { defaultValue: false });
+        let answer = await firstValueFrom(this.#dlgService.open<boolean>(TUI_CONFIRM, { size: 's', data: { content: 'Are you sure you want to delete this group?', yes: 'Yes', no: 'No' } }), { defaultValue: false });
         if (answer) {
-          await firstValueFrom(this.#api.deleteGroup(group.id));
-          this.#alerts.printSuccess(`Group '${group.fullName}' deleted`);
-          const groups = this.#state().groups.map(g => g.id === group.id ? { ...g, deleted: true } : g);
-          this.#state.update(state => ({ ...state, groups }));
-          await this.selectAccounts(this.#state().accounts.filter(id => !group.accounts.some(a => a.id === id)));
+          const force = group.accounts.some(a => a.balance !== 0);
+          if (force) {
+            answer = await firstValueFrom(this.#dlgService.open<boolean>(TUI_CONFIRM, { size: 's', data: { content: 'This group has accounts with non-zero balance. Are you sure you want to delete it?', yes: 'Yes', no: 'No' } }), { defaultValue: false });
+          }
+          if (answer) {
+            // delete group
+            await firstValueFrom(this.#api.deleteGroup(group.id, force));
+            this.#alerts.printSuccess(`Group '${group.fullName}' deleted`);
+            const groups = this.#state().groups.map(g => g.id === group.id ? { ...g, deleted: true } : g);
+            this.#state.update(state => ({ ...state, groups }));
+            await this.selectAccounts(this.#state().accounts.filter(id => !group.accounts.some(a => a.id === id)));
+          }
         }
       }
     } catch (err) {

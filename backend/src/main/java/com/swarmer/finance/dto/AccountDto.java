@@ -27,16 +27,12 @@ public record AccountDto(
             8, BigDecimal.valueOf(100000000),
             18, BigDecimal.valueOf(1000000000000000000L)
     );
+
     public static AccountDto fromEntity(Account entity, Long userId, BigDecimal balance, LocalDateTime opdate) {
         if (entity == null) {
             return null;
         }
-        var fullname = entity.getGroup().getName();
-        if (entity.getName() != null && !entity.getName().isBlank()) {
-            fullname += " " + entity.getName();
-        } else if (entity.getGroup().getAccounts().stream().filter(a -> !a.isDeleted()).count() > 1) {
-            fullname += " " + entity.getCurrency();
-        }
+        var fullname = getFullName(entity);
         var shared = !entity.getGroup().getOwner().getId().equals(userId) && entity.getGroup().getAcls().stream()
                 .noneMatch(acl -> acl.getUser().getId().equals(userId) && acl.isAdmin());
         if (shared) {
@@ -55,6 +51,20 @@ public record AccountDto(
                 opdate,
                 entity.isDeleted());
     }
+
+    public static String getFullName(Account entity) {
+        if (entity == null) {
+            return null;
+        }
+        var fullname = entity.getGroup().getName();
+        if (entity.getName() != null && !entity.getName().isBlank()) {
+            fullname += " " + entity.getName();
+        } else if (entity.getGroup().getAccounts().stream().filter(a -> !a.isDeleted()).count() > 1) {
+            fullname += " " + entity.getCurrency();
+        }
+        return fullname;
+    }
+
     public static BigDecimal setScale(BigDecimal value, int scale) {
         if (value == null) {
             return null;
@@ -62,6 +72,7 @@ public record AccountDto(
         var decimals = DECIMALS.getOrDefault(scale, BigDecimal.valueOf(1));
         return value.divide(decimals, scale, RoundingMode.HALF_DOWN);
     }
+    
     public static BigDecimal unsetScale(BigDecimal value, int scale) {
         if (value == null) {
             return null;

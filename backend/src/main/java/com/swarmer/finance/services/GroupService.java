@@ -106,7 +106,7 @@ public class GroupService {
     }
 
     @Transactional
-    public GroupDto updateGroup(GroupDto dto, Long userId) {
+    public GroupDto updateGroup(GroupDto dto, boolean force, Long userId) {
         var group = groupRepository.findById(dto.id()).orElseThrow();
         var admin = true;
         if (!group.getOwner().getId().equals(userId)) {
@@ -131,6 +131,25 @@ public class GroupService {
                             .noneMatch(b -> a.id().equals(b.accountId()) || a.id().equals(b.recipientId()))) {
                         group.getAccounts().remove(account);
                     } else {
+                        if (a.deleted()) {
+                            // Check if account has non-zero balance
+                            var debit = balances.stream().filter(b -> a.id().equals(b.accountId()))
+                                    .map(b -> b.debit())
+                                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                            var credit = balances.stream().filter(b -> a.id().equals(b.recipientId()))
+                                    .map(b -> b.credit())
+                                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                            var balance = a.startBalance().add(credit).subtract(debit);
+                            if (!balance.equals(BigDecimal.ZERO)) {
+                                if (force) {
+                                    // Force delete all transactions for this account
+                                    transactionService.deleteTransactionsByAccounts(List.of(a.id()));
+                                    group.getAccounts().remove(account);
+                                } else {
+                                    throw new RuntimeException("Account '" + a.fullName() + "' has non-zero balance");
+                                }
+                            }
+                        }
                         account.setName(a.name());
                         account.setCurrency(a.currency());
                         account.setStartBalance(AccountDto.unsetScale(a.startBalance(), a.scale()));
@@ -183,7 +202,7 @@ public class GroupService {
     }
 
     @Transactional
-    public void deleteGroup(Long groupId, Long userId) {
+    public void deleteGroup(Long groupId, Long userId, boolean force) {
         var group = groupRepository.findById(groupId).orElseThrow();
         if (!group.getOwner().getId().equals(userId)) {
             var acl = group.getAcls().stream().filter(a -> a.getUser().getId().equals(userId)).findFirst().orElse(null);
@@ -198,11 +217,18 @@ public class GroupService {
             return;
         }
         var dto = GroupDto.fromEntity(group, userId, balances);
-        dto.accounts().forEach(a -> {
-            if (!a.balance().equals(BigDecimal.ZERO)) {
-                throw new RuntimeException("Account not empty");
-            }
-        });
+        var isEmpty = dto.accounts().stream()
+                .allMatch(a -> a.balance().compareTo(BigDecimal.ZERO) == 0);
+        if (!force && !isEmpty) {
+            throw new RuntimeException("This group has accounts with non-zero balance");
+        }
+        if (force && !isEmpty) {
+            // Force delete all transactions for this group
+            transactionService.deleteTransactionsByAccounts(accList);
+            // Delete group
+            groupRepository.delete(group);
+            return;
+        }
         group.setDeleted(true);
         group.setUpdated(LocalDateTime.now());
         groupRepository.save(group);
