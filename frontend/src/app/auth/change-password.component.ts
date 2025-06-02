@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { AuthService } from '../services/auth.service';
 import { TuiButton, TuiIcon, TuiLabel, TuiTextfield } from '@taiga-ui/core';
 import { AlertService } from '../services/alert.service';
@@ -11,7 +11,7 @@ import { TuiPassword } from '@taiga-ui/kit';
     selector: 'app-change-password',
     standalone: true,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [CommonModule, ReactiveFormsModule, RouterLink, TuiButton, TuiTextfield, TuiIcon, TuiLabel, TuiPassword],
+    imports: [ReactiveFormsModule, RouterLink, TuiButton, TuiTextfield, TuiIcon, TuiLabel, TuiPassword],
     templateUrl: './change-password.component.html',
     styleUrl: './change-password.component.scss'
 })

@@ -1,78 +1,80 @@
 <form [formGroup]=form class="group" [tuiTextfieldSize]="'s'" autocomplete="off">
-    <tui-input formControlName="fullName" tuiAutoFocus>
-        Name
-        <input tuiTextfieldLegacy autocomplete="off" />
-    </tui-input>
-    @if(isOwnerOrCoowner) {
+  <tui-input formControlName="fullName" tuiAutoFocus>
+    Name
+    <input tuiTextfieldLegacy autocomplete="off" />
+  </tui-input>
+  @if(isOwnerOrCoowner) {
     <div class="accounts" formArrayName="accounts">
-        <div class="accounts-title" colspan="3">Balances</div>
-        <button tuiIconButton type="button" [iconStart]="'@tui.plus'" [size]="'s'" [appearance]="'flat'"
-            (click)="onAddAccount()"></button>
-        @for(account of accounts.controls; track $index) {
+      <div class="accounts-title" colspan="3">Balances</div>
+      <button tuiIconButton type="button" [iconStart]="'@tui.plus'" [size]="'s'" [appearance]="'flat'"
+      (click)="onAddAccount()"></button>
+      @for(account of accounts.controls; track $index) {
         @if (!account.value.deleted) {
-        <ng-container [formGroupName]="$index">
+          <ng-container [formGroupName]="$index">
             <tui-input formControlName="name" class="account-name">
-                {{getAccount($index).getRawValue().currency?.toUpperCase()}}
+              {{getAccount($index).getRawValue().currency?.toUpperCase()}}
             </tui-input>
             @if(!!account.value.opdate) {
-                <tui-input-number formControlName="balance"></tui-input-number>
+              <tui-input-number formControlName="balance"></tui-input-number>
             } @else {
-                <tui-input-number formControlName="startBalance">0,00</tui-input-number>
+              <tui-input-number formControlName="startBalance">0,00</tui-input-number>
             }
             <tui-combo-box formControlName="currency" class="account-currency" [strict]="false">
-                <input tuiTextfieldLegacy />
-                <tui-data-list-wrapper *tuiDataList [items]="currencies | tuiFilterByInput" [size]="'s'" />
+              <input tuiTextfieldLegacy />
+              <tui-data-list-wrapper *tuiDataList [items]="currencies | tuiFilterByInput" [size]="'s'" />
             </tui-combo-box>
             <button tuiIconButton type="button" [iconStart]="'@tui.settings'" [size]="'s'" [appearance]="'flat'"
-                (click)="onEditAccount($index)"></button>
+            (click)="onEditAccount($index)"></button>
             <button tuiIconButton type="button" [iconStart]="'@tui.trash'" [size]="'s'" [appearance]="'flat'"
-                [disabled]="!isOwnerOrCoowner || !canDelete || (!!account.getRawValue().balance && !!account.value.opdate)"
-                (click)="onRemoveAccount($index)"></button>
-        </ng-container>
+              [disabled]="!isOwnerOrCoowner || !canDelete || (!!account.getRawValue().balance && !!account.value.opdate)"
+            (click)="onRemoveAccount($index)"></button>
+          </ng-container>
         }
-        }
+      }
     </div>
     <div>Permissions</div>
+  }
+  <div class="permissions" formArrayName="permissions">
+    <tui-input [formControl]="query" [tuiTextfieldCleaner]="true" class="fill" *tuiLet="users$ | async as users">
+      <input tuiTextfieldLegacy autocomplete="of" placeholder="Type user email" />
+      <tui-data-list *tuiDataList>
+        @for (user of users; track user) {
+          <button tuiOption [value]="user" (click)="onSelectedUser(user)">
+            {{ user }}
+          </button>
+        }
+      </tui-data-list>
+    </tui-input>
+    <tui-select class="rights" [formControl]="rights" [valueContent]="optionContent" [tuiTextfieldSize]="'s'">
+      <tui-data-list-wrapper *tuiDataList [items]="options" [itemContent]="optionContent" [size]="'s'" />
+    </tui-select>
+    <ng-template #optionContent let-option>{{option.name}}</ng-template>
+    <button tuiIconButton type="button" [iconStart]="'@tui.plus'" [size]="'s'" [appearance]="'flat'"
+    (click)="onAddPermission()" [disabled]="!selected"></button>
+    @if (permissions.controls.length > 0) {
+      <div></div>
+      <div class="title">Admin</div>
+      <div class="title">Write</div>
+      <div class="title">Read</div>
+      <div></div>
     }
-    <div class="permissions" formArrayName="permissions">
-        <tui-input [formControl]="query" [tuiTextfieldCleaner]="true" class="fill" *tuiLet="users$ | async as users">
-            <input tuiTextfieldLegacy autocomplete="of" placeholder="Type user email" />
-            <tui-data-list *tuiDataList>
-                <button *ngFor="let user of users" tuiOption [value]="user" (click)="onSelectedUser(user)">
-                    {{ user }}
-                </button>
-            </tui-data-list>
-        </tui-input>
-        <tui-select class="rights" [formControl]="rights" [valueContent]="optionContent" [tuiTextfieldSize]="'s'">
-            <tui-data-list-wrapper *tuiDataList [items]="options" [itemContent]="optionContent" [size]="'s'" />
-        </tui-select>
-        <ng-template #optionContent let-option>{{option.name}}</ng-template>
-        <button tuiIconButton type="button" [iconStart]="'@tui.plus'" [size]="'s'" [appearance]="'flat'"
-            (click)="onAddPermission()" [disabled]="!selected"></button>
-        @if (permissions.controls.length > 0) {
-        <div></div>
-        <div class="title">Admin</div>
-        <div class="title">Write</div>
-        <div class="title">Read</div>
-        <div></div>
-        }
-        @for(acl of permissions.controls; track acl.value.user.email) {
-        @if (isOwnerOrCoowner || acl.value.user.email == email) {
+    @for(acl of permissions.controls; track acl.value.user.email) {
+      @if (isOwnerOrCoowner || acl.value.user.email == email) {
         <ng-container [formGroupName]="$index">
-            <div class="email">{{acl.value.user.email}}</div>
-            <input type="checkbox" formControlName="admin" (change)="onToggleAdmin($event, $index)">
-            <input type="checkbox" formControlName="write" (change)="onToggleWrite($event, $index)">
-            <input type="checkbox" [disabled]="true" [checked]="true">
-            <button tuiIconButton type="button" [iconStart]="'@tui.trash'" [size]="'s'" [appearance]="'flat'"
-                (click)="onRemovePermission($index)" [disabled]="!isOwnerOrCoowner"></button>
+          <div class="email">{{acl.value.user.email}}</div>
+          <input type="checkbox" formControlName="admin" (change)="onToggleAdmin($event, $index)">
+          <input type="checkbox" formControlName="write" (change)="onToggleWrite($event, $index)">
+          <input type="checkbox" [disabled]="true" [checked]="true">
+          <button tuiIconButton type="button" [iconStart]="'@tui.trash'" [size]="'s'" [appearance]="'flat'"
+          (click)="onRemovePermission($index)" [disabled]="!isOwnerOrCoowner"></button>
         </ng-container>
-        }
-        }
-    </div>
-    <div class="row">
-        <div class="fill"></div>
-        <button tuiButton type="submit" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()"
-            [disabled]=!form.valid>Save</button>
-        <button tuiButton type="button" [appearance]="'secondary'" [size]="'s'" (click)="onCancel()">Cancel</button>
-    </div>
+      }
+    }
+  </div>
+  <div class="row">
+    <div class="fill"></div>
+    <button tuiButton type="submit" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()"
+    [disabled]=!form.valid>Save</button>
+    <button tuiButton type="button" [appearance]="'secondary'" [size]="'s'" (click)="onCancel()">Cancel</button>
+  </div>
 </form>

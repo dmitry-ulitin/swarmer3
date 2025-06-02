@@ -7,15 +7,14 @@ import { TuiAutoFocus, TuiFilterPipe } from '@taiga-ui/cdk';
 import { AlertService } from '../services/alert.service';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Account, scale } from '../models/account';
-import { CommonModule } from '@angular/common';
+
 import { TuiFilterByInputPipe } from "@taiga-ui/kit";
 
 @Component({
   selector: 'app-acc-editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, TuiButton, TuiInputModule, TuiFilterByInputPipe, TuiInputNumberModule, TuiComboBoxModule,
-    TuiSelectModule, TuiTextfieldControllerModule, TuiAutoFocus, TuiLabel],
+  imports: [ReactiveFormsModule, TuiButton, TuiInputModule, TuiFilterByInputPipe, TuiInputNumberModule, TuiComboBoxModule, TuiSelectModule, TuiTextfieldControllerModule, TuiAutoFocus, TuiLabel],
   templateUrl: './acc.editor.component.html',
   styleUrl: './acc.editor.component.scss'
 })

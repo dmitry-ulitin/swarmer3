@@ -1,37 +1,39 @@
 <table class="groups">
-    @for(g of data.groups(); track g.id) {
+  @for(g of data.groups(); track g.id) {
     <tr [class.expanded]="data.state().expanded.includes(g.id)" [class.owner]="g.owner" [class.coowner]="g.coowner"
-        [class.shared]="g.shared">
-        <td [class.active]="isGroupSelected(g)" (click)="selectGroup(g, $event)">
-            <a class="group" tuiLink>{{g.fullName}}</a>
-            @for(a of g.accounts; track a.id) {
-                @if(!a.deleted) {
-                    <a class="account" tuiLink  [class.active]="isAccountSelected(a)" (click)="selectAccount(a, $event)">{{a.fullName}}</a>
-                }
-            }
-        </td>
-        <td (click)="toggle(g)">
-            <tui-icon  *ngIf="isGroupExpandable(g)" icon="@tui.chevron-down" class="icon" [style.height.px]="16" [style.height.py]="16"></tui-icon>
-        </td>
-        <td class="text-end">
-            @for(t of total(g); track t.currency) {
-                <div class="group">{{t.value | currency:t.currency : 'symbol' : '1.2'+'-'+t.scale}}</div>
-            }
-            @for(a of g.accounts; track a.id) {
-                @if(!a.deleted) {
-                    <div class="account">{{a.balance | currency: a.currency : 'symbol' : '1.2'+'-'+a.scale}}</div>
-                }
-            }
-        </td>
+      [class.shared]="g.shared">
+      <td [class.active]="isGroupSelected(g)" (click)="selectGroup(g, $event)">
+        <a class="group" tuiLink>{{g.fullName}}</a>
+        @for(a of g.accounts; track a.id) {
+          @if(!a.deleted) {
+            <a class="account" tuiLink  [class.active]="isAccountSelected(a)" (click)="selectAccount(a, $event)">{{a.fullName}}</a>
+          }
+        }
+      </td>
+      <td (click)="toggle(g)">
+        @if (isGroupExpandable(g)) {
+          <tui-icon  icon="@tui.chevron-down" class="icon" [style.height.px]="16" [style.height.py]="16"></tui-icon>
+        }
+      </td>
+      <td class="text-end">
+        @for(t of total(g); track t.currency) {
+          <div class="group">{{t.value | currency:t.currency : 'symbol' : '1.2'+'-'+t.scale}}</div>
+        }
+        @for(a of g.accounts; track a.id) {
+          @if(!a.deleted) {
+            <div class="account">{{a.balance | currency: a.currency : 'symbol' : '1.2'+'-'+a.scale}}</div>
+          }
+        }
+      </td>
     </tr>
-    }
-    <tr>
-        <td><a tuiLink [pseudo]="true" (click)="newGroup()">new account</a></td>
-        <td>&nbsp;</td>
-        <td class="text-end">
-            @for(t of data.total(); track t.currency) {
-                <div class="group">{{t.value | currency:t.currency : 'symbol' : '1.2'+'-'+t.scale}}</div>
-            }
-        </td>
-    </tr>
+  }
+  <tr>
+    <td><a tuiLink [pseudo]="true" (click)="newGroup()">new account</a></td>
+    <td>&nbsp;</td>
+    <td class="text-end">
+      @for(t of data.total(); track t.currency) {
+        <div class="group">{{t.value | currency:t.currency : 'symbol' : '1.2'+'-'+t.scale}}</div>
+      }
+    </td>
+  </tr>
 </table>

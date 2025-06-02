@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './header/header.component';
 import { DataService } from './services/data.service';
@@ -10,7 +10,7 @@ import { TuiRoot } from '@taiga-ui/core';
   selector: 'app-root',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterOutlet, HeaderComponent, TuiRoot],
+  imports: [RouterOutlet, HeaderComponent, TuiRoot],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })

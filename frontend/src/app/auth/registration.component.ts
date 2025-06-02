@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { AlertService } from '../services/alert.service';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+
 import { RouterLink } from '@angular/router';
 import { TuiButton, TuiIcon, TuiLabel, TuiTextfield, TuiTextfieldDropdownDirective } from '@taiga-ui/core';
 import { TuiDataListWrapper, TuiFilterByInputPipe, TuiPassword } from '@taiga-ui/kit';
@@ -12,7 +12,7 @@ import { CURRENCIES_EN } from '../models/currencies';
   selector: 'app-registration',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, TuiButton, TuiTextfield, TuiLabel, TuiIcon, TuiPassword, TuiDataListWrapper, TuiFilterByInputPipe, TuiTextfieldDropdownDirective],
+  imports: [ReactiveFormsModule, RouterLink, TuiButton, TuiTextfield, TuiLabel, TuiIcon, TuiPassword, TuiDataListWrapper, TuiFilterByInputPipe, TuiTextfieldDropdownDirective],
   templateUrl: './registration.component.html',
   styleUrl: './registration.component.scss'
 })

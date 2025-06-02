@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewChild, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { AuthService } from '../services/auth.service';
 import { TuiDialogService, TuiDataList, TuiDropdown, TuiDropdownOpen, TuiIcon, TuiButton } from '@taiga-ui/core';
 import { DataService } from '../services/data.service';
@@ -15,7 +15,7 @@ import { RouterLink } from '@angular/router';
   selector: 'app-header',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TuiButton, RouterLink, TuiDropdown, TuiDataList, TuiIcon, TuiChevron, TuiDataListDropdownManager],
+  imports: [TuiButton, RouterLink, TuiDropdown, TuiDataList, TuiIcon, TuiChevron, TuiDataListDropdownManager],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
