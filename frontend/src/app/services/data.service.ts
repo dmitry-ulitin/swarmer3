@@ -332,7 +332,7 @@ export class DataService {
   async getSummary() {
     try {
       const state = this.#state();
-      const summary = await firstValueFrom(this.#api.getSummary(state.accounts, state.range), { defaultValue: [] });
+      const summary = await firstValueFrom(this.#api.getSummary(state.accounts, state.search, state.range, state.category?.id), { defaultValue: [] });
       this.#state.update(state => ({ ...state, summary }));
     } catch (err) {
       this.#alerts.printError(err);
@@ -356,7 +356,7 @@ export class DataService {
 
   async selectCategory(category: Category | null) {
     this.#state.update(state => ({ ...state, category }));
-    await this.getTransactions(this.#state());
+    await Promise.all([this.getTransactions(this.#state()), this.getSummary()]);
   }
 
   async selectCurrency(currency: string | undefined | null) {
@@ -366,7 +366,7 @@ export class DataService {
 
   async setSearch(search: string | undefined | null) {
     this.#state.update(state => ({ ...state, search: search || '' }));
-    await this.getTransactions(this.#state());
+    await Promise.all([this.getTransactions(this.#state()), this.getSummary()]);
   }
 
   async setRange(range: DateRange) {

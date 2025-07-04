@@ -28,7 +28,10 @@ import com.swarmer.finance.models.TransactionType;
 import com.swarmer.finance.repositories.TransactionRepository;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
 @Service
 public class TransactionService {
@@ -46,10 +49,16 @@ public class TransactionService {
     }
 
     public List<TransactionSum> getBalances(Collection<Long> accList, LocalDateTime from, LocalDateTime to, Long id) {
+        return getBalances(null, accList, null, null, from, to, id);
+    }
+
+    public List<TransactionSum> getBalances(Long userId, Collection<Long> accList, String search, Long categoryId, LocalDateTime from, LocalDateTime to, Long id) {
         var builder = entityManager.getCriteriaBuilder();
         var criteriaQuery = builder.createQuery(TransactionSum.class);
         var root = criteriaQuery.from(Transaction.class);
         var where = builder.or(root.get("account").get("id").in(accList), root.get("recipient").get("id").in(accList));
+        where = appendSearchCriteria(search, builder, root, where);
+        where = appendCategoryCriteria(userId, categoryId, builder, root, where);
         if (from != null) {
             var greaterThanOrEqualTo = builder.greaterThanOrEqualTo(root.<LocalDateTime>get("opdate"), from);
             where = builder.and(where, greaterThanOrEqualTo);
@@ -329,7 +338,7 @@ public class TransactionService {
         ;
     }
 
-    public Collection<Summary> getSummary(Long userId, Collection<Long> accountIdsFilter, LocalDateTime from,
+    public Collection<Summary> getSummary(Long userId, Collection<Long> accountIdsFilter, String search, Long category, LocalDateTime from,
             LocalDateTime to) {
         var userAccounts = aclService.getAccounts(userId);
         var validAccounts = userAccounts.stream()
@@ -342,7 +351,7 @@ public class TransactionService {
         var result = validAccounts.values().stream().map(Account::getCurrency).distinct()
                 .collect(Collectors.toMap(c -> c,
                         c -> new Summary(c, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)));
-        getBalances(validAccounts.keySet(), from, to, null).forEach(b -> {
+        getBalances(userId, validAccounts.keySet(), search, category, from, to, null).forEach(b -> {
             if (validAccounts.containsKey(b.accountId())) {
                 var account = validAccounts.get(b.accountId());
                 var debit = AccountDto.setScale(b.debit(), account.getScale());
@@ -490,13 +499,29 @@ public class TransactionService {
         var criteriaQuery = builder.createQuery(Transaction.class);
         var root = criteriaQuery.from(Transaction.class);
         var where = builder.or(root.get("account").get("id").in(ai), root.get("recipient").get("id").in(ai));
-        if (search != null && !search.isBlank()) {
-            var pattern = "%" + search.toUpperCase() + "%";
-            var details = builder.like(builder.upper(root.get("details")), pattern);
-            var party = builder.like(builder.upper(root.get("party")), pattern);
-            var category = builder.like(builder.upper(root.join("category", JoinType.LEFT).get("name")), pattern);
-            where = builder.and(where, builder.or(category, details, party));
+        where = appendSearchCriteria(search, builder, root, where);
+        where = appendCategoryCriteria(userId, categoryId, builder, root, where);
+        if (from != null) {
+            where = builder.and(where, builder.greaterThanOrEqualTo(root.get("opdate"), from));
         }
+        if (to != null) {
+            where = builder.and(where, builder.lessThan(root.get("opdate"), to));
+        }
+        criteriaQuery = criteriaQuery.where(where).orderBy(builder.desc(root.get("opdate")),
+                builder.desc(root.get("id")));
+        var typedQuery = entityManager.createQuery(criteriaQuery);
+        if (offset > 0) {
+            typedQuery = typedQuery.setFirstResult(offset);
+        }
+        if (limit > 0) {
+            typedQuery = typedQuery.setMaxResults(limit);
+        }
+        var trx = typedQuery.getResultList();
+        return trx;
+    }
+
+    private Predicate appendCategoryCriteria(Long userId, Long categoryId, CriteriaBuilder builder, Root<Transaction> root,
+            Predicate where) {
         if (categoryId != null) {
             if (categoryId == -TransactionType.EXPENSE.getValue()) {
                 where = builder.and(where, root.get("category").isNull(), root.get("recipient").isNull());
@@ -515,22 +540,17 @@ public class TransactionService {
                 where = builder.and(where, root.get("category").get("id").in(categories));
             }
         }
-        if (from != null) {
-            where = builder.and(where, builder.greaterThanOrEqualTo(root.get("opdate"), from));
+        return where;
+    }
+
+    private Predicate appendSearchCriteria(String search, CriteriaBuilder builder, Root<Transaction> root, Predicate where) {
+        if (search != null && !search.isBlank()) {
+            var pattern = "%" + search.toUpperCase() + "%";
+            var details = builder.like(builder.upper(root.get("details")), pattern);
+            var party = builder.like(builder.upper(root.get("party")), pattern);
+            var category = builder.like(builder.upper(root.join("category", JoinType.LEFT).get("name")), pattern);
+            where = builder.and(where, builder.or(category, details, party));
         }
-        if (to != null) {
-            where = builder.and(where, builder.lessThan(root.get("opdate"), to));
-        }
-        criteriaQuery = criteriaQuery.where(where).orderBy(builder.desc(root.get("opdate")),
-                builder.desc(root.get("id")));
-        var typedQuery = entityManager.createQuery(criteriaQuery);
-        if (offset > 0) {
-            typedQuery = typedQuery.setFirstResult(offset);
-        }
-        if (limit > 0) {
-            typedQuery = typedQuery.setMaxResults(limit);
-        }
-        var trx = typedQuery.getResultList();
-        return trx;
+        return where;
     }
 }

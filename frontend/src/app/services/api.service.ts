@@ -132,9 +132,11 @@ export class ApiService {
     return this.http.patch<void>(`/api/transactions/import?account=${acc}`, transactions);
   }
 
-  getSummary(accounts: number[], range: DateRange): Observable<Summary[]> {
+  getSummary(accounts: number[], search: string, range: DateRange, category: number | null | undefined): Observable<Summary[]> {
     let params = new HttpParams();
     params = params.set('accounts', accounts.join(","));
+    params = params.set('search', search);
+    params = params.set('category', typeof category === 'number' ? category : '');
     params = params.set('from', range?.from?.toString('YMD', '-') || '');
     params = params.set('to', range?.to?.toString('YMD', '-') || '');
     return this.http.get<Summary[]>('/api/transactions/summary', { params: params });

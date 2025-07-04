@@ -105,10 +105,12 @@ public class TransactionController {
     public ResponseEntity<Collection<Summary>> getSummary(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(required = false) Set<Long> accounts,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long category,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         Long userId = principal.getUserDto().id();
-        return ResponseEntity.ok(transactionService.getSummary(userId, accounts,
+        return ResponseEntity.ok(transactionService.getSummary(userId, accounts, search, category,
                 from == null ? null : from.atStartOfDay(), to == null ? null : to.atTime(LocalTime.MAX)));
     }
 
