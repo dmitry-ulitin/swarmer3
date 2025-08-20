@@ -124,6 +124,7 @@ public class GroupService {
         var balances = transactionService.getBalances(accList, null, null, null);
         if (admin) {
             dto.accounts().forEach(a -> {
+                var startBalance = AccountDto.unsetScale(a.startBalance(), a.scale());
                 if (a.id() != null && a.id() != 0) {
                     var account = group.getAccounts().stream().filter(acc -> acc.getId().equals(a.id()))
                             .findFirst().orElseThrow();
@@ -139,7 +140,7 @@ public class GroupService {
                             var credit = balances.stream().filter(b -> a.id().equals(b.recipientId()))
                                     .map(b -> b.credit())
                                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-                            var balance = a.startBalance().add(credit).subtract(debit);
+                            var balance = startBalance.add(credit).subtract(debit);
                             if (!balance.equals(BigDecimal.ZERO)) {
                                 if (force) {
                                     // Force delete all transactions for this account
@@ -152,7 +153,7 @@ public class GroupService {
                         }
                         account.setName(a.name());
                         account.setCurrency(a.currency());
-                        account.setStartBalance(AccountDto.unsetScale(a.startBalance(), a.scale()));
+                        account.setStartBalance(startBalance);
                         account.setChain(a.chain());
                         account.setAddress(a.address());
                         account.setScale(a.scale());
@@ -163,7 +164,7 @@ public class GroupService {
                     account.setGroup(group);
                     account.setName(a.name());
                     account.setCurrency(a.currency());
-                    account.setStartBalance(AccountDto.unsetScale(a.startBalance(), a.scale()));
+                    account.setStartBalance(startBalance);
                     account.setChain(a.chain());
                     account.setAddress(a.address());
                     account.setScale(a.scale());
