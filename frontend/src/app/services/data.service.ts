@@ -21,6 +21,7 @@ import { Rule } from '../models/rule';
 import { RuleEditorComponent } from '../rule.editor/rule.editor.component';
 import { CategorySum } from '../models/category.sum';
 import { AccEditorComponent } from "../acc.editor/acc.editor.component";
+import { DateRangeEditorComponent } from "../date.range.editor/date.range.editor.component";
 
 const GET_TRANSACTIONS_LIMIT = 100;
 
@@ -372,6 +373,17 @@ export class DataService {
   async setRange(range: DateRange) {
     this.#state.update(state => ({ ...state, range }));
     await Promise.all([this.getTransactions(this.#state()), this.getSummary(), this.getCategoriesSummary()]);
+  }
+
+  async setCustomRange() {
+    const state = this.#state();
+    let min = state.groups.map(g => g.opdate || '').reduce((min, c) => !min || c < min ? c : min, '');
+    const range = await firstValueFrom(this.#dlgService.open<DateRange | undefined>(
+      new PolymorpheusComponent(DateRangeEditorComponent), { data: state.range.dayRange(min), dismissible: false, closeable: false }
+    ));
+    if (!!range) {
+      await this.setRange(range);
+    }
   }
 
   async checkWallets(accounts: number[], fullScan: boolean) {

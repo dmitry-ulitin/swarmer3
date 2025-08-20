@@ -1,5 +1,5 @@
 <div class="h-100 overflow-auto" infiniteScroll [scrollWindow]="false" [alwaysCallback]="true" (scrolled)="onScroll()">
-  @for (t of transactions(); track t) {
+  @for (t of transactions(); track t.id) {
     <div class="t-content" [class.active]="tid() === t.id"
       (click)="selectTransaction(t.id)">
       <div class="t-row">

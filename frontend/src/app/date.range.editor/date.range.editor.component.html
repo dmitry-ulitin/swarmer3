@@ -1,0 +1,13 @@
+<form [formGroup]=form class="date-range" [tuiTextfieldSize]="'s'">
+    <tui-textfield [tuiTextfieldCleaner]="false">
+        <label tuiLabel>Choose range</label>
+        <input tuiInputDateRange formControlName="dateRange" />
+        <tui-calendar-range *tuiTextfieldDropdown />
+    </tui-textfield>
+    <div class="row">
+        <div class="fill"></div>
+        <button tuiButton type="button" [appearance]="'primary'" [size]="'s'" (click)="onSubmit()"
+            [disabled]=!form.valid>Save</button>
+        <button tuiButton type="button" [appearance]="'secondary'" [size]="'s'" (click)="onCancel()">Cancel</button>
+    </div>
+</form>
