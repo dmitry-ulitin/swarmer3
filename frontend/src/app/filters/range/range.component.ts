@@ -23,6 +23,10 @@ export class RangeComponent {
     this.data.setRange(option);
   }
 
+  onCustomRange() {
+    this.data.setCustomRange();
+  }
+
   prev(option: DateRange) {
     this.data.setRange(option.prev());
   }

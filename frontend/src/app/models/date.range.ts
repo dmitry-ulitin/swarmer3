@@ -1,4 +1,4 @@
-import { TuiDay } from "@taiga-ui/cdk";
+import { TuiDay, TuiDayRange } from "@taiga-ui/cdk";
 
 export enum RangeType {
     Custom = 0,
@@ -78,5 +78,11 @@ export class DateRange {
         return this.name == another.name
             && (!this.from && !another.from || !!this.from && !!another.from && this.from.daySame(another.from))
             && (!this.to && !another.to || !!this.to && !!another.to && this.to.daySame(another.to));
+    }
+
+    dayRange(min: string): TuiDayRange {
+        const from = this.from || (!!min ? TuiDay.jsonParse(min) : TuiDay.currentLocal());
+        const to = this.to || TuiDay.currentLocal();
+        return new TuiDayRange(from, to);
     }
 }
