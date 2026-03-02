@@ -192,6 +192,10 @@ public class TransactionController {
             @RequestParam(required = false, defaultValue = "false") boolean fullScan,
             @AuthenticationPrincipal UserPrincipal principal) {
         Long userId = principal.getUserDto().id();
-        return ResponseEntity.ok(walletService.importWallets(userId, accounts, fullScan));
+        try {
+            return ResponseEntity.ok(walletService.importWallets(userId, accounts, fullScan));
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error checking wallets", e);
+        }
     }
 }

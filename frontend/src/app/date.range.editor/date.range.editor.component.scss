@@ -1,17 +1,12 @@
-.date-range {
+:host {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  min-width: 400px;
-}
-
-.fill {
-  width: 100%;
+  gap: 0.5rem;
 }
 
 .row {
   display: flex;
-  gap: 8px;
+  gap: .5rem;
   justify-content: flex-end;
-  margin-top: 16px;
+  margin-top: .5rem;
 }

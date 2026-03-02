@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, Inject, inject } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TuiDialogContext, TuiButton, TuiTextfield, TuiTextfieldDropdownDirective } from '@taiga-ui/core';
 import { POLYMORPHEUS_CONTEXT } from '@taiga-ui/polymorpheus';
 import { DateRange, RangeType } from '../models/date.range';
@@ -21,16 +21,14 @@ import { TuiDayRange } from '@taiga-ui/cdk';
   styleUrl: './date.range.editor.component.scss'
 })
 export class DateRangeEditorComponent {
-  form = new FormGroup({
-    dateRange: new FormControl(this.context.data, { nonNullable: true })
-  });
+  dateRange = new FormControl(this.context.data, { nonNullable: true });
 
   constructor(@Inject(POLYMORPHEUS_CONTEXT) private readonly context: TuiDialogContext<DateRange | undefined, TuiDayRange>) {
   }
 
   onSubmit(): void {
-    if (this.form.valid) {
-      const range = this.form.getRawValue().dateRange;
+    if (this.dateRange.valid) {
+      const range = this.dateRange.getRawValue();
       this.context.completeWith(new DateRange(range.toString(), range.from, range.to, RangeType.Custom));
     }
   }
