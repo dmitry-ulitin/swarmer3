@@ -379,7 +379,7 @@ export class DataService {
     const state = this.#state();
     let min = state.groups.map(g => g.opdate || '').reduce((min, c) => !min || c < min ? c : min, '');
     const range = await firstValueFrom(this.#dlgService.open<DateRange | undefined>(
-      new PolymorpheusComponent(DateRangeEditorComponent), { data: state.range.dayRange(min), dismissible: false, closeable: false }
+      new PolymorpheusComponent(DateRangeEditorComponent), { data: state.range.dayRange(min), dismissible: false, closeable: false, size: 's' }
     ));
     if (!!range) {
       await this.setRange(range);
