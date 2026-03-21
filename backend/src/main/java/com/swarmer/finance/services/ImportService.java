@@ -105,6 +105,7 @@ public class ImportService {
             case ALFABANK -> importAlfabank(is);
             case UNICREDIT -> importUnicredit(is);
             case CAIXA -> importCaixa(is);
+            case BANKOFCYPRUS -> importBankOfCyprus(is);
             default -> throw new IllegalArgumentException("Unknown bank type: " + bankId);
         };
         return importRecords(records, accountId, userId);
@@ -230,6 +231,42 @@ public class ImportService {
                 return new ImportDto(null, opdate, type, debit, credit, null, null, currency, party, details, null,
                         true);
             }).toList();
+        }
+    }
+
+    private List<ImportDto> importBankOfCyprus(InputStream is)
+            throws UnsupportedEncodingException, IOException, ParseException {
+        var format = CSVFormat.DEFAULT.builder().setTrim(true).get();
+        try (var fileReader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+                var csvParser = CSVParser.parse(fileReader, format)) {
+            var OPDATE_COL = 0;
+            var DETAILS_COL = 1;
+            var CATEGORY_COL = 2;
+            var DEBIT_COL = 4;
+            var CREDIT_COL = 5;
+            DecimalFormat decimalFormat = new DecimalFormat();
+            DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols();
+            otherSymbols.setDecimalSeparator(',');
+            otherSymbols.setGroupingSeparator('.');
+            decimalFormat.setDecimalFormatSymbols(otherSymbols);
+            decimalFormat.setParseBigDecimal(true);
+            List<ImportDto> records = new ArrayList<>();
+            for (var r : csvParser.getRecords()) {
+                if (!r.get(OPDATE_COL).matches("\\d{1,2}/\\d{1,2}/\\d{4}")) {
+                    continue;
+                }
+                var debit = r.get(DEBIT_COL);
+                var credit = r.get(CREDIT_COL);
+                var type = credit.isEmpty() ? TransactionType.EXPENSE : TransactionType.INCOME;
+                var opdate = LocalDate.parse(r.get(OPDATE_COL), DateTimeFormatter.ofPattern("d/M/yyyy")).atStartOfDay();
+                var amount = (BigDecimal) decimalFormat.parse(debit.isEmpty() ? credit : debit);
+                var currency = "EUR";
+                var catname = r.get(CATEGORY_COL);
+                var details = r.get(DETAILS_COL);
+                records.add(new ImportDto(null, opdate, type, amount, amount, null, null, currency, null, details, catname,
+                        true));
+            }
+            return records;
         }
     }
 
