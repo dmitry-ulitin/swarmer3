@@ -220,20 +220,26 @@ public class ImportService {
                 .setTrim(true).get();
         try (var fileReader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
                 var csvParser = CSVParser.parse(fileReader, format)) {
+            var TYPE_COL = csvParser.getHeaderMap().getOrDefault("Debit/Credit (D/C)", csvParser.getHeaderMap().getOrDefault("Дебет/Кредит (D/C)", 5));
+            var OPDATE_COL = csvParser.getHeaderMap().getOrDefault("Date", csvParser.getHeaderMap().getOrDefault("Дата", 2));
+            var PARTY_COL = csvParser.getHeaderMap().getOrDefault("Sender/receiver name", csvParser.getHeaderMap().getOrDefault("Имя плательщика/получателя", 4));
+            var AMOUNT_COL = csvParser.getHeaderMap().getOrDefault("Amount", csvParser.getHeaderMap().getOrDefault("Сумма", 6));
+            var DETAILS_COL = csvParser.getHeaderMap().getOrDefault("Description", csvParser.getHeaderMap().getOrDefault("Пояснение", 9));
+            var CURRENCY_COL = csvParser.getHeaderMap().getOrDefault("Currency", csvParser.getHeaderMap().getOrDefault("Валюта", 10));
             return csvParser.getRecords().stream().map(r -> {
-                var type = "D".equals(r.get(7)) ? TransactionType.EXPENSE : TransactionType.INCOME;
-                var opdate = LocalDate.parse(r.get(2), DateTimeFormatter.ISO_DATE).atStartOfDay();
-                var debit = new BigDecimal(r.get(8)).abs();
+                var type = "D".equals(r.get(TYPE_COL)) ? TransactionType.EXPENSE : TransactionType.INCOME;
+                var opdate = LocalDate.parse(r.get(OPDATE_COL), DateTimeFormatter.ISO_DATE).atStartOfDay();
+                var debit = new BigDecimal(r.get(AMOUNT_COL)).abs();
                 var credit = debit;
-                var currency = r.get(13);
-                var party = r.get(4);
-                var details = r.get(11);
+                var currency = r.get(CURRENCY_COL);
+                var party = r.get(PARTY_COL);
+                var details = r.get(DETAILS_COL);
                 return new ImportDto(null, opdate, type, debit, credit, null, null, currency, party, details, null,
                         true);
             }).toList();
         }
     }
-
+    
     private List<ImportDto> importBankOfCyprus(InputStream is)
             throws UnsupportedEncodingException, IOException, ParseException {
         var format = CSVFormat.DEFAULT.builder().setTrim(true).get();
@@ -307,7 +313,7 @@ public class ImportService {
             List<ImportDto> records = new ArrayList<>();
             for (int i = 0; i < (lines.length - 1); i++) {
                 if (table) {
-                    if (lines[i].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2} \\d+ .*")) {
+                    if (lines[i].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2} .*?\\d+,\\d{2}$")) {
                         var opdate = LocalDateTime.parse(lines[i].substring(0, 16),
                                 DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
                         lines[i] = lines[i].substring(17);
@@ -316,15 +322,14 @@ public class ImportService {
                                 .parse(parts[parts.length - 2].replaceAll("\\u00a0|\\+|-", ""));
                         var type = parts[parts.length - 2].startsWith("+") ? TransactionType.INCOME
                                 : TransactionType.EXPENSE;
-                        lines[i] = lines[i].substring(parts[0].length() + 1, lines[i].length()
+                        lines[i] = lines[i].substring(0, lines[i].length()
                                 - parts[parts.length - 2].length() - parts[parts.length - 1].length() - 2);
                         var catname = lines[i++];
-                        lines[i] = lines[i].substring(11);
-                        String details = lines[i];
-                        if (!lines[i + 1].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2} \\d+ .*")) {
-                            if (lines[i + 2].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2} \\d+ .*")) {
+                        String details = lines[i].replaceFirst("^\\d{2}\\.\\d{2}\\.\\d{4} \\d+ ", "" );
+                        if (!lines[i + 1].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2} .*?\\d+,\\d{2}$")) {
+                            if (lines[i + 2].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2} .*?\\d+,\\d{2}$")) {
                                 details += " " + lines[++i];
-                            } else if (lines[i + 3].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2} \\d+ .*")) {
+                            } else if (lines[i + 3].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2} .*?\\d+,\\d{2}$")) {
                                 details += " " + lines[++i] + " " + lines[++i];
                             }
                         }
@@ -334,7 +339,7 @@ public class ImportService {
                     } else {
                         table = false;
                     }
-                } else if (lines[i + 1].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2} \\d+ .*")) {
+                } else if (lines[i + 1].matches("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2} .*?\\d+,\\d{2}$")) {
                     table = true;
                 }
             }
