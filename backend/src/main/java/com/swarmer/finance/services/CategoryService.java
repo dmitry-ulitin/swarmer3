@@ -101,6 +101,7 @@ public class CategoryService {
                 .forEach(d -> {
                     transactionRepository.replaceCategoryId(d.getId(), category.getId());
                     ruleRepository.replaceCategoryId(d.getId(), category.getId());
+                    categoryRepository.replaceParentId(d.getId(), category.getId());
                     categoryRepository.deleteById(d.getId());
                 });
         return CategoryDto.fromEntity(category);
